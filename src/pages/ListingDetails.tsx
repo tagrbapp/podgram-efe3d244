@@ -27,7 +27,7 @@ interface Listing {
   profiles: {
     full_name: string;
     phone: string;
-  };
+  } | null;
 }
 
 const ListingDetails = () => {
@@ -43,19 +43,29 @@ const ListingDetails = () => {
 
   const fetchListing = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: listingData, error: listingError } = await supabase
         .from("listings")
         .select(`
           *,
-          category:categories(name),
-          profiles(full_name, phone)
+          category:categories(name)
         `)
         .eq("id", id)
         .eq("status", "active")
         .single();
 
-      if (error) throw error;
-      setListing(data);
+      if (listingError) throw listingError;
+
+      // Fetch profile separately
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name, phone")
+        .eq("id", listingData.user_id)
+        .maybeSingle();
+
+      setListing({
+        ...listingData,
+        profiles: profileData
+      });
     } catch (error) {
       console.error("Error fetching listing:", error);
       toast.error("فشل تحميل تفاصيل الإعلان");
@@ -67,7 +77,13 @@ const ListingDetails = () => {
 
   const incrementViews = async () => {
     try {
-      await supabase.rpc("increment_listing_views", { listing_id: id });
+      // Increment views directly
+      const { error } = await supabase
+        .from("listings")
+        .update({ views: (listing?.views || 0) + 1 })
+        .eq("id", id);
+      
+      if (error) throw error;
     } catch (error) {
       console.error("Error incrementing views:", error);
     }
