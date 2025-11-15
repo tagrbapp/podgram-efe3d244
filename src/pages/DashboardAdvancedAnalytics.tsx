@@ -184,6 +184,8 @@ const DashboardAdvancedAnalytics = () => {
               </CardContent>
             </Card>
           )}
+              </>
+            )}
           </main>
         </div>
         

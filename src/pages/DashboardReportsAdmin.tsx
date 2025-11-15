@@ -229,27 +229,26 @@ const DashboardReportsAdmin = () => {
               </Select>
             </div>
           </div>
-        </div>
 
-        {/* Reports List */}
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-64 w-full" />
-            ))}
-          </div>
-        ) : filteredReports.length === 0 ? (
-          <div className="text-center py-12">
-            <Shield className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">لا توجد بلاغات</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredReports.map((report) => (
-              <ReportCard key={report.id} report={report} onUpdate={fetchReports} />
-            ))}
-          </div>
-        )}
+          {/* Reports List */}
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-64 w-full" />
+              ))}
+            </div>
+          ) : filteredReports.length === 0 ? (
+            <div className="text-center py-12">
+              <Shield className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground">لا توجد بلاغات</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredReports.map((report) => (
+                <ReportCard key={report.id} report={report} onUpdate={fetchReports} />
+              ))}
+            </div>
+          )}
           </main>
         </div>
         
