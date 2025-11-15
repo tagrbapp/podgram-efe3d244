@@ -6,75 +6,64 @@
 
 @layer base {
   :root {
-    /* الألوان الأساسية - لون أزرق فاتح مع برتقالي دافئ */
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    /* اللون الأساسي - أزرق حيوي */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 217 91% 70%;
-    --primary-dark: 217 91% 50%;
-
-    /* اللون الثانوي - برتقالي دافئ */
-    --secondary: 25 95% 53%;
-    --secondary-foreground: 0 0% 100%;
-    --secondary-light: 25 95% 63%;
-    --secondary-dark: 25 95% 43%;
-
-    /* الخلفيات الخافتة */
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    /* اللون المميز */
-    --accent: 142 76% 36%;
-    --accent-foreground: 0 0% 100%;
-
-    /* لون التحذير والحذف */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* الحدود والمدخلات */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 217 91% 60%;
-
-    --radius: 0.75rem;
-
-    /* التدرجات اللونية المحسّنة */
-    --gradient-primary: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(240, 85%, 65%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(25, 95%, 53%) 0%, hsl(340, 82%, 52%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(158, 64%, 52%) 100%);
-    --gradient-hero: linear-gradient(180deg, hsl(217, 91%, 97%) 0%, hsl(210, 40%, 98%) 100%);
-    --gradient-sunset: linear-gradient(135deg, hsl(340, 82%, 52%) 0%, hsl(25, 95%, 53%) 50%, hsl(45, 93%, 58%) 100%);
+    /* Luxury Dark Theme - Inspired by Qultura */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
     
-    /* الظلال المحسّنة */
-    --shadow-sm: 0 1px 2px 0 hsl(217 91% 60% / 0.05);
-    --shadow-elegant: 0 10px 40px -10px hsl(217 91% 60% / 0.2);
-    --shadow-card: 0 4px 20px -2px hsl(222 47% 11% / 0.08);
-    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.25);
-    --shadow-glow-secondary: 0 0 40px hsl(25 95% 53% / 0.25);
+    /* Gold Luxury Accents */
+    --primary: 43 74% 66%;
+    --primary-foreground: 240 10% 3.9%;
+    --primary-light: 43 74% 76%;
+    --primary-dark: 43 74% 56%;
+    --primary-glow: 43 100% 70%;
     
-    /* الانتقالات السلسة */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-
-    /* ألوان Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 217 91% 60%;
+    /* Sophisticated Secondary */
+    --secondary: 240 6% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --secondary-light: 240 6% 18%;
+    --secondary-dark: 240 6% 8%;
+    
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 43 74% 66%;
+    --accent-foreground: 240 10% 3.9%;
+    --destructive: 0 62.8% 50.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 16%;
+    --input: 240 6% 16%;
+    --ring: 43 74% 66%;
+    --radius: 0.5rem;
+    
+    /* Luxury Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(43 74% 66%) 0%, hsl(43 100% 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(240 10% 6%) 0%, hsl(240 10% 10%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(43 74% 56%) 0%, hsl(43 74% 76%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(240 10% 3.9%) 0%, hsl(240 10% 8%) 50%, hsl(43 74% 20%) 100%);
+    --gradient-sunset: linear-gradient(to right, hsl(43 74% 66%), hsl(35 80% 60%), hsl(25 85% 55%));
+    
+    /* Elegant Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(240 10% 0% / 0.05);
+    --shadow-elegant: 0 20px 60px -15px hsl(43 74% 66% / 0.3);
+    --shadow-card: 0 10px 40px -10px hsl(240 10% 0% / 0.4);
+    --shadow-glow: 0 0 40px hsl(43 100% 70% / 0.3);
+    --shadow-glow-secondary: 0 0 30px hsl(43 74% 66% / 0.2);
+    
+    /* Smooth Transitions */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Sidebar luxury styling */
+    --sidebar-background: 240 10% 5%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 43 74% 66%;
+    --sidebar-primary-foreground: 240 10% 3.9%;
+    --sidebar-accent: 240 6% 12%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 6% 12%;
+    --sidebar-ring: 43 74% 66%;
   }
 
   .dark {
@@ -143,11 +132,13 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-arabic;
     direction: rtl;
-    font-family: 'Cairo', 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-image: radial-gradient(circle at 20% 50%, hsl(43 74% 10% / 0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, hsl(43 100% 10% / 0.1) 0%, transparent 50%);
+    background-attachment: fixed;
   }
 
   html {
@@ -156,11 +147,20 @@
 
   /* تحسينات عامة للعناصر */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply font-luxury font-bold;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+    background: var(--gradient-sunset);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   a {
-    @apply transition-smooth;
+    @apply text-foreground hover:text-primary transition-smooth;
   }
 
   /* جعل الأرقام بالصيغة الإنجليزية دائماً */
@@ -176,9 +176,18 @@
 }
 
 @layer utilities {
-  /* التدرجات */
+  /* Luxury Gradient backgrounds */
   .bg-gradient-primary {
     background: var(--gradient-primary);
+    position: relative;
+  }
+  
+  .bg-gradient-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 0%, hsl(43 100% 70% / 0.1) 100%);
+    pointer-events: none;
   }
   
   .bg-gradient-secondary {
@@ -191,6 +200,16 @@
   
   .bg-gradient-hero {
     background: var(--gradient-hero);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bg-gradient-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 50%, hsl(43 74% 66% / 0.1) 0%, transparent 60%);
+    pointer-events: none;
   }
 
   .bg-gradient-sunset {
@@ -244,22 +263,46 @@
     @apply transition-smooth hover:shadow-glow;
   }
 
-  /* تأثيرات الخلفية */
+  /* Luxury Glassmorphism effects */
   .glass {
-    @apply bg-card/80 backdrop-blur-lg border border-border/50;
+    background: rgba(43, 35, 25, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(43 74% 66% / 0.2);
+    box-shadow: 0 8px 32px hsl(240 10% 0% / 0.3);
   }
 
   .glass-dark {
-    @apply bg-card/60 backdrop-blur-xl border border-border/30;
+    background: rgba(15, 15, 20, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(43 74% 66% / 0.15);
+    box-shadow: 0 8px 32px hsl(240 10% 0% / 0.4);
   }
 
-  /* تأثيرات النص */
+  /* Luxury Text gradient effects */
   .text-gradient-primary {
-    @apply bg-gradient-primary bg-clip-text text-transparent;
+    background: var(--gradient-sunset);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   .text-gradient-secondary {
-    @apply bg-gradient-secondary bg-clip-text text-transparent;
+    background: linear-gradient(135deg, hsl(0 0% 98%) 0%, hsl(240 5% 64.9%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
   }
 
   .text-gradient-sunset {

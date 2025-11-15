@@ -82,8 +82,14 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Cairo', 'Tajawal', 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+        sans: ['Playfair Display', 'Cairo', 'Tajawal', 'serif'],
         arabic: ['Cairo', 'Tajawal', 'sans-serif'],
+        luxury: ['Playfair Display', 'serif'],
+      },
+      fontSize: {
+        'luxury-xl': ['4rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'luxury-lg': ['3rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        'luxury-md': ['2rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
       },
       keyframes: {
         "accordion-down": {
