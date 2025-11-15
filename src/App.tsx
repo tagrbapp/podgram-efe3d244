@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import ListingDetails from "./pages/ListingDetails";
 import Favorites from "./pages/Favorites";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/profile/:id" element={<Profile />} />
           <Route path="/listing/:id" element={<ListingDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

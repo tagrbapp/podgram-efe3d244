@@ -6,11 +6,26 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
-import { User as UserIcon, Mail, Phone } from "lucide-react";
+import { User as UserIcon, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
+import { z } from "zod";
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
+  newPassword: z.string().min(6, "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل"),
+  confirmPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "كلمات المرور غير متطابقة",
+  path: ["confirmPassword"],
+});
+
+const emailSchema = z.object({
+  newEmail: z.string().email("البريد الإلكتروني غير صحيح"),
+});
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -20,6 +35,19 @@ const Settings = () => {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // Password change states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  
+  // Email change states
+  const [newEmail, setNewEmail] = useState("");
+  const [changingEmail, setChangingEmail] = useState(false);
 
   useEffect(() => {
     const subscription = onAuthStateChange((session, user) => {
@@ -85,6 +113,83 @@ const Settings = () => {
     setSaving(false);
   };
 
+  const handlePasswordChange = async () => {
+    if (!user) return;
+
+    try {
+      const validated = passwordSchema.parse({
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      });
+
+      setChangingPassword(true);
+
+      // Re-authenticate user first
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email!,
+        password: validated.currentPassword,
+      });
+
+      if (signInError) {
+        toast.error("كلمة المرور الحالية غير صحيحة");
+        setChangingPassword(false);
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: validated.newPassword,
+      });
+
+      if (updateError) {
+        toast.error("فشل في تغيير كلمة المرور");
+        setChangingPassword(false);
+        return;
+      }
+
+      toast.success("تم تغيير كلمة المرور بنجاح");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setChangingPassword(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
+      setChangingPassword(false);
+    }
+  };
+
+  const handleEmailChange = async () => {
+    if (!user) return;
+
+    try {
+      const validated = emailSchema.parse({ newEmail });
+
+      setChangingEmail(true);
+
+      const { error } = await supabase.auth.updateUser({
+        email: validated.newEmail,
+      });
+
+      if (error) {
+        toast.error("فشل في تحديث البريد الإلكتروني");
+        setChangingEmail(false);
+        return;
+      }
+
+      toast.success("تم إرسال رابط التأكيد إلى البريد الإلكتروني الجديد");
+      setNewEmail("");
+      setChangingEmail(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
+      setChangingEmail(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -104,11 +209,11 @@ const Settings = () => {
 
           <main className="p-6">
             <div className="max-w-2xl mx-auto space-y-6">
-              {/* معلومات الحساب */}
+              {/* معلومات الحساب الأساسية */}
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                   <UserIcon className="h-5 w-5" />
-                  معلومات الحساب
+                  معلومات الحساب الأساسية
                 </h2>
 
                 <div className="space-y-4">
@@ -125,7 +230,7 @@ const Settings = () => {
                       className="bg-muted"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      لا يمكن تغيير البريد الإلكتروني
+                      البريد الإلكتروني الحالي
                     </p>
                   </div>
 
@@ -166,12 +271,142 @@ const Settings = () => {
                 </div>
               </Card>
 
+              <Separator />
+
+              {/* تغيير البريد الإلكتروني */}
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  تغيير البريد الإلكتروني
+                </h2>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="newEmail" className="mb-2 block">
+                      البريد الإلكتروني الجديد
+                    </Label>
+                    <Input
+                      id="newEmail"
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      placeholder="البريد الإلكتروني الجديد"
+                      dir="ltr"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      سيتم إرسال رابط تأكيد إلى البريد الجديد
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleEmailChange}
+                    disabled={changingEmail || !newEmail}
+                    className="w-full"
+                    variant="secondary"
+                  >
+                    {changingEmail ? "جاري التحديث..." : "تحديث البريد الإلكتروني"}
+                  </Button>
+                </div>
+              </Card>
+
+              <Separator />
+
+              {/* تغيير كلمة المرور */}
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  تغيير كلمة المرور
+                </h2>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="currentPassword" className="mb-2 block">
+                      كلمة المرور الحالية
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="currentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        placeholder="أدخل كلمة المرور الحالية"
+                        dir="ltr"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="newPassword" className="mb-2 block">
+                      كلمة المرور الجديدة
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="أدخل كلمة المرور الجديدة"
+                        dir="ltr"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="confirmPassword" className="mb-2 block">
+                      تأكيد كلمة المرور
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="أعد إدخال كلمة المرور الجديدة"
+                        dir="ltr"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handlePasswordChange}
+                    disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+                    className="w-full"
+                    variant="secondary"
+                  >
+                    {changingPassword ? "جاري التغيير..." : "تغيير كلمة المرور"}
+                  </Button>
+                </div>
+              </Card>
+
+              <Separator />
+
               {/* معلومات إضافية */}
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4">معلومات الحساب</h2>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>تاريخ الإنشاء: {new Date(user?.created_at || "").toLocaleDateString("ar-SA")}</p>
-                  <p>معرف المستخدم: {user?.id}</p>
+                  <p className="font-mono text-xs">معرف المستخدم: {user?.id}</p>
                 </div>
               </Card>
             </div>
