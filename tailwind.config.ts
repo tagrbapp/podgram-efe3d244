@@ -22,14 +22,10 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          light: "hsl(var(--primary-light))",
-          dark: "hsl(var(--primary-dark))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
-          light: "hsl(var(--secondary-light))",
-          dark: "hsl(var(--secondary-dark))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -51,6 +47,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        qultura: {
+          blue: "hsl(var(--qultura-blue))",
+          green: "hsl(var(--qultura-green))",
+          pink: "hsl(var(--qultura-pink))",
+          beige: "hsl(var(--qultura-beige))",
+          "light-blue": "hsl(var(--qultura-light-blue))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -62,34 +65,14 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
-      backgroundImage: {
-        'gradient-primary': 'var(--gradient-primary)',
-        'gradient-secondary': 'var(--gradient-secondary)',
-        'gradient-accent': 'var(--gradient-accent)',
-        'gradient-hero': 'var(--gradient-hero)',
-        'gradient-sunset': 'var(--gradient-sunset)',
-      },
-      boxShadow: {
-        'sm': 'var(--shadow-sm)',
-        'elegant': 'var(--shadow-elegant)',
-        'card': 'var(--shadow-card)',
-        'glow': 'var(--shadow-glow)',
-        'glow-secondary': 'var(--shadow-glow-secondary)',
-      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Playfair Display', 'Cairo', 'Tajawal', 'serif'],
-        arabic: ['Cairo', 'Tajawal', 'sans-serif'],
-        luxury: ['Playfair Display', 'serif'],
-      },
-      fontSize: {
-        'luxury-xl': ['4rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
-        'luxury-lg': ['3rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
-        'luxury-md': ['2rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
+        sans: ["Cairo", "Tajawal", "system-ui", "sans-serif"],
+        arabic: ["Cairo", "Tajawal", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
