@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
-import { MessageCircle, Send, User } from "lucide-react";
+import { MessageCircle, Send, User, Search, MoreVertical, Image as ImageIcon, Paperclip, Smile, Check, CheckCheck } from "lucide-react";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -60,6 +61,12 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     const subscription = onAuthStateChange((session, user) => {
@@ -88,9 +95,14 @@ const Messages = () => {
   }, [navigate]);
 
   useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
     if (selectedConversation) {
       loadMessages(selectedConversation.id);
       markMessagesAsRead(selectedConversation.id);
+      scrollToBottom();
     }
   }, [selectedConversation]);
 
@@ -265,6 +277,27 @@ const Messages = () => {
     return user?.id === conv.buyer_id ? conv.seller_profile : conv.buyer_profile;
   };
 
+  const filteredConversations = conversations.filter(conv => {
+    if (!searchQuery) return true;
+    const otherUser = getOtherUserProfile(conv);
+    return otherUser.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           conv.listings.title.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  const formatMessageTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+    } else if (diffInHours < 48) {
+      return 'أمس';
+    } else {
+      return date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
+    }
+  };
+
   if (isLoading) {
     return (
       <SidebarProvider>
@@ -302,49 +335,73 @@ const Messages = () => {
           <main className="p-6">
             <div className="grid md:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
               {/* Conversations List */}
-              <Card className="md:col-span-1">
-                <div className="p-4 border-b">
-                  <h2 className="font-semibold">المحادثات</h2>
+              <Card className="md:col-span-4 border-0 shadow-lg">
+                <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+                  <div className="relative">
+                    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="ابحث في المحادثات..."
+                      className="pr-10 bg-background/50 border-primary/20 focus:border-primary"
+                    />
+                  </div>
                 </div>
-                <ScrollArea className="h-[calc(100%-4rem)]">
-                  {conversations.length === 0 ? (
-                    <div className="p-8 text-center">
-                      <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                      <p className="text-muted-foreground">لا توجد محادثات</p>
+                <ScrollArea className="h-[calc(100%-5rem)]">
+                  {filteredConversations.length === 0 ? (
+                    <div className="p-12 text-center">
+                      <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                        <MessageCircle className="h-10 w-10 text-muted-foreground/50" />
+                      </div>
+                      <p className="text-muted-foreground font-medium">
+                        {searchQuery ? "لا توجد نتائج" : "لا توجد محادثات"}
+                      </p>
+                      <p className="text-sm text-muted-foreground/70 mt-1">
+                        {searchQuery ? "جرب البحث بكلمات أخرى" : "ابدأ محادثة من صفحة الإعلان"}
+                      </p>
                     </div>
                   ) : (
-                    <div className="divide-y">
-                      {conversations.map((conv) => {
+                    <div className="divide-y divide-border/50">
+                      {filteredConversations.map((conv) => {
                         const otherUser = getOtherUserProfile(conv);
+                        const isSelected = selectedConversation?.id === conv.id;
                         return (
                           <button
                             key={conv.id}
                             onClick={() => setSelectedConversation(conv)}
-                            className={`w-full p-4 text-right hover:bg-muted/50 transition-colors ${
-                              selectedConversation?.id === conv.id ? "bg-muted" : ""
+                            className={`w-full p-4 text-right hover:bg-accent/50 transition-all duration-200 ${
+                              isSelected ? "bg-primary/10 border-r-4 border-primary" : ""
                             }`}
                           >
                             <div className="flex items-start gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={otherUser.avatar_url || undefined} />
-                                <AvatarFallback>
-                                  <User className="h-5 w-5" />
-                                </AvatarFallback>
-                              </Avatar>
+                              <div className="relative">
+                                <Avatar className="h-12 w-12 border-2 border-background shadow-md">
+                                  <AvatarImage src={otherUser.avatar_url || undefined} />
+                                  <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold">
+                                    {otherUser.full_name[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {conv.unread_count! > 0 && (
+                                  <div className="absolute -top-1 -left-1 w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
+                                    <span className="text-[10px] text-white font-bold">{conv.unread_count}</span>
+                                  </div>
+                                )}
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
-                                  <p className="font-medium truncate">{otherUser.full_name}</p>
-                                  {conv.unread_count! > 0 && (
-                                    <Badge variant="destructive" className="ml-2">
-                                      {conv.unread_count}
-                                    </Badge>
+                                  <p className="font-semibold truncate text-foreground">{otherUser.full_name}</p>
+                                  {conv.last_message && (
+                                    <span className="text-xs text-muted-foreground mr-2 flex-shrink-0">
+                                      {formatMessageTime(conv.last_message.created_at)}
+                                    </span>
                                   )}
                                 </div>
-                                <p className="text-xs text-muted-foreground truncate mb-1">
+                                <p className="text-xs text-muted-foreground/80 truncate mb-1 flex items-center gap-1">
+                                  <span className="text-primary">•</span>
                                   {conv.listings.title}
                                 </p>
                                 {conv.last_message && (
-                                  <p className="text-sm text-muted-foreground truncate">
+                                  <p className={`text-sm truncate ${conv.unread_count! > 0 ? "font-medium text-foreground" : "text-muted-foreground"}`}>
                                     {conv.last_message.content}
                                   </p>
                                 )}
@@ -359,74 +416,143 @@ const Messages = () => {
               </Card>
 
               {/* Messages Area */}
-              <Card className="md:col-span-2 flex flex-col">
+              <Card className="md:col-span-8 flex flex-col border-0 shadow-lg overflow-hidden">
                 {selectedConversation ? (
                   <>
                     {/* Chat Header */}
-                    <div className="p-4 border-b flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={getOtherUserProfile(selectedConversation).avatar_url || undefined} />
-                        <AvatarFallback>
-                          <User className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{getOtherUserProfile(selectedConversation).full_name}</p>
-                        <p className="text-sm text-muted-foreground">{selectedConversation.listings.title}</p>
+                    <div className="p-4 border-b bg-gradient-to-r from-card to-card/80 backdrop-blur-sm flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-md">
+                          <AvatarImage src={getOtherUserProfile(selectedConversation).avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold">
+                            {getOtherUserProfile(selectedConversation).full_name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold text-foreground">{getOtherUserProfile(selectedConversation).full_name}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <span className="text-primary">•</span>
+                            {selectedConversation.listings.title}
+                          </p>
+                        </div>
                       </div>
+                      <Button variant="ghost" size="icon" className="rounded-full">
+                        <MoreVertical className="h-5 w-5" />
+                      </Button>
                     </div>
 
                     {/* Messages */}
-                    <ScrollArea className="flex-1 p-4">
+                    <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-muted/20 to-background">
                       <div className="space-y-4">
-                        {messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={`flex ${msg.sender_id === user?.id ? "justify-end" : "justify-start"}`}
-                          >
+                        {messages.map((msg, index) => {
+                          const isSentByMe = msg.sender_id === user?.id;
+                          const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
+                          
+                          return (
                             <div
-                              className={`max-w-[70%] rounded-lg p-3 ${
-                                msg.sender_id === user?.id
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted"
-                              }`}
+                              key={msg.id}
+                              className={`flex ${isSentByMe ? "justify-end" : "justify-start"} items-end gap-2`}
                             >
-                              <p className="text-sm">{msg.content}</p>
-                              <p className={`text-xs mt-1 ${
-                                msg.sender_id === user?.id ? "text-primary-foreground/70" : "text-muted-foreground"
-                              }`}>
-                                {new Date(msg.created_at).toLocaleTimeString('ar-SA', { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
-                                })}
-                              </p>
+                              {!isSentByMe && (
+                                <Avatar className={`h-7 w-7 ${showAvatar ? "" : "invisible"}`}>
+                                  <AvatarImage src={getOtherUserProfile(selectedConversation).avatar_url || undefined} />
+                                  <AvatarFallback className="text-xs">
+                                    {getOtherUserProfile(selectedConversation).full_name[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              
+                              <div className={`flex flex-col ${isSentByMe ? "items-end" : "items-start"} max-w-[70%]`}>
+                                <div
+                                  className={`rounded-2xl px-4 py-2 shadow-md ${
+                                    isSentByMe
+                                      ? "bg-gradient-primary text-primary-foreground rounded-br-sm"
+                                      : "bg-card border border-border rounded-bl-sm"
+                                  }`}
+                                >
+                                  <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                                </div>
+                                <div className="flex items-center gap-1 mt-1 px-1">
+                                  <span className={`text-[11px] ${isSentByMe ? "text-muted-foreground" : "text-muted-foreground/70"}`}>
+                                    {new Date(msg.created_at).toLocaleTimeString('ar-SA', { 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })}
+                                  </span>
+                                  {isSentByMe && (
+                                    msg.is_read ? (
+                                      <CheckCheck className="h-3 w-3 text-primary" />
+                                    ) : (
+                                      <Check className="h-3 w-3 text-muted-foreground" />
+                                    )
+                                  )}
+                                </div>
+                              </div>
+
+                              {isSentByMe && (
+                                <Avatar className={`h-7 w-7 ${showAvatar ? "" : "invisible"}`}>
+                                  <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-bold">
+                                    أنا
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
+                        <div ref={messagesEndRef} />
                       </div>
                     </ScrollArea>
 
                     {/* Message Input */}
-                    <div className="p-4 border-t">
-                      <div className="flex gap-2">
-                        <Input
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                          placeholder="اكتب رسالتك..."
-                          className="flex-1"
-                        />
-                        <Button onClick={sendMessage} disabled={!newMessage.trim()}>
-                          <Send className="h-4 w-4" />
+                    <div className="p-4 border-t bg-card/50 backdrop-blur-sm">
+                      <div className="flex gap-2 items-end">
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+                            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+                            <Paperclip className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                        <div className="flex-1 relative">
+                          <Input
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                sendMessage();
+                              }
+                            }}
+                            placeholder="اكتب رسالتك هنا..."
+                            className="pr-12 pl-4 py-6 rounded-full bg-background border-primary/20 focus:border-primary resize-none"
+                          />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full h-8 w-8"
+                          >
+                            <Smile className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                        <Button 
+                          onClick={sendMessage} 
+                          disabled={!newMessage.trim()}
+                          className="rounded-full h-12 w-12 bg-gradient-primary hover:opacity-90 shadow-lg"
+                        >
+                          <Send className="h-5 w-5" />
                         </Button>
                       </div>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                      <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium text-muted-foreground">اختر محادثة للبدء</p>
+                  <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-background">
+                    <div className="text-center max-w-sm">
+                      <div className="w-24 h-24 rounded-full bg-gradient-primary/10 flex items-center justify-center mx-auto mb-6">
+                        <MessageCircle className="h-12 w-12 text-primary" />
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2">مرحباً بك في الرسائل</h3>
+                      <p className="text-muted-foreground">اختر محادثة من القائمة للبدء في المراسلة</p>
                     </div>
                   </div>
                 )}
