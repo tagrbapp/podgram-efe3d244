@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import ListingCard from "@/components/ListingCard";
 import CategoryCircle from "@/components/CategoryCircle";
 import ActionCard from "@/components/ActionCard";
-import BrandLogos from "@/components/BrandLogos";
+import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,7 +12,6 @@ import categoryWatches from "@/assets/category-watches.jpg";
 import categoryBags from "@/assets/category-bags.jpg";
 import categoryJewelry from "@/assets/category-jewelry.jpg";
 import categoryMens from "@/assets/category-mens.jpg";
-import heroGreenBanner from "@/assets/hero-green-banner.jpg";
 import actionTradein from "@/assets/action-tradein.jpg";
 import actionSell from "@/assets/action-sell.jpg";
 
@@ -109,33 +108,8 @@ const Index = () => {
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-8 items-center">
-              {/* Left Side - Green Section with Brands */}
-              <div className="relative rounded-3xl overflow-hidden h-[500px] bg-gradient-to-br from-[hsl(var(--qultura-green))] to-[hsl(159,58%,47%)]">
-                <img src={heroGreenBanner} alt="Luxury Brands" className="absolute inset-0 w-full h-full object-cover opacity-10" />
-                <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8">
-                  <p className="text-lg text-white/90 mb-4">أكثر من 249 علامة فاخرة على المنصة</p>
-                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-                    Largest selection of<br/>
-                    <span className="text-white/80">luxury brands</span>
-                  </h2>
-                  <div className="mt-8">
-                    <BrandLogos />
-                  </div>
-                </div>
-                {/* Navigation Arrows */}
-                <button className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors">
-                  <span className="text-2xl">←</span>
-                </button>
-                <button className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors">
-                  <span className="text-2xl">→</span>
-                </button>
-                {/* Indicator Dots */}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                  <div className="w-2 h-2 rounded-full bg-white/60"></div>
-                  <div className="w-2 h-2 rounded-full bg-white"></div>
-                  <div className="w-2 h-2 rounded-full bg-white/60"></div>
-                </div>
-              </div>
+              {/* Left Side - Carousel Section */}
+              <HeroCarousel />
 
               {/* Right Side - Text Section */}
               <div className="text-center lg:text-right px-8">
