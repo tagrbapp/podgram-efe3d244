@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
@@ -421,7 +421,10 @@ const Messages = () => {
                   <>
                     {/* Chat Header */}
                     <div className="p-4 border-b bg-gradient-to-r from-card to-card/80 backdrop-blur-sm flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <Link 
+                        to={`/profile/${user?.id === selectedConversation.buyer_id ? selectedConversation.seller_id : selectedConversation.buyer_id}`}
+                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                      >
                         <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-md">
                           <AvatarImage src={getOtherUserProfile(selectedConversation).avatar_url || undefined} />
                           <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold">
@@ -435,7 +438,7 @@ const Messages = () => {
                             {selectedConversation.listings.title}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                       <Button variant="ghost" size="icon" className="rounded-full">
                         <MoreVertical className="h-5 w-5" />
                       </Button>
