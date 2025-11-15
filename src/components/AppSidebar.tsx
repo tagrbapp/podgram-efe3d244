@@ -1,4 +1,4 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, LogOut } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,7 @@ const mainItems = [
   { title: "إعلاناتي", url: "/dashboard/listings", icon: Package },
   { title: "المفضلة", url: "/favorites", icon: Heart },
   { title: "الإحصائيات", url: "/dashboard/analytics", icon: TrendingUp },
+  { title: "التقارير", url: "/dashboard/reports", icon: FileText },
 ];
 
 const settingsItems = [
