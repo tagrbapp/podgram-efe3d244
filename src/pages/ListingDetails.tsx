@@ -228,7 +228,6 @@ const ListingDetails = () => {
       toast.error("فشل في بدء المحادثة");
     }
   };
-  };
 
   if (loading) {
     return (
