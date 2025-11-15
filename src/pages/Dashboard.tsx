@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { ListingsTable } from "@/components/dashboard/ListingsTable";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Edit, Trash2, Eye, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 interface Listing {
@@ -50,18 +52,16 @@ const Dashboard = () => {
 
     setUser(user);
     
-    // جلب الملف الشخصي
     const { data: profileData } = await supabase
       .from("profiles")
       .select("full_name, phone")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
     
     if (profileData) {
       setProfile(profileData);
     }
 
-    // جلب الإعلانات
     await fetchListings(user.id);
     setIsLoading(false);
   };
@@ -94,8 +94,6 @@ const Dashboard = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("هل أنت متأكد من حذف هذا الإعلان؟")) return;
-
     const { error } = await supabase
       .from("listings")
       .delete()
@@ -135,193 +133,80 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg">جاري التحميل...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-8">
-        {/* رأس الصفحة */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">مرحباً، {profile?.full_name || "المستخدم"}</h1>
-              <p className="text-muted-foreground">إدارة إعلاناتك ومتابعة نشاطك</p>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        
+        <div className="flex-1">
+          <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center justify-between px-6">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <div>
+                <h1 className="text-2xl font-bold">مرحباً، {profile?.full_name || "المستخدم"}</h1>
+                <p className="text-sm text-muted-foreground">إدارة إعلاناتك ومتابعة نشاطك</p>
+              </div>
             </div>
+            
             <Link to="/add-listing">
               <Button className="gap-2 bg-gradient-secondary hover:opacity-90 transition-smooth shadow-elegant">
                 <Plus className="h-4 w-4" />
                 إضافة إعلان جديد
               </Button>
             </Link>
-          </div>
+          </header>
 
-          {/* إحصائيات */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-4 shadow-card">
-              <p className="text-sm text-muted-foreground mb-1">إجمالي الإعلانات</p>
-              <p className="text-2xl font-bold">{listings.length}</p>
+          <main className="p-6 space-y-6">
+            {/* الإحصائيات والرسوم البيانية */}
+            <DashboardStats listings={listings} />
+
+            {/* جدول الإعلانات */}
+            <Card className="p-6">
+              <Tabs defaultValue="active" dir="rtl">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold">إعلاناتي</h2>
+                  <TabsList>
+                    <TabsTrigger value="active">النشطة ({activeListings.length})</TabsTrigger>
+                    <TabsTrigger value="sold">المباعة ({soldListings.length})</TabsTrigger>
+                    <TabsTrigger value="inactive">غير نشطة ({inactiveListings.length})</TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="active">
+                  <ListingsTable 
+                    listings={activeListings} 
+                    onDelete={handleDelete}
+                    onStatusChange={handleStatusChange}
+                  />
+                </TabsContent>
+
+                <TabsContent value="sold">
+                  <ListingsTable 
+                    listings={soldListings} 
+                    onDelete={handleDelete}
+                    onStatusChange={handleStatusChange}
+                  />
+                </TabsContent>
+
+                <TabsContent value="inactive">
+                  <ListingsTable 
+                    listings={inactiveListings} 
+                    onDelete={handleDelete}
+                    onStatusChange={handleStatusChange}
+                  />
+                </TabsContent>
+              </Tabs>
             </Card>
-            <Card className="p-4 shadow-card">
-              <p className="text-sm text-muted-foreground mb-1">النشطة</p>
-              <p className="text-2xl font-bold text-green-600">{activeListings.length}</p>
-            </Card>
-            <Card className="p-4 shadow-card">
-              <p className="text-sm text-muted-foreground mb-1">المباعة</p>
-              <p className="text-2xl font-bold text-blue-600">{soldListings.length}</p>
-            </Card>
-            <Card className="p-4 shadow-card">
-              <p className="text-sm text-muted-foreground mb-1">المشاهدات</p>
-              <p className="text-2xl font-bold">
-                {listings.reduce((sum, l) => sum + l.views, 0)}
-              </p>
-            </Card>
-          </div>
+          </main>
         </div>
-
-        {/* جدول الإعلانات */}
-        <Card className="p-6 shadow-elegant">
-          <Tabs defaultValue="active" dir="rtl">
-            <TabsList className="mb-6">
-              <TabsTrigger value="active">النشطة ({activeListings.length})</TabsTrigger>
-              <TabsTrigger value="sold">المباعة ({soldListings.length})</TabsTrigger>
-              <TabsTrigger value="inactive">غير نشطة ({inactiveListings.length})</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="active">
-              <ListingsTable 
-                listings={activeListings} 
-                onDelete={handleDelete}
-                onStatusChange={handleStatusChange}
-              />
-            </TabsContent>
-
-            <TabsContent value="sold">
-              <ListingsTable 
-                listings={soldListings} 
-                onDelete={handleDelete}
-                onStatusChange={handleStatusChange}
-              />
-            </TabsContent>
-
-            <TabsContent value="inactive">
-              <ListingsTable 
-                listings={inactiveListings} 
-                onDelete={handleDelete}
-                onStatusChange={handleStatusChange}
-              />
-            </TabsContent>
-          </Tabs>
-        </Card>
       </div>
-    </div>
-  );
-};
-
-const ListingsTable = ({ 
-  listings, 
-  onDelete, 
-  onStatusChange 
-}: { 
-  listings: Listing[];
-  onDelete: (id: string) => void;
-  onStatusChange: (id: string, status: string) => void;
-}) => {
-  if (listings.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">لا توجد إعلانات في هذا القسم</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {listings.map((listing) => (
-        <Card key={listing.id} className="p-4 hover:shadow-card transition-smooth">
-          <div className="flex gap-4">
-            {/* صورة الإعلان */}
-            <div className="w-24 h-24 rounded-lg bg-muted overflow-hidden shrink-0">
-              {listing.images && listing.images.length > 0 ? (
-                <img 
-                  src={listing.images[0]} 
-                  alt={listing.title}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Eye className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-
-            {/* معلومات الإعلان */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="font-semibold text-lg mb-1">{listing.title}</h3>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span>{listing.location}</span>
-                    <span>•</span>
-                    <span>{listing.categories?.name || "غير محدد"}</span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      {listing.views} مشاهدة
-                    </span>
-                  </div>
-                </div>
-                <Badge 
-                  variant={listing.status === "active" ? "default" : "secondary"}
-                  className="shrink-0"
-                >
-                  {listing.status === "active" ? "نشط" : listing.status === "sold" ? "مباع" : "غير نشط"}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <p className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  {listing.price} ريال
-                </p>
-                
-                <div className="flex items-center gap-2">
-                  {listing.status === "active" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onStatusChange(listing.id, "sold")}
-                    >
-                      تم البيع
-                    </Button>
-                  )}
-                  {listing.status === "sold" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onStatusChange(listing.id, "active")}
-                    >
-                      إعادة نشر
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onDelete(listing.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
+    </SidebarProvider>
   );
 };
 
