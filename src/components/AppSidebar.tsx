@@ -22,6 +22,8 @@ const mainItems = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
   { title: "إعلاناتي", url: "/dashboard/listings", icon: Package },
   { title: "المزادات", url: "/dashboard/auctions", icon: Gavel },
+  { title: "إحصائيات المزادات", url: "/dashboard/auction-analytics", icon: BarChart },
+  { title: "ملفي كمزايد", url: "/dashboard/bidder-profile", icon: Trophy },
   { title: "الرسائل", url: "/messages", icon: MessageCircle },
   { title: "المفضلة", url: "/favorites", icon: Heart },
   { title: "الإحصائيات", url: "/dashboard/analytics", icon: TrendingUp },

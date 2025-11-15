@@ -16,6 +16,8 @@ import AuctionTimer from "@/components/AuctionTimer";
 import BidForm from "@/components/BidForm";
 import AuctionBidsList from "@/components/AuctionBidsList";
 import AutoBidSettings from "@/components/AutoBidSettings";
+import { AuctionAlertForm } from "@/components/AuctionAlertForm";
+import { AuctionAlertsList } from "@/components/AuctionAlertsList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Auction {

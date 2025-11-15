@@ -25,6 +25,9 @@ import DashboardAdvancedAnalytics from "./pages/DashboardAdvancedAnalytics";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import DashboardReportsAdmin from "./pages/DashboardReportsAdmin";
 import DashboardAuctions from "./pages/DashboardAuctions";
+import DashboardAuctionAnalytics from "./pages/DashboardAuctionAnalytics";
+import DashboardBidderProfile from "./pages/DashboardBidderProfile";
+import AuctionInvitations from "./pages/AuctionInvitations";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +53,9 @@ const App = () => (
           <Route path="/dashboard/reports" element={<DashboardReports />} />
           <Route path="/dashboard/reports/admin" element={<DashboardReportsAdmin />} />
           <Route path="/dashboard/auctions" element={<DashboardAuctions />} />
+          <Route path="/dashboard/auction-analytics" element={<DashboardAuctionAnalytics />} />
+          <Route path="/dashboard/bidder-profile" element={<DashboardBidderProfile />} />
+          <Route path="/auction-invitations" element={<AuctionInvitations />} />
           <Route path="/dashboard/admin" element={<DashboardAdmin />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
