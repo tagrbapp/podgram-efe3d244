@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import ListingCard from "@/components/ListingCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Heart } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Listing {
   id: string;
@@ -99,23 +101,25 @@ const Favorites = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
-          <Heart className="h-8 w-8 text-red-500 fill-red-500" />
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            المفضلة
-          </h1>
-        </div>
-
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <SidebarTrigger />
+            <div className="flex items-center gap-3">
+              <Heart className="h-6 w-6 text-red-500 fill-red-500" />
+              <h1 className="text-xl font-semibold">المفضلة</h1>
+            </div>
+          </header>
+          <main className="p-6">
         {isLoading ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">جاري التحميل...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-80" />
+            ))}
           </div>
         ) : listings.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 animate-fade-in">
             <Heart className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
             <p className="text-xl text-muted-foreground mb-2">لا توجد إعلانات في المفضلة</p>
             <p className="text-sm text-muted-foreground">
@@ -123,27 +127,34 @@ const Favorites = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                id={listing.id}
-                title={listing.title}
-                price={listing.price}
-                location={listing.location}
-                time={getTimeAgo(listing.created_at)}
-                image={
-                  listing.images && listing.images.length > 0
-                    ? listing.images[0]
-                    : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
-                }
-                category={listing.categories?.name || "عام"}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {listings.map((listing, index) => (
+              <div key={listing.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in">
+                <ListingCard
+                  id={listing.id}
+                  title={listing.title}
+                  price={listing.price}
+                  location={listing.location}
+                  time={getTimeAgo(listing.created_at)}
+                  image={
+                    listing.images && listing.images.length > 0
+                      ? listing.images[0]
+                      : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
+                  }
+                  category={listing.categories?.name || "عام"}
+                />
+              </div>
             ))}
           </div>
         )}
+          </main>
+        </div>
+        
+        <div className="order-1">
+          <AppSidebar />
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
