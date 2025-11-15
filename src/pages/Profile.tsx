@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import ListingCard from "@/components/ListingCard";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession } from "@/lib/auth";
@@ -390,33 +392,66 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-lg">جاري التحميل...</p>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <div className="flex-1 order-2">
+            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+              <SidebarTrigger />
+              <h1 className="text-lg font-semibold">جاري التحميل...</h1>
+            </header>
+            <main className="p-6">
+              <div className="grid gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-32" />
+                ))}
+              </div>
+            </main>
+          </div>
+          <div className="order-1">
+            <AppSidebar />
+          </div>
         </div>
-      </>
+      </SidebarProvider>
     );
   }
 
   if (!profile) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-lg">المستخدم غير موجود</p>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <div className="flex-1 order-2">
+            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+              <SidebarTrigger />
+              <h1 className="text-lg font-semibold">الملف الشخصي</h1>
+            </header>
+            <main className="p-6">
+              <div className="text-center py-12">
+                <p className="text-lg text-muted-foreground">المستخدم غير موجود</p>
+              </div>
+            </main>
+          </div>
+          <div className="order-1">
+            <AppSidebar />
+          </div>
         </div>
-      </>
+      </SidebarProvider>
     );
   }
 
   const isOwnProfile = currentUserId === id;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <SidebarTrigger />
+            <div className="flex items-center gap-3">
+              <User className="h-6 w-6" />
+              <h1 className="text-xl font-semibold">الملف الشخصي</h1>
+            </div>
+          </header>
+          <main className="p-6 max-w-7xl mx-auto">
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
@@ -875,8 +910,20 @@ const Profile = () => {
                                       <Reply className="ml-1 h-3 w-3" />
                                       رد على التقييم
                                     </Button>
-                                  )}
-      </div>
+                                   )}
+                                 </div>
+                               </div>
+                             </Card>
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
       
       {/* Reply Dialog */}
       <Dialog open={isReplyDialogOpen} onOpenChange={setIsReplyDialogOpen}>
@@ -913,20 +960,14 @@ const Profile = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                )}
-              </div>
-            </Card>
-          </div>
+          </main>
+        </div>
+        
+        <div className="order-1">
+          <AppSidebar />
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
