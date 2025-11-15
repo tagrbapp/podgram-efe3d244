@@ -810,6 +810,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_auction_invitation: {
+        Args: { _invitation_id: string }
+        Returns: Json
+      }
       add_points: {
         Args: {
           _points: number
@@ -836,6 +840,10 @@ export type Database = {
         Args: { _admin_id: string; _user_id: string }
         Returns: undefined
       }
+      calculate_auction_stats: {
+        Args: { _days?: number; _user_id: string }
+        Returns: Json
+      }
       calculate_avg_response_time: {
         Args: { seller_uuid: string }
         Returns: number
@@ -849,6 +857,11 @@ export type Database = {
         Returns: number
       }
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
+      check_auction_alerts: { Args: never; Returns: undefined }
+      decline_auction_invitation: {
+        Args: { _invitation_id: string }
+        Returns: Json
+      }
       end_expired_auctions: { Args: never; Returns: undefined }
       get_admin_users_overview: {
         Args: never
@@ -866,6 +879,15 @@ export type Database = {
           total_listings: number
           total_reviews: number
           total_sales: number
+        }[]
+      }
+      get_auction_timeline_data: {
+        Args: { _days?: number; _user_id: string }
+        Returns: {
+          auctions_count: number
+          bids_count: number
+          date: string
+          revenue: number
         }[]
       }
       get_revenue_by_period: {
