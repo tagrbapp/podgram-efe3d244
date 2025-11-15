@@ -162,6 +162,17 @@
   a {
     @apply transition-smooth;
   }
+
+  /* جعل الأرقام بالصيغة الإنجليزية دائماً */
+  * {
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  input[type="number"],
+  input[type="tel"] {
+    direction: ltr;
+    text-align: left;
+  }
 }
 
 @layer utilities {

@@ -44,28 +44,28 @@ export const DashboardStats = ({ listings }: DashboardStatsProps) => {
   const stats = [
     {
       title: "إجمالي الإعلانات",
-      value: listings.length,
+      value: listings.length.toLocaleString('en-US'),
       icon: Package,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
     {
       title: "الإعلانات النشطة",
-      value: activeListings.length,
+      value: activeListings.length.toLocaleString('en-US'),
       icon: Clock,
       color: "text-green-600",
       bgColor: "bg-green-50",
     },
     {
       title: "المباعة",
-      value: soldListings.length,
+      value: soldListings.length.toLocaleString('en-US'),
       icon: CheckCircle,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
     },
     {
       title: "إجمالي المشاهدات",
-      value: totalViews.toLocaleString('ar-SA'),
+      value: totalViews.toLocaleString('en-US'),
       icon: Eye,
       color: "text-orange-600",
       bgColor: "bg-orange-50",
@@ -98,11 +98,35 @@ export const DashboardStats = ({ listings }: DashboardStatsProps) => {
           <h3 className="text-lg font-semibold mb-4">المشاهدات خلال آخر 7 أيام</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={viewsByDay}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="views" stroke="#3b82f6" strokeWidth={2} />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis 
+                dataKey="day" 
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                tickFormatter={(value) => value.toLocaleString('en-US')}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--card))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  direction: 'ltr'
+                }}
+                formatter={(value: number) => [value.toLocaleString('en-US'), 'المشاهدات']}
+                labelFormatter={(label) => `اليوم: ${label}`}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="views" 
+                stroke="hsl(var(--primary))" 
+                strokeWidth={3}
+                dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
             </LineChart>
           </ResponsiveContainer>
         </Card>
@@ -112,11 +136,31 @@ export const DashboardStats = ({ listings }: DashboardStatsProps) => {
           <h3 className="text-lg font-semibold mb-4">الإعلانات حسب الحالة</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={statusData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#3b82f6" />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis 
+                dataKey="name"
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                tickFormatter={(value) => value.toLocaleString('en-US')}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--card))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  direction: 'ltr'
+                }}
+                formatter={(value: number) => [value.toLocaleString('en-US'), 'العدد']}
+              />
+              <Bar 
+                dataKey="value" 
+                fill="hsl(var(--primary))" 
+                radius={[8, 8, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </Card>
