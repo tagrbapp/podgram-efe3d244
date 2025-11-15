@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Clock, Phone, MessageCircle, ArrowRight, Eye, Heart } from "lucide-react";
+import { MapPin, Clock, Phone, MessageCircle, MessageSquare, ArrowRight, Eye, Heart } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { toast } from "sonner";
+import { getSession } from "@/lib/auth";
 
 interface Listing {
   id: string;
@@ -21,6 +22,7 @@ interface Listing {
   images: string[];
   created_at: string;
   views: number;
+  user_id: string;
   category: {
     name: string;
   };
@@ -176,6 +178,58 @@ const ListingDetails = () => {
     }
   };
 
+  const handleStartChat = async () => {
+    try {
+      const { session, user } = await getSession();
+      
+      if (!session || !user) {
+        toast.error("يجب تسجيل الدخول للمراسلة");
+        navigate("/auth");
+        return;
+      }
+
+      if (user.id === listing?.user_id) {
+        toast.error("لا يمكنك مراسلة نفسك");
+        return;
+      }
+
+      // Check if conversation already exists
+      const { data: existingConv, error: checkError } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("listing_id", id)
+        .eq("buyer_id", user.id)
+        .eq("seller_id", listing?.user_id)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingConv) {
+        // Navigate to existing conversation
+        navigate("/messages");
+        return;
+      }
+
+      // Create new conversation
+      const { error: createError } = await supabase
+        .from("conversations")
+        .insert({
+          listing_id: id,
+          buyer_id: user.id,
+          seller_id: listing?.user_id,
+        });
+
+      if (createError) throw createError;
+
+      toast.success("تم بدء المحادثة");
+      navigate("/messages");
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      toast.error("فشل في بدء المحادثة");
+    }
+  };
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -311,6 +365,15 @@ const ListingDetails = () => {
               </div>
 
               <div className="space-y-3">
+                <Button
+                  onClick={handleStartChat}
+                  className="w-full bg-gradient-primary hover:opacity-90"
+                  size="lg"
+                >
+                  <MessageSquare className="ml-2 h-5 w-5" />
+                  ابدأ محادثة
+                </Button>
+
                 <Button
                   onClick={handleWhatsApp}
                   className="w-full bg-[#25D366] hover:bg-[#20BA5A] text-white"
