@@ -1,4 +1,4 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -125,12 +125,26 @@ export function AppSidebar() {
               ))}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/analytics/advanced")}>
-                  <NavLink to="/dashboard/analytics/advanced" icon={BarChart} label="التحليلات المتقدمة" />
+                  <NavLink
+                    to="/dashboard/analytics/advanced"
+                    className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
+                    activeClassName="bg-muted text-primary font-medium"
+                  >
+                    <BarChart className="h-5 w-5" />
+                    {state !== "collapsed" && <span>التحليلات المتقدمة</span>}
+                  </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/gamification")}>
-                  <NavLink to="/dashboard/gamification" icon={Trophy} label="النقاط والشارات" />
+                  <NavLink
+                    to="/dashboard/gamification"
+                    className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
+                    activeClassName="bg-muted text-primary font-medium"
+                  >
+                    <Trophy className="h-5 w-5" />
+                    {state !== "collapsed" && <span>النقاط والشارات</span>}
+                  </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -143,9 +157,21 @@ export function AppSidebar() {
             <SidebarGroupLabel>الإدارة</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/dashboard/admin")}>
+                    <NavLink
+                      to="/dashboard/admin"
+                      className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
+                      activeClassName="bg-muted text-primary font-medium"
+                    >
+                      <Shield className="h-5 w-5" />
+                      {state !== "collapsed" && <span>لوحة الإدارة</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 {adminItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <NavLink
                         to={item.url}
                         className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
@@ -155,7 +181,7 @@ export function AppSidebar() {
                         {state !== "collapsed" && (
                           <div className="flex items-center justify-between flex-1">
                             <span>{item.title}</span>
-                            {pendingReportsCount > 0 && (
+                            {item.url === "/dashboard/reports/admin" && pendingReportsCount > 0 && (
                               <Badge variant="destructive" className="mr-auto">
                                 {pendingReportsCount}
                               </Badge>
