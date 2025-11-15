@@ -31,17 +31,20 @@ export default function DashboardAuctionAnalytics() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: statsData } = await supabase.rpc('calculate_auction_stats', {
+      const { data: statsData, error: statsError } = await supabase.rpc('calculate_auction_stats', {
         _user_id: user.id,
         _days: parseInt(period)
       });
 
-      const { data: timelineData } = await supabase.rpc('get_auction_timeline_data', {
+      const { data: timelineData, error: timelineError } = await supabase.rpc('get_auction_timeline_data', {
         _user_id: user.id,
         _days: parseInt(period)
       });
 
-      setStats(statsData as any);
+      if (statsError) console.error('Error fetching stats:', statsError);
+      if (timelineError) console.error('Error fetching timeline:', timelineError);
+
+      setStats(statsData ? statsData as unknown as Stats : null);
       setTimelineData(timelineData || []);
     } catch (error) {
       console.error('Error fetching analytics:', error);

@@ -51,9 +51,9 @@ export const AuctionAlertForm = ({ auctionId, currentBid, onSuccess }: AuctionAl
         alertData.time_before_end = parseInt(timeBeforeEnd);
       }
 
-      const { error } = await supabase
-        .from('auction_alerts' as any)
-        .insert(alertData);
+    const { error } = await supabase
+      .from('auction_alerts')
+      .insert(alertData);
 
       if (error) throw error;
 

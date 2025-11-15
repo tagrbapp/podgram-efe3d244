@@ -44,13 +44,13 @@ export const AuctionAlertsList = ({ auctionId }: AuctionAlertsListProps) => {
       if (!user) return;
 
       const { data } = await supabase
-        .from('auction_alerts' as any)
+        .from('auction_alerts')
         .select('*')
         .eq('auction_id', auctionId)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      setAlerts(data as any || []);
+      setAlerts(data || []);
     } catch (error) {
       console.error('Error fetching alerts:', error);
     } finally {
@@ -61,7 +61,7 @@ export const AuctionAlertsList = ({ auctionId }: AuctionAlertsListProps) => {
   const handleDelete = async (alertId: string) => {
     try {
       const { error } = await supabase
-        .from('auction_alerts' as any)
+        .from('auction_alerts')
         .delete()
         .eq('id', alertId);
 
@@ -78,7 +78,7 @@ export const AuctionAlertsList = ({ auctionId }: AuctionAlertsListProps) => {
   const toggleActive = async (alertId: string, isActive: boolean) => {
     try {
       const { error } = await supabase
-        .from('auction_alerts' as any)
+        .from('auction_alerts')
         .update({ is_active: !isActive })
         .eq('id', alertId);
 

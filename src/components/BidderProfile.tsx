@@ -39,7 +39,7 @@ export const BidderProfile = ({ userId, userName, avatarUrl }: BidderProfileProp
   const fetchBidderData = async () => {
     try {
       const { data: statsData } = await supabase
-        .from('bidder_stats' as any)
+        .from('bidder_stats')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
@@ -49,7 +49,7 @@ export const BidderProfile = ({ userId, userName, avatarUrl }: BidderProfileProp
         .select('badge_id, badges(name, icon, color)')
         .eq('user_id', userId);
 
-      setStats((statsData as any) || {
+      setStats(statsData || {
         total_bids: 0,
         won_auctions: 0,
         avg_rating: 0,

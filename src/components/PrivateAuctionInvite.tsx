@@ -75,9 +75,9 @@ export const PrivateAuctionInvite = ({ auctionId }: PrivateAuctionInviteProps) =
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) return;
 
-      const { error } = await supabase
-        .from('auction_invitations' as any)
-        .insert({
+    const { error } = await supabase
+      .from('auction_invitations')
+      .insert({
           auction_id: auctionId,
           inviter_id: currentUser.id,
           invitee_id: user.id,
