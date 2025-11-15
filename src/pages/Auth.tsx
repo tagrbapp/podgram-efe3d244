@@ -1,19 +1,89 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { signIn, signUp, getSession } from "@/lib/auth";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const checkSession = async () => {
+      const { session } = await getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // سيتم إضافة منطق المصادقة لاحقاً
-    setTimeout(() => setIsLoading(false), 1000);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      toast.error("خطأ في تسجيل الدخول", {
+        description: error.message === "Invalid login credentials" 
+          ? "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+          : error.message,
+      });
+    } else {
+      toast.success("تم تسجيل الدخول بنجاح!");
+      navigate("/dashboard");
+    }
+
+    setIsLoading(false);
+  };
+
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const fullName = formData.get("name") as string;
+    const email = formData.get("register-email") as string;
+    const password = formData.get("register-password") as string;
+    const confirmPassword = formData.get("confirm-password") as string;
+
+    if (password !== confirmPassword) {
+      toast.error("كلمة المرور غير متطابقة");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+      setIsLoading(false);
+      return;
+    }
+
+    const { error } = await signUp(email, password, fullName);
+
+    if (error) {
+      toast.error("خطأ في إنشاء الحساب", {
+        description: error.message === "User already registered"
+          ? "البريد الإلكتروني مسجل بالفعل"
+          : error.message,
+      });
+    } else {
+      toast.success("تم إنشاء الحساب بنجاح!", {
+        description: "جاري تحويلك إلى لوحة التحكم..."
+      });
+      navigate("/dashboard");
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -40,11 +110,12 @@ const Auth = () => {
             </TabsList>
 
             <TabsContent value="login">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">البريد الإلكتروني</Label>
                   <Input 
                     id="email" 
+                    name="email"
                     type="email" 
                     placeholder="example@email.com"
                     className="text-right"
@@ -55,6 +126,7 @@ const Auth = () => {
                   <Label htmlFor="password">كلمة المرور</Label>
                   <Input 
                     id="password" 
+                    name="password"
                     type="password"
                     className="text-right"
                     required
@@ -71,11 +143,12 @@ const Auth = () => {
             </TabsContent>
 
             <TabsContent value="register">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">الاسم الكامل</Label>
                   <Input 
                     id="name" 
+                    name="name"
                     type="text"
                     placeholder="أدخل اسمك الكامل"
                     className="text-right"
@@ -86,6 +159,7 @@ const Auth = () => {
                   <Label htmlFor="register-email">البريد الإلكتروني</Label>
                   <Input 
                     id="register-email" 
+                    name="register-email"
                     type="email"
                     placeholder="example@email.com"
                     className="text-right"
@@ -96,7 +170,9 @@ const Auth = () => {
                   <Label htmlFor="register-password">كلمة المرور</Label>
                   <Input 
                     id="register-password" 
+                    name="register-password"
                     type="password"
+                    placeholder="6 أحرف على الأقل"
                     className="text-right"
                     required
                   />
@@ -105,6 +181,7 @@ const Auth = () => {
                   <Label htmlFor="confirm-password">تأكيد كلمة المرور</Label>
                   <Input 
                     id="confirm-password" 
+                    name="confirm-password"
                     type="password"
                     className="text-right"
                     required
