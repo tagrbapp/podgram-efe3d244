@@ -7,32 +7,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
 import { User as UserIcon, Mail, Phone } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
+import type { User, Session } from "@supabase/supabase-js";
 
 const Settings = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    checkUser();
-  }, []);
+    const subscription = onAuthStateChange((session, user) => {
+      setSession(session);
+      setUser(user);
+      
+      if (!session || !user) {
+        navigate("/auth");
+      } else {
+        loadUserProfile(user);
+      }
+    });
 
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
+    getSession().then(({ session, user }) => {
+      setSession(session);
+      setUser(user);
+      
+      if (!session || !user) {
+        navigate("/auth");
+      } else {
+        loadUserProfile(user);
+      }
+    });
 
-    setUser(user);
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
+  const loadUserProfile = async (user: User) => {
     const { data: profileData } = await supabase
       .from("profiles")
       .select("full_name, phone")

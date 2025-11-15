@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { ListingsTable } from "@/components/dashboard/ListingsTable";
 import { supabase } from "@/integrations/supabase/client";
+import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
+import type { User, Session } from "@supabase/supabase-js";
 
 interface Listing {
   id: string;
@@ -34,24 +35,38 @@ interface Profile {
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkUser();
-  }, []);
+    const subscription = onAuthStateChange((session, user) => {
+      setSession(session);
+      setUser(user);
+      
+      if (!session || !user) {
+        navigate("/auth");
+      } else {
+        loadUserData(user);
+      }
+    });
 
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
+    getSession().then(({ session, user }) => {
+      setSession(session);
+      setUser(user);
+      
+      if (!session || !user) {
+        navigate("/auth");
+      } else {
+        loadUserData(user);
+      }
+    });
 
-    setUser(user);
-    
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const loadUserData = async (user: User) => {
     const { data: profileData } = await supabase
       .from("profiles")
       .select("full_name, phone")
