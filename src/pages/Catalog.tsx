@@ -8,8 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SlidersHorizontal, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { SlidersHorizontal, X, GitCompare } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import ProductComparisonDialog from "@/components/ProductComparisonDialog";
 
 interface Listing {
   id: string;
@@ -18,6 +22,8 @@ interface Listing {
   location: string;
   created_at: string;
   images: string[];
+  views: number;
+  description: string;
   category: {
     id: string;
     name: string;
@@ -37,6 +43,8 @@ const Catalog = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [sortBy, setSortBy] = useState<"newest" | "price-asc" | "price-desc">("newest");
+  const [compareProducts, setCompareProducts] = useState<Listing[]>([]);
+  const [compareDialogOpen, setCompareDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -63,6 +71,8 @@ const Catalog = () => {
         location,
         created_at,
         images,
+        views,
+        description,
         category:categories(id, name)
       `)
       .eq("status", "active")
@@ -107,6 +117,29 @@ const Catalog = () => {
     setSelectedCategories([]);
     setPriceRange([0, 100000]);
     setSortBy("newest");
+  };
+
+  const toggleCompare = (listing: Listing) => {
+    setCompareProducts((prev) => {
+      const exists = prev.find((p) => p.id === listing.id);
+      if (exists) {
+        return prev.filter((p) => p.id !== listing.id);
+      } else {
+        if (prev.length >= 3) {
+          toast.error("يمكنك مقارنة 3 منتجات فقط");
+          return prev;
+        }
+        return [...prev, listing];
+      }
+    });
+  };
+
+  const removeFromCompare = (id: string) => {
+    setCompareProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const isInCompare = (id: string) => {
+    return compareProducts.some((p) => p.id === id);
   };
 
   const getTimeAgo = (dateString: string) => {
@@ -191,6 +224,17 @@ const Catalog = () => {
 
           {/* Sort & Mobile Filters */}
           <div className="flex items-center gap-3">
+            {/* Compare Button */}
+            {compareProducts.length > 0 && (
+              <Button
+                onClick={() => setCompareDialogOpen(true)}
+                className="bg-qultura-blue hover:bg-qultura-blue/90"
+              >
+                <GitCompare className="ml-2 h-4 w-4" />
+                مقارنة ({compareProducts.length})
+              </Button>
+            )}
+            
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
@@ -243,22 +287,42 @@ const Catalog = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {listings.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    id={listing.id}
-                    title={listing.title}
-                    price={listing.price}
-                    location={listing.location}
-                    time={getTimeAgo(listing.created_at)}
-                    image={listing.images?.[0] || "/placeholder.svg"}
-                    category={listing.category?.name || "غير محدد"}
-                  />
+                  <div key={listing.id} className="relative">
+                    <ListingCard
+                      id={listing.id}
+                      title={listing.title}
+                      price={listing.price}
+                      location={listing.location}
+                      time={getTimeAgo(listing.created_at)}
+                      image={listing.images?.[0] || "/placeholder.svg"}
+                      category={listing.category?.name || "غير محدد"}
+                    />
+                    {/* Compare Button */}
+                    <div className="absolute top-4 left-4 z-10">
+                      <Button
+                        variant={isInCompare(listing.id) ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleCompare(listing)}
+                        className={isInCompare(listing.id) ? "bg-qultura-blue hover:bg-qultura-blue/90" : "bg-white/90 hover:bg-white"}
+                      >
+                        <GitCompare className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
           </main>
         </div>
       </div>
+
+      {/* Comparison Dialog */}
+      <ProductComparisonDialog
+        products={compareProducts}
+        open={compareDialogOpen}
+        onClose={() => setCompareDialogOpen(false)}
+        onRemove={removeFromCompare}
+      />
     </div>
   );
 };
