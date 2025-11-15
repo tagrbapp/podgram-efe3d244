@@ -7,11 +7,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ListingCard from "@/components/ListingCard";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession } from "@/lib/auth";
 import { toast } from "sonner";
-import { User, Phone, Calendar, MapPin, MessageSquare, Package, TrendingUp, Eye, Star, ArrowRight } from "lucide-react";
+import { User, Phone, Calendar, MapPin, MessageSquare, Package, TrendingUp, Eye, Star, ArrowRight, ShieldCheck, Flag, StarIcon } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -35,13 +39,34 @@ interface Listing {
   } | null;
 }
 
+interface Review {
+  id: string;
+  reviewer_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  profiles: {
+    full_name: string;
+    avatar_url: string | null;
+  };
+}
+
 const Profile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
 
   useEffect(() => {
     const loadUser = async () => {
@@ -55,6 +80,8 @@ const Profile = () => {
     if (id) {
       fetchProfile();
       fetchListings();
+      fetchReviews();
+      checkVerificationStatus();
     }
   }, [id]);
 
@@ -95,7 +122,6 @@ const Profile = () => {
         )
       `)
       .eq("user_id", id)
-      .eq("status", "active")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -106,6 +132,62 @@ const Profile = () => {
 
     setListings(data || []);
     setIsLoading(false);
+  };
+
+  const fetchReviews = async () => {
+    if (!id) return;
+
+    const { data: reviewsData, error } = await supabase
+      .from("reviews")
+      .select("id, reviewer_id, rating, comment, created_at")
+      .eq("seller_id", id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching reviews:", error);
+      return;
+    }
+
+    if (!reviewsData) {
+      setReviews([]);
+      return;
+    }
+
+    // Fetch profiles for reviewers
+    const reviewerIds = reviewsData.map(r => r.reviewer_id);
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url")
+      .in("id", reviewerIds);
+
+    const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+
+    const enrichedReviews = reviewsData.map(review => ({
+      ...review,
+      profiles: profilesMap.get(review.reviewer_id) || { full_name: "مستخدم", avatar_url: null }
+    }));
+
+    setReviews(enrichedReviews);
+    
+    // Calculate average rating
+    if (reviewsData.length > 0) {
+      const avg = reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewsData.length;
+      setAverageRating(Math.round(avg * 10) / 10);
+    }
+  };
+
+  const checkVerificationStatus = async () => {
+    if (!id) return;
+
+    const { data, error } = await supabase
+      .from("listings")
+      .select("id")
+      .eq("user_id", id)
+      .eq("status", "sold");
+
+    if (!error && data && data.length >= 20) {
+      setIsVerified(true);
+    }
   };
 
   const handleStartChat = async () => {
@@ -176,6 +258,90 @@ const Profile = () => {
     return date.toLocaleDateString("ar-SA", { year: 'numeric', month: 'long' });
   };
 
+  const handleSubmitReport = async () => {
+    if (!currentUserId || !id) {
+      toast.error("يجب تسجيل الدخول");
+      return;
+    }
+
+    if (!reportReason || !reportDescription) {
+      toast.error("يرجى ملء جميع الحقول");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("reports")
+      .insert({
+        reporter_id: currentUserId,
+        reported_user_id: id,
+        reason: reportReason,
+        description: reportDescription,
+      });
+
+    if (error) {
+      toast.error("فشل في إرسال البلاغ");
+      return;
+    }
+
+    toast.success("تم إرسال البلاغ بنجاح");
+    setIsReportDialogOpen(false);
+    setReportReason("");
+    setReportDescription("");
+  };
+
+  const handleSubmitReview = async () => {
+    if (!currentUserId || !id) {
+      toast.error("يجب تسجيل الدخول");
+      return;
+    }
+
+    if (!reviewComment) {
+      toast.error("يرجى كتابة تعليق");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("reviews")
+      .insert({
+        reviewer_id: currentUserId,
+        seller_id: id,
+        rating: reviewRating,
+        comment: reviewComment,
+      });
+
+    if (error) {
+      if (error.code === "23505") {
+        toast.error("لقد قيمت هذا البائع بالفعل");
+      } else {
+        toast.error("فشل في إضافة التقييم");
+      }
+      return;
+    }
+
+    toast.success("تم إضافة التقييم بنجاح");
+    setIsReviewDialogOpen(false);
+    setReviewRating(5);
+    setReviewComment("");
+    fetchReviews();
+  };
+
+  const renderStars = (rating: number, size: number = 16) => {
+    return (
+      <div className="flex gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-${size/4} w-${size/4} ${
+              star <= rating
+                ? "fill-yellow-400 text-yellow-400"
+                : "fill-muted text-muted"
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+
   const activeListings = listings.filter(l => l.status === "active");
   const soldListings = listings.filter(l => l.status === "sold");
   const totalViews = listings.reduce((sum, l) => sum + (l.views || 0), 0);
@@ -230,22 +396,137 @@ const Profile = () => {
                   </AvatarFallback>
                 </Avatar>
 
-                <h1 className="text-2xl font-bold mb-2">{profile.full_name}</h1>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <h1 className="text-2xl font-bold">{profile.full_name}</h1>
+                  {isVerified && (
+                    <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 border-0 gap-1">
+                      <ShieldCheck className="h-3 w-3" />
+                      موثوق
+                    </Badge>
+                  )}
+                </div>
                 
-                <div className="flex items-center gap-2 text-muted-foreground mb-4">
+                {averageRating > 0 && (
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    {renderStars(Math.round(averageRating), 20)}
+                    <span className="text-lg font-semibold">{averageRating}</span>
+                    <span className="text-sm text-muted-foreground">({reviews.length} تقييم)</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
                   <Calendar className="h-4 w-4" />
                   <span className="text-sm">عضو منذ {getMemberSince(profile.created_at)}</span>
                 </div>
 
                 {!isOwnProfile && (
-                  <Button 
-                    onClick={handleStartChat}
-                    className="w-full mt-4 bg-gradient-primary hover:opacity-90 shadow-lg"
-                    size="lg"
-                  >
-                    <MessageSquare className="ml-2 h-5 w-5" />
-                    راسل البائع
-                  </Button>
+                  <div className="space-y-2 w-full mt-4">
+                    <Button 
+                      onClick={handleStartChat}
+                      className="w-full bg-gradient-primary hover:opacity-90 shadow-lg"
+                      size="lg"
+                    >
+                      <MessageSquare className="ml-2 h-5 w-5" />
+                      راسل البائع
+                    </Button>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Star className="ml-2 h-4 w-4" />
+                            إضافة تقييم
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent dir="rtl">
+                          <DialogHeader>
+                            <DialogTitle>إضافة تقييم للبائع</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label>التقييم</Label>
+                              <div className="flex gap-2 mt-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    onClick={() => setReviewRating(star)}
+                                    className="transition-transform hover:scale-110"
+                                  >
+                                    <Star
+                                      className={`h-8 w-8 ${
+                                        star <= reviewRating
+                                          ? "fill-yellow-400 text-yellow-400"
+                                          : "fill-muted text-muted"
+                                      }`}
+                                    />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="review-comment">التعليق</Label>
+                              <Textarea
+                                id="review-comment"
+                                value={reviewComment}
+                                onChange={(e) => setReviewComment(e.target.value)}
+                                placeholder="شارك تجربتك مع هذا البائع..."
+                                className="mt-2"
+                                rows={4}
+                              />
+                            </div>
+                            <Button onClick={handleSubmitReview} className="w-full">
+                              إرسال التقييم
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full text-destructive hover:text-destructive">
+                            <Flag className="ml-2 h-4 w-4" />
+                            إبلاغ
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent dir="rtl">
+                          <DialogHeader>
+                            <DialogTitle>الإبلاغ عن مستخدم</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="report-reason">السبب</Label>
+                              <Select value={reportReason} onValueChange={setReportReason}>
+                                <SelectTrigger className="mt-2">
+                                  <SelectValue placeholder="اختر السبب" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="spam">محتوى غير مرغوب فيه</SelectItem>
+                                  <SelectItem value="fraud">احتيال أو نصب</SelectItem>
+                                  <SelectItem value="inappropriate">محتوى غير لائق</SelectItem>
+                                  <SelectItem value="fake">حساب وهمي</SelectItem>
+                                  <SelectItem value="other">أخرى</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor="report-description">التفاصيل</Label>
+                              <Textarea
+                                id="report-description"
+                                value={reportDescription}
+                                onChange={(e) => setReportDescription(e.target.value)}
+                                placeholder="اشرح المشكلة بالتفصيل..."
+                                className="mt-2"
+                                rows={4}
+                              />
+                            </div>
+                            <Button onClick={handleSubmitReport} className="w-full" variant="destructive">
+                              إرسال البلاغ
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
                 )}
 
                 {isOwnProfile && (
@@ -359,12 +640,15 @@ const Profile = () => {
                   </div>
                 ) : (
                   <Tabs defaultValue="active" dir="rtl">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsList className="grid w-full grid-cols-3 mb-6">
                       <TabsTrigger value="active">
                         النشطة ({activeListings.length})
                       </TabsTrigger>
                       <TabsTrigger value="all">
                         الكل ({listings.length})
+                      </TabsTrigger>
+                      <TabsTrigger value="reviews">
+                        التقييمات ({reviews.length})
                       </TabsTrigger>
                     </TabsList>
 
@@ -405,6 +689,54 @@ const Profile = () => {
                           />
                         ))}
                       </div>
+                    </TabsContent>
+
+                    <TabsContent value="reviews">
+                      {reviews.length === 0 ? (
+                        <div className="text-center py-12">
+                          <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                            <Star className="h-10 w-10 text-muted-foreground/50" />
+                          </div>
+                          <p className="text-lg font-medium text-muted-foreground">
+                            لا توجد تقييمات بعد
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {reviews.map((review) => (
+                            <Card key={review.id} className="p-4">
+                              <div className="flex items-start gap-4">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage src={review.profiles.avatar_url || undefined} />
+                                  <AvatarFallback className="bg-gradient-primary text-primary-foreground">
+                                    {getInitials(review.profiles.full_name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div>
+                                      <p className="font-semibold">{review.profiles.full_name}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {new Date(review.created_at).toLocaleDateString('ar-SA', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric'
+                                        })}
+                                      </p>
+                                    </div>
+                                    {renderStars(review.rating, 16)}
+                                  </div>
+                                  {review.comment && (
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                      {review.comment}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
                     </TabsContent>
                   </Tabs>
                 )}
