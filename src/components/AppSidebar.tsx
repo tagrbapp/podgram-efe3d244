@@ -117,11 +117,11 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
-                      activeClassName="bg-muted text-primary font-medium"
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                      activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
                     >
-                      <item.icon className="h-5 w-5" />
-                      {state !== "collapsed" && <span>{item.title}</span>}
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {state !== "collapsed" && <span className="text-sm">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -130,11 +130,11 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/analytics/advanced")}>
                   <NavLink
                     to="/dashboard/analytics/advanced"
-                    className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
-                    activeClassName="bg-muted text-primary font-medium"
+                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                    activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
                   >
-                    <BarChart className="h-5 w-5" />
-                    {state !== "collapsed" && <span>التحليلات المتقدمة</span>}
+                    <BarChart className="h-5 w-5 flex-shrink-0" />
+                    {state !== "collapsed" && <span className="text-sm">التحليلات المتقدمة</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -142,11 +142,11 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/gamification")}>
                   <NavLink
                     to="/dashboard/gamification"
-                    className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
-                    activeClassName="bg-muted text-primary font-medium"
+                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                    activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
                   >
-                    <Trophy className="h-5 w-5" />
-                    {state !== "collapsed" && <span>النقاط والشارات</span>}
+                    <Trophy className="h-5 w-5 flex-shrink-0" />
+                    {state !== "collapsed" && <span className="text-sm">النقاط والشارات</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -156,19 +156,19 @@ export function AppSidebar() {
 
         {/* Admin Section */}
         {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>الإدارة</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
+          <SidebarGroup className="py-4">
+            <SidebarGroupLabel className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">الإدارة</SidebarGroupLabel>
+            <SidebarGroupContent className="mt-2">
+              <SidebarMenu className="gap-1 px-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={isActive("/dashboard/admin")}>
                     <NavLink
                       to="/dashboard/admin"
-                      className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
-                      activeClassName="bg-muted text-primary font-medium"
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                      activeClassName="bg-destructive/10 text-destructive font-semibold border-r-4 border-destructive"
                     >
-                      <Shield className="h-5 w-5" />
-                      {state !== "collapsed" && <span>لوحة الإدارة</span>}
+                      <Shield className="h-5 w-5 flex-shrink-0" />
+                      {state !== "collapsed" && <span className="text-sm">لوحة الإدارة</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -177,15 +177,15 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <NavLink
                         to={item.url}
-                        className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
-                        activeClassName="bg-muted text-primary font-medium"
+                        className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                        activeClassName="bg-destructive/10 text-destructive font-semibold border-r-4 border-destructive"
                       >
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
                         {state !== "collapsed" && (
                           <div className="flex items-center justify-between flex-1">
-                            <span>{item.title}</span>
+                            <span className="text-sm">{item.title}</span>
                             {item.url === "/dashboard/reports/admin" && pendingReportsCount > 0 && (
-                              <Badge variant="destructive" className="mr-auto">
+                              <Badge variant="destructive" className="mr-auto text-xs px-2 py-0.5">
                                 {pendingReportsCount}
                               </Badge>
                             )}
