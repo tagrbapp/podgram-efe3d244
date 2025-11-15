@@ -9,7 +9,9 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
+import type { User, Session } from "@supabase/supabase-js";
 
 interface Category {
   id: string;
@@ -18,6 +20,8 @@ interface Category {
 
 const AddListing = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -26,17 +30,30 @@ const AddListing = () => {
   const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
-    checkAuth();
-    fetchCategories();
-  }, []);
+    const subscription = onAuthStateChange((session, user) => {
+      setSession(session);
+      setUser(user);
+      
+      if (!session || !user) {
+        toast.error("يجب تسجيل الدخول أولاً");
+        navigate("/auth");
+      }
+    });
 
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error("يجب تسجيل الدخول أولاً");
-      navigate("/auth");
-    }
-  };
+    getSession().then(({ session, user }) => {
+      setSession(session);
+      setUser(user);
+      
+      if (!session || !user) {
+        toast.error("يجب تسجيل الدخول أولاً");
+        navigate("/auth");
+      }
+    });
+
+    fetchCategories();
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const fetchCategories = async () => {
     const { data } = await supabase
