@@ -171,17 +171,17 @@ const DashboardReportsAdmin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
-      <Navbar />
-      
-      <main className="container mx-auto px-4 py-8 mt-16">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">إدارة البلاغات</h1>
-          </div>
-          
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <SidebarTrigger />
+            <div className="flex items-center gap-3">
+              <Shield className="h-6 w-6 text-destructive" />
+              <h1 className="text-xl font-semibold">إدارة البلاغات</h1>
+            </div>
+          </header>
+          <main className="p-6 space-y-8">
           {/* Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 p-4 rounded-lg border border-yellow-500/20">
@@ -246,13 +246,16 @@ const DashboardReportsAdmin = () => {
         ) : (
           <div className="space-y-4">
             {filteredReports.map((report) => (
-          <ReportCard key={report.id} report={report} onUpdate={fetchReports} />
-        ))}
-      </div>
+              <ReportCard key={report.id} report={report} onUpdate={fetchReports} />
+            ))}
+          </div>
         )}
           </main>
         </div>
-        <AppSidebar />
+        
+        <div className="order-1">
+          <AppSidebar />
+        </div>
       </div>
     </SidebarProvider>
   );
