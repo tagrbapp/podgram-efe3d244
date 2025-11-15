@@ -1,6 +1,6 @@
 import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import podgramLogo from "@/assets/podgram-logo.png";
@@ -101,14 +101,14 @@ export function AppSidebar() {
         {/* Logo */}
         <div className="p-4 border-b transition-all duration-300">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain flex-shrink-0 transition-transform duration-300 hover:scale-110" />
+            <Link to="/" className="flex items-center gap-3 cursor-pointer group">
+              <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain flex-shrink-0 transition-transform duration-300 group-hover:scale-110" />
               {state !== "collapsed" && (
-                <span className="text-xl font-bold text-qultura-blue animate-fade-in">
+                <span className="text-xl font-bold text-qultura-blue animate-fade-in group-hover:text-primary transition-colors duration-200">
                   Podgram
                 </span>
               )}
-            </div>
+            </Link>
             {state !== "collapsed" && <NotificationsDropdown userId={currentUserId} />}
           </div>
         </div>
