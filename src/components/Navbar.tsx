@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import TopBar from "@/components/TopBar";
 import SearchBar from "@/components/SearchBar";
+import podgramLogo from "@/assets/podgram-logo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -88,12 +89,10 @@ const Navbar = () => {
         <div className="container mx-auto px-4">
           <div className="flex h-20 items-center justify-between gap-4">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="h-10 w-10 rounded-lg bg-qultura-blue flex items-center justify-center">
-                <span className="text-xl font-bold text-white">مك</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900 hidden sm:inline">
-                مك
+            <Link to="/" className="flex items-center gap-3 flex-shrink-0">
+              <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain" />
+              <span className="text-2xl font-bold text-qultura-blue hidden sm:inline">
+                Podgram
               </span>
             </Link>
 

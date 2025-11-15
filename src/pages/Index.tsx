@@ -109,8 +109,9 @@ const Index = () => {
             <div className="relative rounded-3xl overflow-hidden h-[400px] bg-gradient-to-r from-emerald-400 to-emerald-500">
               <img src={heroGreenBanner} alt="Luxury Brands" className="absolute inset-0 w-full h-full object-cover opacity-20" />
               <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-                <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">أكثر من 249 علامة فاخرة</h1>
-                <p className="text-2xl md:text-3xl text-white/90 mb-8">أكبر تشكيلة من العلامات الفاخرة</p>
+                <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">Podgram</h1>
+                <p className="text-2xl md:text-3xl text-white/90 mb-2">أكثر من 249 علامة فاخرة</p>
+                <p className="text-lg text-white/80 mb-8">المنصة الأولى للمنتجات الفاخرة في المنطقة</p>
                 <BrandLogos />
               </div>
             </div>
