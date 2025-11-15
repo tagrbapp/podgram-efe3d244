@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +8,104 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 const AddListing = () => {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+    fetchCategories();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً");
+      navigate("/auth");
+    }
+  };
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from("categories")
+      .select("id, name")
+      .order("name");
+    
+    if (data) {
+      setCategories(data);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast.error("يجب تسجيل الدخول أولاً");
+      navigate("/auth");
+      return;
+    }
+
+    const title = formData.get("title") as string;
+    const priceStr = formData.get("price") as string;
+    const location = formData.get("location") as string;
+
+    // التحقق من الحقول المطلوبة
+    if (!title || !priceStr || !location) {
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      setIsLoading(false);
+      return;
+    }
+
+    const price = parseFloat(priceStr);
+    if (isNaN(price) || price <= 0) {
+      toast.error("يرجى إدخال سعر صحيح");
+      setIsLoading(false);
+      return;
+    }
+
+    const listingData = {
+      user_id: user.id,
+      title: title,
+      description: formData.get("description") as string || null,
+      price: price,
+      category_id: selectedCategory || null,
+      location: location,
+      phone: formData.get("phone") as string || null,
+      email: formData.get("email") as string || null,
+      status: "active",
+    };
+
+    const { error } = await supabase
+      .from("listings")
+      .insert([listingData]);
+
+    if (error) {
+      console.error("Error creating listing:", error);
+      toast.error("خطأ في نشر الإعلان", {
+        description: error.message,
+      });
+    } else {
+      toast.success("تم نشر الإعلان بنجاح!");
+      navigate("/dashboard");
+    }
+
+    setIsLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Navbar />
@@ -20,51 +118,58 @@ const AddListing = () => {
           </div>
 
           <Card className="p-6 md:p-8 shadow-elegant">
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">عنوان الإعلان</Label>
+                <Label htmlFor="title">عنوان الإعلان *</Label>
                 <Input 
                   id="title" 
+                  name="title"
                   placeholder="مثال: سيارة للبيع - تويوتا كامري 2020"
                   className="text-right"
+                  required
                 />
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="category">التصنيف</Label>
-                  <Select dir="rtl">
+                  <Select dir="rtl" value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="text-right">
                       <SelectValue placeholder="اختر التصنيف" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cars">سيارات</SelectItem>
-                      <SelectItem value="real-estate">عقارات</SelectItem>
-                      <SelectItem value="electronics">إلكترونيات</SelectItem>
-                      <SelectItem value="fashion">أزياء</SelectItem>
-                      <SelectItem value="furniture">أثاث</SelectItem>
-                      <SelectItem value="jobs">وظائف</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price">السعر (ريال)</Label>
+                  <Label htmlFor="price">السعر (ريال) *</Label>
                   <Input 
                     id="price" 
+                    name="price"
                     type="number"
+                    step="0.01"
+                    min="0"
                     placeholder="0"
                     className="text-right"
+                    required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">الموقع</Label>
+                <Label htmlFor="location">الموقع *</Label>
                 <Input 
                   id="location" 
+                  name="location"
                   placeholder="المدينة أو المنطقة"
                   className="text-right"
+                  required
                 />
               </div>
 
@@ -72,6 +177,7 @@ const AddListing = () => {
                 <Label htmlFor="description">الوصف</Label>
                 <Textarea 
                   id="description"
+                  name="description"
                   placeholder="اكتب وصفاً تفصيلياً للإعلان..."
                   className="min-h-32 text-right"
                 />
@@ -85,7 +191,7 @@ const AddListing = () => {
                     اسحب الصور هنا أو انقر للاختيار
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    الحد الأقصى 5 صور، كل صورة حتى 5MB
+                    سيتم إضافة ميزة رفع الصور قريباً
                   </p>
                 </div>
               </div>
@@ -95,6 +201,7 @@ const AddListing = () => {
                   <Label htmlFor="phone">رقم الجوال</Label>
                   <Input 
                     id="phone" 
+                    name="phone"
                     type="tel"
                     placeholder="05xxxxxxxx"
                     className="text-right"
@@ -105,6 +212,7 @@ const AddListing = () => {
                   <Label htmlFor="email">البريد الإلكتروني</Label>
                   <Input 
                     id="email" 
+                    name="email"
                     type="email"
                     placeholder="example@email.com"
                     className="text-right"
@@ -116,13 +224,16 @@ const AddListing = () => {
                 <Button 
                   type="submit" 
                   className="flex-1 bg-gradient-primary hover:opacity-90 transition-smooth"
+                  disabled={isLoading}
                 >
-                  نشر الإعلان
+                  {isLoading ? "جاري النشر..." : "نشر الإعلان"}
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline"
                   className="flex-1"
+                  onClick={() => navigate("/dashboard")}
+                  disabled={isLoading}
                 >
                   إلغاء
                 </Button>
