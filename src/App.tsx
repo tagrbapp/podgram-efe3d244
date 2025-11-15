@@ -16,6 +16,7 @@ import DashboardGamification from "./pages/DashboardGamification";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import Messages from "./pages/Messages";
 import ListingDetails from "./pages/ListingDetails";
+import Catalog from "./pages/Catalog";
 import Favorites from "./pages/Favorites";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/add-listing" element={<AddListing />} />
+          <Route path="/catalog" element={<Catalog />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/listings" element={<DashboardListings />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />

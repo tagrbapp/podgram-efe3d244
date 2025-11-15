@@ -111,6 +111,18 @@ const Navbar = () => {
               <Link to="/trade-in" className="text-gray-600 hover:text-qultura-blue transition-smooth">
                 استبدال
               </Link>
+
+              <Button
+                className="bg-qultura-blue hover:bg-qultura-blue/90 text-white px-6 h-12"
+                asChild
+              >
+                <Link to="/catalog">
+                  <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  الكتالوج
+                </Link>
+              </Button>
             </div>
 
             {/* Search Bar */}

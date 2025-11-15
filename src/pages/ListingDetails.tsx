@@ -257,116 +257,169 @@ const ListingDetails = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Breadcrumb */}
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6"
+          className="mb-6 text-qultura-blue hover:text-qultura-blue/80"
         >
           <ArrowRight className="ml-2 h-4 w-4" />
           العودة للرئيسية
         </Button>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* المحتوى الرئيسي */}
-          <div className="md:col-span-2 space-y-6">
-            {/* معرض الصور */}
-            {listing.images && listing.images.length > 0 ? (
-              <Card className="overflow-hidden">
-                <Carousel className="w-full">
-                  <CarouselContent>
-                    {listing.images.map((image, index) => (
-                      <CarouselItem key={index}>
-                        <div className="aspect-[16/9] bg-muted">
-                          <img
-                            src={image}
-                            alt={`${listing.title} - صورة ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  {listing.images.length > 1 && (
-                    <>
-                      <CarouselPrevious className="left-4" />
-                      <CarouselNext className="right-4" />
-                    </>
-                  )}
-                </Carousel>
-              </Card>
-            ) : (
-              <Card className="aspect-[16/9] bg-muted flex items-center justify-center">
-                <p className="text-muted-foreground">لا توجد صور</p>
-              </Card>
-            )}
-
-            {/* التفاصيل */}
-            <Card className="p-6">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <h1 className="text-3xl font-bold text-foreground">{listing.title}</h1>
-                <div className="flex items-center gap-2 shrink-0">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Image Gallery */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              {listing.images && listing.images.length > 0 ? (
+                <div className="relative">
+                  <Carousel className="w-full">
+                    <CarouselContent>
+                      {listing.images.map((image, index) => (
+                        <CarouselItem key={index}>
+                          <div className="aspect-[4/3] bg-gray-50">
+                            <img
+                              src={image}
+                              alt={`${listing.title} - صورة ${index + 1}`}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    {listing.images.length > 1 && (
+                      <>
+                        <CarouselPrevious className="left-4 bg-white/90 hover:bg-white border-gray-200" />
+                        <CarouselNext className="right-4 bg-white/90 hover:bg-white border-gray-200" />
+                      </>
+                    )}
+                  </Carousel>
+                  
+                  {/* Favorite Button */}
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={toggleFavorite}
                     disabled={favoriteLoading}
-                    className={isFavorite ? "text-red-500 hover:text-red-600" : ""}
+                    className={`absolute top-4 left-4 rounded-full bg-white/90 hover:bg-white ${
+                      isFavorite ? "text-red-500 hover:text-red-600" : ""
+                    }`}
                   >
                     <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
                   </Button>
-                  <Badge variant="secondary">
-                    {listing.category.name}
-                  </Badge>
+
+                  {/* Image Counter */}
+                  {listing.images.length > 1 && (
+                    <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                      1 / {listing.images.length}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="aspect-[4/3] bg-gray-50 flex items-center justify-center">
+                  <p className="text-muted-foreground">لا توجد صور</p>
+                </div>
+              )}
+
+              {/* Thumbnail Preview */}
+              {listing.images && listing.images.length > 1 && (
+                <div className="p-4 border-t border-gray-100">
+                  <div className="flex gap-2 overflow-x-auto">
+                    {listing.images.slice(0, 5).map((image, index) => (
+                      <div
+                        key={index}
+                        className="flex-shrink-0 w-20 h-20 rounded-lg border-2 border-gray-200 hover:border-qultura-blue overflow-hidden cursor-pointer transition-all"
+                      >
+                        <img
+                          src={image}
+                          alt={`صورة ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                    {listing.images.length > 5 && (
+                      <div className="flex-shrink-0 w-20 h-20 rounded-lg border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
+                        <span className="text-sm text-muted-foreground">+{listing.images.length - 5}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Product Details */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge 
+                      variant="secondary" 
+                      className="bg-qultura-blue/10 text-qultura-blue border-0"
+                    >
+                      {listing.category.name}
+                    </Badge>
+                  </div>
+                  <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
                 </div>
               </div>
 
-              <p className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
-                {listing.price} ريال
-              </p>
+              <div className="mb-6">
+                <p className="text-4xl font-bold text-qultura-blue">
+                  {listing.price.toLocaleString('ar-SA')} ريال
+                </p>
+              </div>
 
-              <div className="flex items-center gap-6 text-sm text-muted-foreground mb-6">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground pb-6 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="h-4 w-4 text-qultura-blue" />
                   <span>{listing.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-4 w-4 text-qultura-blue" />
                   <span>{getTimeAgo(listing.created_at)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-4 w-4 text-qultura-blue" />
                   <span>{listing.views} مشاهدة</span>
                 </div>
               </div>
 
-              <div className="border-t border-border pt-6">
-                <h2 className="text-xl font-semibold mb-3">الوصف</h2>
+              <div className="pt-6">
+                <h2 className="text-lg font-semibold mb-3 text-foreground">الوصف</h2>
                 <p className="text-foreground whitespace-pre-wrap leading-relaxed">
                   {listing.description || "لا يوجد وصف"}
                 </p>
               </div>
-            </Card>
+            </div>
           </div>
 
-          {/* معلومات البائع */}
-          <div className="space-y-4">
-            <Card className="p-6 sticky top-4">
-              <h2 className="text-xl font-semibold mb-4">معلومات البائع</h2>
+          {/* Seller Info Sidebar */}
+          <div className="lg:sticky lg:top-4 h-fit">
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold mb-4 text-foreground">معلومات البائع</h2>
               
-              <div className="space-y-4 mb-6">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">الاسم</p>
-                  <p className="text-foreground font-medium">
-                    {listing.profiles?.full_name || "مستخدم"}
-                  </p>
+              <div className="mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-qultura-blue/10 flex items-center justify-center">
+                    <span className="text-lg font-bold text-qultura-blue">
+                      {listing.profiles?.full_name?.charAt(0) || "م"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {listing.profiles?.full_name || "مستخدم"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">بائع</p>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <Button
                   onClick={handleStartChat}
-                  className="w-full bg-gradient-primary hover:opacity-90"
+                  className="w-full bg-qultura-blue hover:bg-qultura-blue/90 text-white"
                   size="lg"
                 >
                   <MessageSquare className="ml-2 h-5 w-5" />
@@ -375,7 +428,7 @@ const ListingDetails = () => {
 
                 <Button
                   onClick={handleWhatsApp}
-                  className="w-full bg-[#25D366] hover:bg-[#20BA5A] text-white"
+                  className="w-full bg-qultura-green hover:bg-qultura-green/90 text-white"
                   size="lg"
                 >
                   <MessageCircle className="ml-2 h-5 w-5" />
@@ -385,7 +438,7 @@ const ListingDetails = () => {
                 <Button
                   onClick={handleCall}
                   variant="outline"
-                  className="w-full"
+                  className="w-full border-gray-200 hover:bg-gray-50"
                   size="lg"
                 >
                   <Phone className="ml-2 h-5 w-5" />
@@ -393,12 +446,12 @@ const ListingDetails = () => {
                 </Button>
               </div>
 
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <p className="text-xs text-muted-foreground text-center">
-                  تحذير: تأكد من المنتج قبل الشراء ولا تدفع مقدماً
+              <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-xs text-amber-800 text-center leading-relaxed">
+                  ⚠️ تحذير: تأكد من المنتج قبل الشراء ولا تدفع مقدماً
                 </p>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
