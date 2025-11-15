@@ -123,6 +123,16 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/dashboard/analytics/advanced")}>
+                  <NavLink to="/dashboard/analytics/advanced" icon={BarChart} label="التحليلات المتقدمة" />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/dashboard/gamification")}>
+                  <NavLink to="/dashboard/gamification" icon={Trophy} label="النقاط والشارات" />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

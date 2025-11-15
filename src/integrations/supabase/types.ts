@@ -14,24 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_actions: {
+        Row: {
+          action_type: string
+          admin_id: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          reason: string | null
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          action_type: string
+          admin_id: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          action_type?: string
+          admin_id?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
+      badges: {
+        Row: {
+          category: string
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Insert: {
+          category: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon: string
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Update: {
+          category?: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
+          blocked_by: string | null
           blocked_id: string
           blocker_id: string
           created_at: string
+          expires_at: string | null
           id: string
+          reason: string | null
         }
         Insert: {
+          blocked_by?: string | null
           blocked_id: string
           blocker_id: string
           created_at?: string
+          expires_at?: string | null
           id?: string
+          reason?: string | null
         }
         Update: {
+          blocked_by?: string | null
           blocked_id?: string
           blocker_id?: string
           created_at?: string
+          expires_at?: string | null
           id?: string
+          reason?: string | null
         }
         Relationships: []
       }
@@ -84,6 +162,76 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_sales: {
+        Row: {
+          created_at: string | null
+          id: string
+          listing_id: string
+          price: number
+          sale_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          listing_id: string
+          price: number
+          sale_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+          price?: number
+          sale_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_sales_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_views: {
+        Row: {
+          created_at: string | null
+          id: string
+          listing_id: string
+          user_id: string
+          view_date: string
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          listing_id: string
+          user_id: string
+          view_date?: string
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+          user_id?: string
+          view_date?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_views_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
@@ -258,6 +406,33 @@ export type Database = {
           },
         ]
       }
+      points_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          points: number
+          reason: string
+          reference_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          points: number
+          reason: string
+          reference_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          points?: number
+          reason?: string
+          reference_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -376,6 +551,62 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_points: {
+        Row: {
+          created_at: string | null
+          id: string
+          level: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          level?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          level?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -402,6 +633,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_points: {
+        Args: {
+          _points: number
+          _reason: string
+          _reference_id?: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      admin_block_user: {
+        Args: {
+          _admin_id: string
+          _duration_days?: number
+          _reason: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      admin_delete_listing: {
+        Args: { _admin_id: string; _listing_id: string; _reason: string }
+        Returns: undefined
+      }
+      admin_unblock_user: {
+        Args: { _admin_id: string; _user_id: string }
+        Returns: undefined
+      }
       calculate_avg_response_time: {
         Args: { seller_uuid: string }
         Returns: number
@@ -414,7 +671,40 @@ export type Database = {
         Args: { seller_uuid: string }
         Returns: number
       }
+      check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
+      get_admin_users_overview: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          avg_rating: number
+          created_at: string
+          full_name: string
+          id: string
+          is_blocked: boolean
+          level: number
+          phone: string
+          points: number
+          reports_count: number
+          total_listings: number
+          total_reviews: number
+          total_sales: number
+        }[]
+      }
+      get_revenue_by_period: {
+        Args: { end_date: string; seller_uuid: string; start_date: string }
+        Returns: {
+          date: string
+          revenue: number
+        }[]
+      }
       get_total_sales: { Args: { seller_uuid: string }; Returns: number }
+      get_views_by_period: {
+        Args: { end_date: string; seller_uuid: string; start_date: string }
+        Returns: {
+          date: string
+          total_views: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
