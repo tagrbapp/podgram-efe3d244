@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
@@ -54,26 +56,31 @@ const DashboardAdvancedAnalytics = () => {
   const averageSale = totalSales > 0 ? totalRevenue / totalSales : 0;
 
   return (
-    <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">التحليلات المتقدمة</h1>
-        <Tabs value={period} onValueChange={(v) => setPeriod(v as any)}>
-          <TabsList>
-            <TabsTrigger value="7">آخر 7 أيام</TabsTrigger>
-            <TabsTrigger value="30">آخر 30 يوم</TabsTrigger>
-            <TabsTrigger value="90">آخر 90 يوم</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
-        </div>
-      ) : (
-        <>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <SidebarTrigger />
+            <div className="flex-1 flex justify-between items-center">
+              <h1 className="text-xl font-semibold">التحليلات المتقدمة</h1>
+              <Tabs value={period} onValueChange={(v) => setPeriod(v as any)}>
+                <TabsList>
+                  <TabsTrigger value="7">آخر 7 أيام</TabsTrigger>
+                  <TabsTrigger value="30">آخر 30 يوم</TabsTrigger>
+                  <TabsTrigger value="90">آخر 90 يوم</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </header>
+          <main className="p-6 space-y-6">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-32" />
+                ))}
+              </div>
+            ) : (
+              <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -176,10 +183,13 @@ const DashboardAdvancedAnalytics = () => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          )}
-        </>
-      )}
-    </div>
+          </>
+            )}
+          </main>
+        </div>
+        <AppSidebar />
+      </div>
+    </SidebarProvider>
   );
 };
 

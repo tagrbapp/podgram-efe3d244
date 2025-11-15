@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ReportCard } from "@/components/admin/ReportCard";
@@ -245,12 +246,15 @@ const DashboardReportsAdmin = () => {
         ) : (
           <div className="space-y-4">
             {filteredReports.map((report) => (
-              <ReportCard key={report.id} report={report} onUpdate={fetchReports} />
-            ))}
-          </div>
+          <ReportCard key={report.id} report={report} onUpdate={fetchReports} />
+        ))}
+      </div>
         )}
-      </main>
-    </div>
+          </main>
+        </div>
+        <AppSidebar />
+      </div>
+    </SidebarProvider>
   );
 };
 

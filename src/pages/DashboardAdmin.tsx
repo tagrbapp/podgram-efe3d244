@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -383,8 +385,12 @@ const DashboardAdmin = () => {
         <TabsContent value="actions">
           <ActionLogTimeline actions={actions} />
         </TabsContent>
-      </Tabs>
-    </div>
+        </Tabs>
+        </main>
+        </div>
+        <AppSidebar />
+      </div>
+    </SidebarProvider>
   );
 };
 

@@ -3,6 +3,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import podgramLogo from "@/assets/podgram-logo.png";
 import { useEffect, useState } from "react";
 import {
   Sidebar,
@@ -94,13 +95,11 @@ export function AppSidebar() {
       <SidebarContent className="bg-card border-l">
         {/* Logo */}
         <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
-              <span className="text-xl font-bold text-primary-foreground">MQ</span>
-            </div>
+          <div className="flex items-center gap-3">
+            <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain flex-shrink-0" />
             {state !== "collapsed" && (
-              <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
-                مك
+              <span className="text-xl font-bold text-qultura-blue">
+                Podgram
               </span>
             )}
           </div>
