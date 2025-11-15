@@ -5,22 +5,24 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import AddListing from "./pages/AddListing";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import Dashboard from "./pages/Dashboard";
+import AddListing from "./pages/AddListing";
+import ListingDetails from "./pages/ListingDetails";
+import Favorites from "./pages/Favorites";
+import Messages from "./pages/Messages";
+import NotFound from "./pages/NotFound";
+import Catalog from "./pages/Catalog";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import DashboardListings from "./pages/DashboardListings";
 import DashboardAnalytics from "./pages/DashboardAnalytics";
 import DashboardReports from "./pages/DashboardReports";
-import DashboardReportsAdmin from "./pages/DashboardReportsAdmin";
-import DashboardAdvancedAnalytics from "./pages/DashboardAdvancedAnalytics";
 import DashboardGamification from "./pages/DashboardGamification";
+import DashboardAdvancedAnalytics from "./pages/DashboardAdvancedAnalytics";
 import DashboardAdmin from "./pages/DashboardAdmin";
-import Messages from "./pages/Messages";
-import ListingDetails from "./pages/ListingDetails";
-import Catalog from "./pages/Catalog";
-import Favorites from "./pages/Favorites";
-import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
+import DashboardReportsAdmin from "./pages/DashboardReportsAdmin";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,8 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/add-listing" element={<AddListing />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/listings" element={<DashboardListings />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />

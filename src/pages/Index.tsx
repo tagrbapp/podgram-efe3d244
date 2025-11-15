@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import ListingCard from "@/components/ListingCard";
 import CategoryCircle from "@/components/CategoryCircle";
 import ActionCard from "@/components/ActionCard";
@@ -148,13 +149,9 @@ const Index = () => {
             )}
           </div>
         </section>
-
-        <footer className="bg-white border-t border-gray-100 py-8">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-gray-600 text-sm">© 2024 مك. جميع الحقوق محفوظة.</p>
-          </div>
-        </footer>
       </main>
+
+      <Footer />
     </div>
   );
 };
