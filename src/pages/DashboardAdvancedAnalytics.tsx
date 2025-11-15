@@ -183,11 +183,13 @@ const DashboardAdvancedAnalytics = () => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </>
-            )}
+          )}
           </main>
         </div>
-        <AppSidebar />
+        
+        <div className="order-1">
+          <AppSidebar />
+        </div>
       </div>
     </SidebarProvider>
   );

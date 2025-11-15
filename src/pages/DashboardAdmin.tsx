@@ -208,24 +208,39 @@ const DashboardAdmin = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 space-y-6" dir="rtl">
-        <Skeleton className="h-12 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <div className="flex-1 order-2">
+            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+              <SidebarTrigger />
+              <h1 className="text-lg font-semibold">جاري التحميل...</h1>
+            </header>
+            <main className="p-6">
+              <div className="grid gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-24" />
+                ))}
+              </div>
+            </main>
+          </div>
+          <AppSidebar />
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      <h1 className="text-3xl font-bold">لوحة الإدارة</h1>
-
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <SidebarTrigger />
+            <h1 className="text-xl font-semibold">لوحة الإدارة</h1>
+          </header>
+          <main className="p-6 space-y-6">
       <AdminStats {...stats} />
 
-      <Tabs defaultValue="users" className="space-y-6">
+      <Tabs defaultValue="users" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="users">المستخدمون</TabsTrigger>
           <TabsTrigger value="listings">الإعلانات</TabsTrigger>
@@ -385,10 +400,13 @@ const DashboardAdmin = () => {
         <TabsContent value="actions">
           <ActionLogTimeline actions={actions} />
         </TabsContent>
-        </Tabs>
-        </main>
+      </Tabs>
+          </main>
         </div>
-        <AppSidebar />
+        
+        <div className="order-1">
+          <AppSidebar />
+        </div>
       </div>
     </SidebarProvider>
   );
