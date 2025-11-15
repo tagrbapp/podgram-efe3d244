@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Star, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -69,8 +69,21 @@ export const Notifications = () => {
           setNotifications(prev => [newNotification, ...prev]);
           setUnreadCount(prev => prev + 1);
           
+          // عرض Toast مع رسالة مخصصة حسب نوع الإشعار
+          const getToastIcon = (type: string) => {
+            switch(type) {
+              case 'new_review': return '⭐';
+              case 'review_reply': return '💬';
+              case 'new_report': return '⚠️';
+              case 'favorite_added': return '❤️';
+              case 'new_message': return '✉️';
+              default: return '🔔';
+            }
+          };
+          
           toast.success(newNotification.title, {
             description: newNotification.message,
+            icon: getToastIcon(newNotification.type),
           });
         }
       )
@@ -179,32 +192,48 @@ export const Notifications = () => {
               <p>لا توجد إشعارات</p>
             </div>
           ) : (
-            notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`p-3 cursor-pointer hover:bg-accent ${
-                  !notification.is_read ? "bg-primary/5" : ""
-                }`}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                <div className="flex flex-col gap-1 w-full">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold text-sm">
-                      {notification.title}
-                    </p>
-                    {!notification.is_read && (
-                      <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
-                    )}
+            notifications.map((notification) => {
+              const getNotificationIcon = () => {
+                switch(notification.type) {
+                  case 'new_review': return <Star className="h-4 w-4 text-yellow-500" />;
+                  case 'review_reply': return <MessageSquare className="h-4 w-4 text-blue-500" />;
+                  case 'new_report': return <Bell className="h-4 w-4 text-red-500" />;
+                  case 'favorite_added': return <Bell className="h-4 w-4 text-pink-500" />;
+                  case 'new_message': return <MessageSquare className="h-4 w-4 text-green-500" />;
+                  default: return <Bell className="h-4 w-4" />;
+                }
+              };
+
+              return (
+                <DropdownMenuItem
+                  key={notification.id}
+                  className={`p-3 cursor-pointer hover:bg-accent ${
+                    !notification.is_read ? "bg-primary/5" : ""
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex gap-3 w-full">
+                    <div className="mt-0.5">{getNotificationIcon()}</div>
+                    <div className="flex flex-col gap-1 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-sm">
+                          {notification.title}
+                        </p>
+                        {!notification.is_read && (
+                          <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {notification.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {getTimeAgo(notification.created_at)}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {getTimeAgo(notification.created_at)}
-                  </p>
-                </div>
-              </DropdownMenuItem>
-            ))
+                </DropdownMenuItem>
+              );
+            })
           )}
         </ScrollArea>
       </DropdownMenuContent>

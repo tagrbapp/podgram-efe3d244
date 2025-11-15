@@ -1,8 +1,9 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +16,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const mainItems = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
@@ -29,13 +31,50 @@ const settingsItems = [
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 
+const adminItems = [
+  { title: "إدارة البلاغات", url: "/dashboard/reports/admin", icon: Shield },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingReportsCount, setPendingReportsCount] = useState(0);
 
   const isActive = (path: string) => currentPath === path;
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["admin", "moderator"]);
+
+    if (roles && roles.length > 0) {
+      setIsAdmin(true);
+      fetchPendingReportsCount();
+    }
+  };
+
+  const fetchPendingReportsCount = async () => {
+    const { data, error } = await supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+
+    if (!error && data) {
+      setPendingReportsCount(data.length || 0);
+    }
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -87,6 +126,40 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>الإدارة</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
+                        activeClassName="bg-muted text-primary font-medium"
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {state !== "collapsed" && (
+                          <div className="flex items-center justify-between flex-1">
+                            <span>{item.title}</span>
+                            {pendingReportsCount > 0 && (
+                              <Badge variant="destructive" className="mr-auto">
+                                {pendingReportsCount}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {/* Settings */}
         <SidebarGroup>
