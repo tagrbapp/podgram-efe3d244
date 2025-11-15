@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
-import { User as UserIcon, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
+import { User as UserIcon, Mail, Phone, Lock, Eye, EyeOff, Bell } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { z } from "zod";
+import { useWebPush } from "@/hooks/useWebPush";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
@@ -48,6 +50,9 @@ const Settings = () => {
   // Email change states
   const [newEmail, setNewEmail] = useState("");
   const [changingEmail, setChangingEmail] = useState(false);
+  
+  // Web Push states
+  const { isSupported, isSubscribed, isLoading, subscribe, unsubscribe } = useWebPush();
 
   useEffect(() => {
     const subscription = onAuthStateChange((session, user) => {
@@ -396,6 +401,61 @@ const Settings = () => {
                   >
                     {changingPassword ? "جاري التغيير..." : "تغيير كلمة المرور"}
                   </Button>
+                </div>
+              </Card>
+
+              <Separator />
+
+              {/* إشعارات المتصفح */}
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  إشعارات المتصفح
+                </h2>
+
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    احصل على إشعارات فورية حتى عندما يكون التطبيق مغلقاً
+                  </p>
+
+                  {!isSupported ? (
+                    <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                      المتصفح لا يدعم إشعارات المتصفح
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-1">
+                        <p className="font-medium">
+                          {isSubscribed ? "الإشعارات مفعلة" : "تفعيل الإشعارات"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {isSubscribed 
+                            ? "ستتلقى إشعارات فورية على المتصفح"
+                            : "انقر للسماح بإرسال الإشعارات"}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={isSubscribed}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            subscribe();
+                          } else {
+                            unsubscribe();
+                          }
+                        }}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  )}
+
+                  {isSubscribed && (
+                    <div className="rounded-md bg-primary/10 p-3 text-sm">
+                      <p className="font-medium text-primary mb-1">✓ الإشعارات نشطة</p>
+                      <p className="text-xs text-muted-foreground">
+                        ستتلقى إشعارات عن المزادات الجديدة، العروض، والرسائل
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Card>
 
