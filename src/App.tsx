@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import DashboardListings from "./pages/DashboardListings";
 import DashboardAnalytics from "./pages/DashboardAnalytics";
 import DashboardReports from "./pages/DashboardReports";
+import Messages from "./pages/Messages";
 import ListingDetails from "./pages/ListingDetails";
 import Favorites from "./pages/Favorites";
 import Settings from "./pages/Settings";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/dashboard/listings" element={<DashboardListings />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />
           <Route path="/dashboard/reports" element={<DashboardReports />} />
+          <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile/:id" element={<Profile />} />
