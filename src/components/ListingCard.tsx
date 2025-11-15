@@ -1,8 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ListingCardProps {
+  id: string;
   title: string;
   price: string;
   location: string;
@@ -11,9 +13,14 @@ interface ListingCardProps {
   category: string;
 }
 
-const ListingCard = ({ title, price, location, time, image, category }: ListingCardProps) => {
+const ListingCard = ({ id, title, price, location, time, image, category }: ListingCardProps) => {
+  const navigate = useNavigate();
+
   return (
-    <Card className="overflow-hidden hover:shadow-elegant transition-smooth cursor-pointer group">
+    <Card 
+      className="overflow-hidden hover:shadow-elegant transition-smooth cursor-pointer group"
+      onClick={() => navigate(`/listing/${id}`)}
+    >
       <div className="aspect-[4/3] overflow-hidden bg-muted">
         <img 
           src={image} 
