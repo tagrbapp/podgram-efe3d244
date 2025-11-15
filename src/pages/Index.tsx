@@ -5,6 +5,7 @@ import ListingCard from "@/components/ListingCard";
 import CategoryCircle from "@/components/CategoryCircle";
 import ActionCard from "@/components/ActionCard";
 import BrandLogos from "@/components/BrandLogos";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { supabase } from "@/integrations/supabase/client";
 
 import categoryWatches from "@/assets/category-watches.jpg";
@@ -115,6 +116,11 @@ const Index = () => {
                 <p className="text-lg text-white/80 mb-8">المنصة الأولى للمنتجات الفاخرة في المنطقة</p>
                 <BrandLogos />
               </div>
+            </div>
+
+            {/* Announcements Section */}
+            <div className="mt-8">
+              <AnnouncementBanner />
             </div>
           </div>
         </section>
