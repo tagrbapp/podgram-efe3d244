@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, Plus, User } from "lucide-react";
+import { Menu, Plus, User, Heart } from "lucide-react";
 
 const Navbar = () => {
   return (
@@ -21,11 +21,11 @@ const Navbar = () => {
               <Link to="/" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-smooth">
                 الرئيسية
               </Link>
-              <Link to="/categories" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-smooth">
-                التصنيفات
+              <Link to="/favorites" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-smooth">
+                المفضلة
               </Link>
-              <Link to="/about" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-smooth">
-                من نحن
+              <Link to="/dashboard" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-smooth">
+                إعلاناتي
               </Link>
             </div>
           </div>
@@ -35,6 +35,12 @@ const Navbar = () => {
               <Menu className="h-5 w-5" />
             </Button>
             
+            <Link to="/favorites">
+              <Button variant="ghost" size="icon" className="transition-smooth">
+                <Heart className="h-4 w-4" />
+              </Button>
+            </Link>
+
             <Link to="/add-listing">
               <Button className="gap-2 bg-gradient-secondary hover:opacity-90 transition-smooth shadow-elegant">
                 <Plus className="h-4 w-4" />
