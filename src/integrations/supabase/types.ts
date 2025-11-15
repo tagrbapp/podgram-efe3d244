@@ -707,6 +707,27 @@ export type Database = {
           },
         ]
       }
+      test_bidder_stats: {
+        Row: {
+          created_at: string | null
+          id: string
+          total_bids: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          total_bids?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          total_bids?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
