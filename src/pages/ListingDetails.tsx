@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Clock, Phone, MessageCircle, ArrowRight, Eye } from "lucide-react";
+import { MapPin, Clock, Phone, MessageCircle, ArrowRight, Eye, Heart } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { toast } from "sonner";
 
@@ -35,10 +35,13 @@ const ListingDetails = () => {
   const navigate = useNavigate();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   useEffect(() => {
     fetchListing();
     incrementViews();
+    checkFavoriteStatus();
   }, [id]);
 
   const fetchListing = async () => {
@@ -119,6 +122,60 @@ const ListingDetails = () => {
     window.location.href = `tel:${phone}`;
   };
 
+  const checkFavoriteStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("favorites")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("listing_id", id)
+      .maybeSingle();
+
+    setIsFavorite(!!data);
+  };
+
+  const toggleFavorite = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      toast.error("يجب تسجيل الدخول لإضافة المفضلة");
+      return;
+    }
+
+    setFavoriteLoading(true);
+
+    try {
+      if (isFavorite) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from("favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("listing_id", id);
+
+        if (error) throw error;
+        setIsFavorite(false);
+        toast.success("تم الإزالة من المفضلة");
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from("favorites")
+          .insert({ user_id: user.id, listing_id: id });
+
+        if (error) throw error;
+        setIsFavorite(true);
+        toast.success("تم الإضافة للمفضلة");
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      toast.error("فشل في تحديث المفضلة");
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -195,9 +252,20 @@ const ListingDetails = () => {
             <Card className="p-6">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <h1 className="text-3xl font-bold text-foreground">{listing.title}</h1>
-                <Badge variant="secondary" className="shrink-0">
-                  {listing.category.name}
-                </Badge>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleFavorite}
+                    disabled={favoriteLoading}
+                    className={isFavorite ? "text-red-500 hover:text-red-600" : ""}
+                  >
+                    <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
+                  </Button>
+                  <Badge variant="secondary">
+                    {listing.category.name}
+                  </Badge>
+                </div>
               </div>
 
               <p className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-6">
