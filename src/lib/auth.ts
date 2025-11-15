@@ -1,23 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
-
-export interface AuthUser {
-  user: User | null;
-  session: Session | null;
-}
+import type { Session, User } from "@supabase/supabase-js";
 
 export const signUp = async (email: string, password: string, fullName: string) => {
+  const redirectUrl = `${window.location.origin}/`;
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: redirectUrl,
       data: {
         full_name: fullName,
       },
-      emailRedirectTo: `${window.location.origin}/`,
     },
   });
-  
+
   return { data, error };
 };
 
@@ -26,7 +23,7 @@ export const signIn = async (email: string, password: string) => {
     email,
     password,
   });
-  
+
   return { data, error };
 };
 
@@ -35,12 +32,18 @@ export const signOut = async () => {
   return { error };
 };
 
-export const getSession = async () => {
+export const getSession = async (): Promise<{ session: Session | null; user: User | null }> => {
   const { data: { session }, error } = await supabase.auth.getSession();
-  return { session, error };
+  return { 
+    session: error ? null : session,
+    user: error ? null : session?.user ?? null
+  };
 };
 
-export const getCurrentUser = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { user, error };
+export const onAuthStateChange = (callback: (session: Session | null, user: User | null) => void) => {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session, session?.user ?? null);
+  });
+
+  return subscription;
 };
