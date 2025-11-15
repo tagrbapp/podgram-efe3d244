@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { AppSidebar } from "@/components/AppSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -185,14 +183,31 @@ const DashboardAuctions = () => {
       : 0
   };
 
+  if (isLoading) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2 flex items-center justify-center">
+            <div className="text-center">جاري التحميل...</div>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <Navbar />
-          
-          <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+              <SidebarTrigger className="-ml-2" />
+              <h1 className="text-2xl font-bold">إدارة المزادات</h1>
+            </div>
+          </header>
+          <main className="container mx-auto p-6" dir="rtl">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground mb-2">
                 إدارة المزادات
@@ -434,8 +449,6 @@ const DashboardAuctions = () => {
               </div>
             </Card>
           </main>
-
-          <Footer />
         </div>
       </div>
     </SidebarProvider>
