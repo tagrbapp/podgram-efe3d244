@@ -52,11 +52,11 @@ export function AppSidebar() {
         <div className="p-4 border-b">
           <div className="flex items-center gap-2">
             <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
-              <span className="text-xl font-bold text-primary-foreground">إ</span>
+              <span className="text-xl font-bold text-primary-foreground">MQ</span>
             </div>
             {state !== "collapsed" && (
               <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
-                إعلاناتي
+                مك
               </span>
             )}
           </div>
