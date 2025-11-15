@@ -15,7 +15,7 @@ import ListingCard from "@/components/ListingCard";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession } from "@/lib/auth";
 import { toast } from "sonner";
-import { User, Phone, Calendar, MapPin, MessageSquare, Package, TrendingUp, Eye, Star, ArrowRight, ShieldCheck, Flag, StarIcon } from "lucide-react";
+import { User, Phone, Calendar, MapPin, MessageSquare, Package, TrendingUp, Eye, Star, ArrowRight, ShieldCheck, Flag, StarIcon, Clock, Zap, BarChart, Reply } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -42,8 +42,11 @@ interface Listing {
 interface Review {
   id: string;
   reviewer_id: string;
+  seller_id: string;
   rating: number;
   comment: string | null;
+  seller_reply: string | null;
+  replied_at: string | null;
   created_at: string;
   profiles: {
     full_name: string;
@@ -63,10 +66,14 @@ const Profile = () => {
   const [averageRating, setAverageRating] = useState(0);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [replyText, setReplyText] = useState("");
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
+  const [stats, setStats] = useState({ responseRate: 0, avgResponseTime: 0, completionRate: 0, totalSales: 0 });
 
   useEffect(() => {
     const loadUser = async () => {
@@ -82,8 +89,17 @@ const Profile = () => {
       fetchListings();
       fetchReviews();
       checkVerificationStatus();
+      fetchSellerStats();
     }
   }, [id]);
+
+  const fetchSellerStats = async () => {
+    if (!id) return;
+    
+    const { getSellerStats } = await import("@/lib/stats");
+    const statsData = await getSellerStats(id);
+    setStats(statsData);
+  };
 
   const fetchProfile = async () => {
     if (!id) return;
@@ -139,7 +155,7 @@ const Profile = () => {
 
     const { data: reviewsData, error } = await supabase
       .from("reviews")
-      .select("id, reviewer_id, rating, comment, created_at")
+      .select("id, reviewer_id, seller_id, rating, comment, seller_reply, replied_at, created_at")
       .eq("seller_id", id)
       .order("created_at", { ascending: false });
 
@@ -322,6 +338,32 @@ const Profile = () => {
     setIsReviewDialogOpen(false);
     setReviewRating(5);
     setReviewComment("");
+    fetchReviews();
+  };
+
+  const handleSubmitReply = async () => {
+    if (!selectedReview || !replyText) {
+      toast.error("يرجى كتابة رد");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("reviews")
+      .update({
+        seller_reply: replyText,
+        replied_at: new Date().toISOString(),
+      })
+      .eq("id", selectedReview.id);
+
+    if (error) {
+      toast.error("فشل في إضافة الرد");
+      return;
+    }
+
+    toast.success("تم إضافة الرد بنجاح");
+    setIsReplyDialogOpen(false);
+    setReplyText("");
+    setSelectedReview(null);
     fetchReviews();
   };
 
@@ -604,6 +646,75 @@ const Profile = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Advanced Seller Statistics */}
+            <Card className="p-6 shadow-lg border-0 bg-gradient-to-br from-primary/5 to-primary/10">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <BarChart className="h-5 w-5 text-primary" />
+                إحصائيات البائع المتقدمة
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg bg-background/80 backdrop-blur">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">معدل الاستجابة</span>
+                    </div>
+                    <span className="text-lg font-bold text-primary">{stats.responseRate}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-gradient-primary h-2 rounded-full transition-all" 
+                      style={{ width: `${stats.responseRate}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-background/80 backdrop-blur">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium">وقت الرد المتوسط</span>
+                    </div>
+                    <span className="text-lg font-bold text-blue-600">
+                      {stats.avgResponseTime < 60 
+                        ? `${Math.round(stats.avgResponseTime)} دقيقة`
+                        : stats.avgResponseTime < 1440
+                        ? `${Math.round(stats.avgResponseTime / 60)} ساعة`
+                        : `${Math.round(stats.avgResponseTime / 1440)} يوم`
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-background/80 backdrop-blur">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium">نسبة إتمام الصفقات</span>
+                    </div>
+                    <span className="text-lg font-bold text-green-600">{stats.completionRate}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all" 
+                      style={{ width: `${stats.completionRate}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-background/80 backdrop-blur">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4 text-purple-600" />
+                      <span className="text-sm font-medium">إجمالي المبيعات</span>
+                    </div>
+                    <span className="text-lg font-bold text-purple-600">{stats.totalSales}</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
 
           {/* Listings Section */}
@@ -727,12 +838,82 @@ const Profile = () => {
                                     {renderStars(review.rating, 16)}
                                   </div>
                                   {review.comment && (
-                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                    <p className="text-sm text-muted-foreground leading-relaxed mb-2">
                                       {review.comment}
                                     </p>
                                   )}
-                                </div>
-                              </div>
+                                  
+                                  {/* Seller Reply */}
+                                  {review.seller_reply && (
+                                    <div className="mt-3 p-3 bg-muted/50 rounded-lg border-r-2 border-primary">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Reply className="h-3 w-3 text-primary" />
+                                        <span className="text-xs font-semibold text-primary">رد البائع</span>
+                                      </div>
+                                      <p className="text-sm text-muted-foreground">
+                                        {review.seller_reply}
+                                      </p>
+                                      {review.replied_at && (
+                                        <p className="text-xs text-muted-foreground/70 mt-1">
+                                          {new Date(review.replied_at).toLocaleDateString('ar-SA')}
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
+                                  
+                                  {/* Reply Button for Seller */}
+                                  {isOwnProfile && !review.seller_reply && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="mt-2 text-primary"
+                                      onClick={() => {
+                                        setSelectedReview(review);
+                                        setIsReplyDialogOpen(true);
+                                      }}
+                                    >
+                                      <Reply className="ml-1 h-3 w-3" />
+                                      رد على التقييم
+                                    </Button>
+                                  )}
+      </div>
+      
+      {/* Reply Dialog */}
+      <Dialog open={isReplyDialogOpen} onOpenChange={setIsReplyDialogOpen}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>الرد على التقييم</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedReview && (
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="font-semibold">{selectedReview.profiles.full_name}</p>
+                  {renderStars(selectedReview.rating, 14)}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {selectedReview.comment}
+                </p>
+              </div>
+            )}
+            <div>
+              <Label htmlFor="reply-text">ردك</Label>
+              <Textarea
+                id="reply-text"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="اكتب ردك على التقييم..."
+                className="mt-2"
+                rows={4}
+              />
+            </div>
+            <Button onClick={handleSubmitReply} className="w-full">
+              إرسال الرد
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
                             </Card>
                           ))}
                         </div>
