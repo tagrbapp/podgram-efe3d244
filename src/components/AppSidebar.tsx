@@ -91,14 +91,14 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className={state === "collapsed" ? "w-16" : "w-64"} side="right">
+    <Sidebar className={`transition-all duration-300 ease-in-out ${state === "collapsed" ? "w-16" : "w-64"}`} side="right">
       <SidebarContent className="bg-card border-l">
         {/* Logo */}
-        <div className="p-4 border-b">
+        <div className="p-4 border-b transition-all duration-300">
           <div className="flex items-center gap-3">
-            <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain flex-shrink-0" />
+            <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain flex-shrink-0 transition-transform duration-300 hover:scale-110" />
             {state !== "collapsed" && (
-              <span className="text-xl font-bold text-qultura-blue">
+              <span className="text-xl font-bold text-qultura-blue animate-fade-in">
                 Podgram
               </span>
             )}
@@ -106,46 +106,48 @@ export function AppSidebar() {
         </div>
 
         {/* Main Navigation */}
-        <SidebarGroup>
-          <SidebarGroupLabel>القائمة الرئيسية</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+        <SidebarGroup className="py-4 transition-all duration-300">
+          {state !== "collapsed" && (
+            <SidebarGroupLabel className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-fade-in">القائمة الرئيسية</SidebarGroupLabel>
+          )}
+          <SidebarGroupContent className="mt-2">
+            <SidebarMenu className="gap-1 px-2">
+              {mainItems.map((item, index) => (
+                <SidebarMenuItem key={item.title} style={{ animationDelay: `${index * 30}ms` }} className="animate-fade-in">
+                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
                       activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
                     >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {state !== "collapsed" && <span className="text-sm">{item.title}</span>}
+                      <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
+                      {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-              <SidebarMenuItem>
+              <SidebarMenuItem style={{ animationDelay: `${mainItems.length * 30}ms` }} className="animate-fade-in">
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/analytics/advanced")}>
                   <NavLink
                     to="/dashboard/analytics/advanced"
-                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
                     activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
                   >
-                    <BarChart className="h-5 w-5 flex-shrink-0" />
-                    {state !== "collapsed" && <span className="text-sm">التحليلات المتقدمة</span>}
+                    <BarChart className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
+                    {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">التحليلات المتقدمة</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
+              <SidebarMenuItem style={{ animationDelay: `${(mainItems.length + 1) * 30}ms` }} className="animate-fade-in">
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/gamification")}>
                   <NavLink
                     to="/dashboard/gamification"
-                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
                     activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
                   >
-                    <Trophy className="h-5 w-5 flex-shrink-0" />
-                    {state !== "collapsed" && <span className="text-sm">النقاط والشارات</span>}
+                    <Trophy className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
+                    {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">النقاط والشارات</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -155,36 +157,38 @@ export function AppSidebar() {
 
         {/* Admin Section */}
         {isAdmin && (
-          <SidebarGroup className="py-4">
-            <SidebarGroupLabel className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">الإدارة</SidebarGroupLabel>
+          <SidebarGroup className="py-4 transition-all duration-300 animate-fade-in">
+            {state !== "collapsed" && (
+              <SidebarGroupLabel className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-fade-in">الإدارة</SidebarGroupLabel>
+            )}
             <SidebarGroupContent className="mt-2">
               <SidebarMenu className="gap-1 px-2">
-                <SidebarMenuItem>
+                <SidebarMenuItem className="animate-fade-in">
                   <SidebarMenuButton asChild isActive={isActive("/dashboard/admin")}>
                     <NavLink
                       to="/dashboard/admin"
-                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
                       activeClassName="bg-destructive/10 text-destructive font-semibold border-r-4 border-destructive"
                     >
-                      <Shield className="h-5 w-5 flex-shrink-0" />
-                      {state !== "collapsed" && <span className="text-sm">لوحة الإدارة</span>}
+                      <Shield className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
+                      {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">لوحة الإدارة</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {adminItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                {adminItems.map((item, index) => (
+                  <SidebarMenuItem key={item.title} style={{ animationDelay: `${(index + 1) * 30}ms` }} className="animate-fade-in">
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <NavLink
                         to={item.url}
-                        className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                        className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
                         activeClassName="bg-destructive/10 text-destructive font-semibold border-r-4 border-destructive"
                       >
-                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                         {state !== "collapsed" && (
-                          <div className="flex items-center justify-between flex-1">
+                          <div className="flex items-center justify-between flex-1 transition-opacity duration-300">
                             <span className="text-sm">{item.title}</span>
-                            {item.url === "/dashboard/reports/admin" && pendingReportsCount > 0 && (
-                              <Badge variant="destructive" className="mr-auto text-xs px-2 py-0.5">
+                            {pendingReportsCount > 0 && (
+                              <Badge variant="destructive" className="ml-auto animate-scale-in transition-transform duration-200 hover:scale-110">
                                 {pendingReportsCount}
                               </Badge>
                             )}
@@ -200,20 +204,23 @@ export function AppSidebar() {
         )}
 
         {/* Settings */}
-        <SidebarGroup>
-          <SidebarGroupLabel>الإعدادات</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+        <SidebarGroup className="py-4 transition-all duration-300">
+          {state !== "collapsed" && (
+            <SidebarGroupLabel className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider animate-fade-in">أخرى</SidebarGroupLabel>
+          )}
+          <SidebarGroupContent className="mt-2">
+            <SidebarMenu className="gap-1 px-2">
+              {settingsItems.map((item, index) => (
+                <SidebarMenuItem key={item.title} style={{ animationDelay: `${index * 30}ms` }} className="animate-fade-in">
+                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink
                       to={item.url}
-                      className="hover:bg-muted/50 flex items-center gap-3 px-3 py-2 rounded-md transition-colors"
-                      activeClassName="bg-muted text-primary font-medium"
+                      end
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                      activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
                     >
-                      <item.icon className="h-5 w-5" />
-                      {state !== "collapsed" && <span>{item.title}</span>}
+                      <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
+                      {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -223,14 +230,14 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Logout Button */}
-        <div className="mt-auto p-4 border-t">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+        <div className="mt-auto p-4 border-t transition-all duration-300">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 transition-all duration-200 hover:translate-x-1 hover:scale-105"
             onClick={handleLogout}
           >
-            <LogOut className="h-5 w-5" />
-            {state !== "collapsed" && <span>تسجيل الخروج</span>}
+            <LogOut className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
+            {state !== "collapsed" && <span className="transition-opacity duration-300 animate-fade-in">تسجيل الخروج</span>}
           </Button>
         </div>
       </SidebarContent>
