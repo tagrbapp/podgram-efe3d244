@@ -24,7 +24,8 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { announcementTemplates, AnnouncementTemplate } from "@/lib/announcementTemplates";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Eye } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Announcement {
   id: string;
@@ -372,7 +373,7 @@ const DashboardAnnouncements = () => {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl" dir="rtl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
           <DialogHeader>
             <DialogTitle>
               {editingId ? "تعديل الإعلان" : "إضافة إعلان جديد"}
@@ -418,19 +419,29 @@ const DashboardAnnouncements = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
-              {!editingId && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setShowTemplates(true)}
-                >
-                  <Sparkles className="h-4 w-4 ml-2" />
-                  اختر من القوالب الجاهزة
-                </Button>
-              )}
-            <div>
-              <Label htmlFor="title">عنوان الإعلان *</Label>
+            <Tabs defaultValue="edit" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="edit">تحرير الإعلان</TabsTrigger>
+                <TabsTrigger value="preview">
+                  <Eye className="h-4 w-4 ml-2" />
+                  معاينة
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="edit" className="space-y-4 mt-4">
+                {!editingId && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowTemplates(true)}
+                  >
+                    <Sparkles className="h-4 w-4 ml-2" />
+                    اختر من القوالب الجاهزة
+                  </Button>
+                )}
+
+                <div>
+                  <Label htmlFor="title">عنوان الإعلان *</Label>
               <Input
                 id="title"
                 value={title}
@@ -515,15 +526,81 @@ const DashboardAnnouncements = () => {
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <Switch
-                id="isActive"
-                checked={isActive}
-                onCheckedChange={setIsActive}
-              />
-              <Label htmlFor="isActive">نشط</Label>
-            </div>
-            </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="isActive"
+                  checked={isActive}
+                  onCheckedChange={setIsActive}
+                />
+                <Label htmlFor="isActive">نشط</Label>
+              </div>
+              </TabsContent>
+
+              <TabsContent value="preview" className="mt-4">
+                <div className="space-y-4">
+                  <div className="bg-muted/50 rounded-lg p-4 border">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      معاينة كيف سيظهر الإعلان للزوار:
+                    </p>
+                    
+                    {/* Preview of the announcement */}
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 border border-primary/20">
+                      <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="flex-1 text-center md:text-right">
+                          <h2 className="text-2xl font-bold mb-3 text-foreground">
+                            {title || "عنوان الإعلان"}
+                          </h2>
+                          {description && (
+                            <p className="text-muted-foreground mb-4">
+                              {description}
+                            </p>
+                          )}
+                          <Button className="bg-primary hover:bg-primary/90">
+                            {buttonText || "اعرف المزيد"}
+                          </Button>
+                        </div>
+                        {imageUrl && (
+                          <div className="w-full md:w-64 h-48 rounded-lg overflow-hidden bg-muted">
+                            <img
+                              src={imageUrl}
+                              alt="معاينة"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d";
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Preview details */}
+                    <div className="mt-4 space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={isActive ? "default" : "secondary"}>
+                          {isActive ? "نشط" : "غير نشط"}
+                        </Badge>
+                        {priority > 0 && (
+                          <Badge variant="outline">الأولوية: {priority}</Badge>
+                        )}
+                      </div>
+                      {(startDate || endDate) && (
+                        <p className="text-muted-foreground">
+                          {startDate && `من: ${startDate}`}
+                          {startDate && endDate && " | "}
+                          {endDate && `إلى: ${endDate}`}
+                        </p>
+                      )}
+                      {linkUrl && (
+                        <p className="text-muted-foreground">
+                          الرابط: <span className="text-primary">{linkUrl}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
 
           <DialogFooter>
