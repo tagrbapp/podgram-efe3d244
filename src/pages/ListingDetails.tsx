@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Clock, Phone, MessageCircle, MessageSquare, ArrowRight, Eye, Heart } from "lucide-react";
+import { MapPin, Clock, Phone, MessageCircle, MessageSquare, ArrowRight, Eye, Heart, Maximize2 } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { toast } from "sonner";
 import { getSession } from "@/lib/auth";
+import ImageLightbox from "@/components/ImageLightbox";
+import ListingCard from "@/components/ListingCard";
 
 interface Listing {
   id: string;
@@ -23,10 +25,11 @@ interface Listing {
   created_at: string;
   views: number;
   user_id: string;
+  category_id?: string;
   category: {
     name: string;
   };
-  profiles: {
+  profiles?: {
     full_name: string;
     phone: string;
   } | null;
@@ -39,12 +42,21 @@ const ListingDetails = () => {
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [similarListings, setSimilarListings] = useState<Listing[]>([]);
 
   useEffect(() => {
     fetchListing();
     incrementViews();
     checkFavoriteStatus();
   }, [id]);
+
+  useEffect(() => {
+    if (listing) {
+      fetchSimilarListings();
+    }
+  }, [listing]);
 
   const fetchListing = async () => {
     try {
@@ -136,6 +148,41 @@ const ListingDetails = () => {
       .maybeSingle();
 
     setIsFavorite(!!data);
+  };
+
+  const fetchSimilarListings = async () => {
+    if (!listing?.category_id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("listings")
+        .select(`
+          id,
+          title,
+          price,
+          location,
+          images,
+          views,
+          created_at,
+          user_id,
+          description,
+          category:categories(name)
+        `)
+        .eq("status", "active")
+        .eq("category_id", listing.category_id)
+        .neq("id", id)
+        .limit(4);
+
+      if (error) throw error;
+      setSimilarListings(data as any || []);
+    } catch (error) {
+      console.error("Error fetching similar listings:", error);
+    }
+  };
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
   };
 
   const toggleFavorite = async () => {
@@ -279,12 +326,19 @@ const ListingDetails = () => {
                     <CarouselContent>
                       {listing.images.map((image, index) => (
                         <CarouselItem key={index}>
-                          <div className="aspect-[4/3] bg-gray-50">
+                          <div 
+                            className="aspect-[4/3] bg-gray-50 relative cursor-pointer group"
+                            onClick={() => openLightbox(index)}
+                          >
                             <img
                               src={image}
                               alt={`${listing.title} - صورة ${index + 1}`}
                               className="w-full h-full object-contain"
                             />
+                            {/* Zoom Overlay */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                              <Maximize2 className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
                           </div>
                         </CarouselItem>
                       ))}
@@ -330,6 +384,7 @@ const ListingDetails = () => {
                     {listing.images.slice(0, 5).map((image, index) => (
                       <div
                         key={index}
+                        onClick={() => openLightbox(index)}
                         className="flex-shrink-0 w-20 h-20 rounded-lg border-2 border-gray-200 hover:border-qultura-blue overflow-hidden cursor-pointer transition-all"
                       >
                         <img
@@ -340,7 +395,10 @@ const ListingDetails = () => {
                       </div>
                     ))}
                     {listing.images.length > 5 && (
-                      <div className="flex-shrink-0 w-20 h-20 rounded-lg border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
+                      <div 
+                        onClick={() => openLightbox(5)}
+                        className="flex-shrink-0 w-20 h-20 rounded-lg border-2 border-gray-200 bg-gray-50 flex items-center justify-center cursor-pointer hover:border-qultura-blue transition-all"
+                      >
                         <span className="text-sm text-muted-foreground">+{listing.images.length - 5}</span>
                       </div>
                     )}
@@ -454,7 +512,38 @@ const ListingDetails = () => {
             </div>
           </div>
         </div>
+
+        {/* Similar Products Section */}
+        {similarListings.length > 0 && (
+          <div className="container mx-auto px-4 py-12 max-w-7xl">
+            <h2 className="text-2xl font-bold mb-6">منتجات مشابهة</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {similarListings.map((item) => (
+                <ListingCard
+                  key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  price={item.price}
+                  location={item.location}
+                  time={item.created_at}
+                  image={item.images?.[0] || "/placeholder.svg"}
+                  category={item.category?.name || "غير محدد"}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Lightbox */}
+      {listing && listing.images && (
+        <ImageLightbox
+          images={listing.images}
+          initialIndex={lightboxIndex}
+          open={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 };
