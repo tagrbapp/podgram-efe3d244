@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { getSession } from "@/lib/auth";
@@ -63,14 +65,27 @@ const DashboardGamification = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 space-y-6" dir="rtl">
-        <Skeleton className="h-12 w-64" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2">
+            <header className="sticky top-0 z-10 bg-background border-b">
+              <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+                <SidebarTrigger className="-ml-2" />
+                <h1 className="text-2xl font-bold">النقاط والشارات</h1>
+              </div>
+            </header>
+            <main className="container mx-auto p-6 space-y-6">
+              <Skeleton className="h-12 w-64" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-32" />
+                ))}
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
@@ -78,8 +93,18 @@ const DashboardGamification = () => {
   const earnedBadgeIds = userBadges.map((ub) => ub.badge_id);
 
   return (
-    <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      <h1 className="text-3xl font-bold">النقاط والشارات</h1>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <Trophy className="w-6 h-6 text-primary" />
+              <h1 className="text-2xl font-bold">النقاط والشارات</h1>
+            </div>
+          </header>
+          <main className="container mx-auto p-6 space-y-6">
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -179,7 +204,10 @@ const DashboardGamification = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 

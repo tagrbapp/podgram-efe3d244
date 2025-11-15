@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, TrendingUp, Target, DollarSign, Gavel } from 'lucide-react';
@@ -17,6 +20,7 @@ interface Stats {
 }
 
 export default function DashboardAuctionAnalytics() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [timelineData, setTimelineData] = useState<any[]>([]);
   const [period, setPeriod] = useState('30');
@@ -29,7 +33,10 @@ export default function DashboardAuctionAnalytics() {
   const fetchAnalytics = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
 
       const { data: statsData, error: statsError } = await supabase.rpc('calculate_auction_stats', {
         _user_id: user.id,
@@ -57,18 +64,30 @@ export default function DashboardAuctionAnalytics() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <Card className="p-12 text-center">جاري تحميل الإحصائيات...</Card>
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2 flex items-center justify-center">
+            <Card className="p-12 text-center">جاري تحميل الإحصائيات...</Card>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <BarChart3 className="w-8 h-8 text-primary" />
-        <h1 className="text-3xl font-bold">إحصائيات المزادات المتقدمة</h1>
-      </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <BarChart3 className="w-6 h-6 text-primary" />
+              <h1 className="text-2xl font-bold">إحصائيات المزادات المتقدمة</h1>
+            </div>
+          </header>
+          <main className="container mx-auto p-6">
 
       {/* Period Selector */}
       <div className="flex gap-2 mb-6">
@@ -184,6 +203,9 @@ export default function DashboardAuctionAnalytics() {
           </div>
         </Card>
       </div>
-    </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }

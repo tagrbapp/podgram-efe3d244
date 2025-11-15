@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -112,15 +114,30 @@ export default function DashboardBidderProfile() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <Card className="p-12 text-center">جاري التحميل...</Card>
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2 flex items-center justify-center">
+            <Card className="p-12 text-center">جاري التحميل...</Card>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <h1 className="text-3xl font-bold mb-6">ملفي كمزايد</h1>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <Trophy className="w-6 h-6 text-primary" />
+              <h1 className="text-2xl font-bold">ملف المزايد</h1>
+            </div>
+          </header>
+          <main className="container mx-auto p-6 max-w-6xl">
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
@@ -243,6 +260,9 @@ export default function DashboardBidderProfile() {
           </Card>
         </div>
       </div>
-    </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }
