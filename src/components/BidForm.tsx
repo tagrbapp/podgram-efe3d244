@@ -71,11 +71,12 @@ const BidForm = ({
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <Gavel className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-bold text-foreground">قدم عرضك</h3>
-      </div>
+    <div className="space-y-4">
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Gavel className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-bold text-foreground">قدم عرضك</h3>
+        </div>
 
       <div className="grid grid-cols-3 gap-2 mb-4">
         <Button
@@ -132,6 +133,7 @@ const BidForm = ({
           {isSubmitting ? "جاري التقديم..." : "تقديم العرض"}
         </Button>
       </form>
+    </div>
     </div>
   );
 };

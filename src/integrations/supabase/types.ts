@@ -100,6 +100,47 @@ export type Database = {
           },
         ]
       }
+      auto_bids: {
+        Row: {
+          auction_id: string
+          created_at: string | null
+          current_proxy_bid: number | null
+          id: string
+          is_active: boolean | null
+          max_bid_amount: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          auction_id: string
+          created_at?: string | null
+          current_proxy_bid?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_bid_amount: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          auction_id?: string
+          created_at?: string | null
+          current_proxy_bid?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_bid_amount?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           category: string
@@ -545,6 +586,33 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string | null
+          endpoint: string
+          id: string
+          p256dh_key: string
+          user_id: string
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          p256dh_key: string
+          user_id: string
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          p256dh_key?: string
+          user_id?: string
         }
         Relationships: []
       }
