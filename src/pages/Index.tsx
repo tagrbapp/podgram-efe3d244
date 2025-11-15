@@ -4,9 +4,11 @@ import CategoryCard from "@/components/CategoryCard";
 import ListingCard from "@/components/ListingCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Car, Home, Smartphone, Shirt, Sofa, Briefcase, Search } from "lucide-react";
+import { Car, Home, Smartphone, Shirt, Sofa, Briefcase, Search, ArrowRight, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import heroImage from "@/assets/hero-luxury.jpg";
+import luxuryProducts from "@/assets/luxury-products.jpg";
 
 interface Category {
   id: string;
@@ -154,172 +156,250 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-              اعثر على ما تبحث عنه
-            </h1>
-            <p className="text-lg text-muted-foreground mb-8">
-              آلاف الإعلانات المبوبة في انتظارك. اشتري، بع، أو أجر بكل سهولة
-            </p>
-            
-            {/* Search Bar */}
-            <div className="flex gap-2 max-w-2xl mx-auto shadow-elegant rounded-lg overflow-hidden bg-card p-2">
-              <Input 
-                placeholder="ابحث عن أي شيء..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="flex-1 border-0 bg-transparent text-right focus-visible:ring-0"
+      {/* Luxury Hero Section */}
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={heroImage} 
+            alt="Luxury Marketplace" 
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 bg-gradient-hero"></div>
+          
+          {/* Animated Particles */}
+          <div className="absolute inset-0">
+            {[...Array(20)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-1 h-1 bg-primary/30 rounded-full animate-pulse-glow"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 3}s`,
+                  animationDuration: `${2 + Math.random() * 3}s`,
+                }}
               />
-              <Button 
-                onClick={handleSearch}
-                className="gap-2 bg-gradient-primary hover:opacity-90 transition-smooth"
+            ))}
+          </div>
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 glass px-6 py-2 rounded-full">
+              <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <span className="text-sm text-muted-foreground">منصة الإعلانات الفاخرة</span>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="font-luxury text-5xl md:text-7xl lg:text-8xl font-bold leading-tight">
+              اكتشف عالم من
+              <br />
+              <span className="text-gradient-primary">الفخامة والرقي</span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-arabic">
+              منصتك الحصرية لبيع وشراء المنتجات الفاخرة والمميزة
+              <br />
+              تجربة تسوق استثنائية تليق بذوقك الراقي
+            </p>
+
+            {/* Search Bar */}
+            <div className="max-w-3xl mx-auto mt-12">
+              <div className="glass-dark p-3 rounded-2xl shadow-glow">
+                <div className="flex flex-col md:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="ابحث عن منتجك المفضل..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                      className="pr-12 h-14 text-lg bg-background/50 border-border/50 focus:border-primary transition-smooth rounded-xl"
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleSearch}
+                    size="lg"
+                    className="h-14 px-8 bg-gradient-primary hover:shadow-glow transition-smooth text-primary-foreground font-bold rounded-xl group"
+                  >
+                    <span>بحث</span>
+                    <ArrowRight className="mr-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center gap-8 pt-12">
+              {[
+                { label: "إعلان نشط", value: String(listings.length) },
+                { label: "تصنيف فاخر", value: String(categories.length) },
+                { label: "عملاء راضون", value: "100+" }
+              ].map((stat, index) => (
+                <div 
+                  key={index} 
+                  className="glass px-8 py-4 rounded-xl hover:scale-105 transition-smooth"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="text-3xl font-bold text-gradient-primary">{stat.value}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Gradient Fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-10"></div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="text-center mb-16 space-y-4 animate-fade-in">
+          <h2 className="text-4xl md:text-5xl font-luxury font-bold text-gradient-primary">
+            تصنيفات مميزة
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-arabic">
+            استكشف مجموعة واسعة من المنتجات الفاخرة في كافة التصنيفات
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          {categories.map((category, index) => {
+            const Icon = iconMap[category.icon] || Briefcase;
+            return (
+              <div
+                key={category.id}
+                className="animate-scale-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
+                onClick={() => handleCategoryClick(category.name)}
               >
-                <Search className="h-4 w-4" />
-                بحث
+                <CategoryCard
+                  icon={Icon}
+                  title={category.name}
+                  count={category.count || 0}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Featured Listings */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="flex items-center justify-between mb-16">
+          <div className="space-y-2">
+            <h2 className="text-4xl md:text-5xl font-luxury font-bold text-gradient-primary">
+              إعلانات مميزة
+            </h2>
+            <p className="text-xl text-muted-foreground font-arabic">
+              أحدث المنتجات الفاخرة المضافة
+            </p>
+          </div>
+          {selectedCategory && (
+            <Badge 
+              variant="outline" 
+              className="px-4 py-2 text-base border-primary/50 hover:bg-primary/10 transition-smooth cursor-pointer"
+              onClick={() => setSelectedCategory(null)}
+            >
+              {selectedCategory} ✕
+            </Badge>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="glass-dark h-80 rounded-2xl animate-pulse"></div>
+            ))}
+          </div>
+        ) : filteredListings.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {filteredListings.map((listing, index) => (
+              <div
+                key={listing.id}
+                className="animate-scale-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <ListingCard
+                  id={listing.id}
+                  title={listing.title}
+                  price={listing.price}
+                  location={listing.location}
+                  time={getTimeAgo(listing.created_at)}
+                  image={listing.images?.[0] || "/placeholder.svg"}
+                  category={listing.categories?.name || "غير محدد"}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <div className="glass-dark inline-block p-12 rounded-2xl">
+              <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-xl text-muted-foreground font-arabic">
+                لا توجد إعلانات متاحة حالياً
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative py-32 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={luxuryProducts} 
+            alt="Luxury Products" 
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-hero"></div>
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <h2 className="text-4xl md:text-6xl font-luxury font-bold text-gradient-primary">
+              ابدأ رحلتك الآن
+            </h2>
+            <p className="text-xl md:text-2xl text-muted-foreground font-arabic leading-relaxed">
+              انضم إلى مجتمعنا الحصري واعرض منتجاتك الفاخرة
+              <br />
+              أو اكتشف كنوزاً جديدة كل يوم
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center pt-8">
+              <Button 
+                size="lg"
+                className="h-16 px-10 bg-gradient-primary hover:shadow-glow transition-smooth text-primary-foreground text-lg font-bold rounded-xl group"
+              >
+                <span>أضف إعلانك</span>
+                <Sparkles className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform" />
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                className="h-16 px-10 border-2 border-primary/50 hover:bg-primary/10 text-lg font-bold rounded-xl transition-smooth"
+              >
+                استكشف المزيد
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-12 bg-card/50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-10">التصنيفات الرئيسية</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {categories.map((category) => (
-              <div
-                key={category.id}
-                onClick={() => handleCategoryClick(category.name)}
-                className={`cursor-pointer transition-all ${
-                  selectedCategory === category.name ? "scale-105" : ""
-                }`}
-              >
-                <CategoryCard
-                  icon={iconMap[category.icon] || Car}
-                  title={category.name}
-                  count={category.count || 0}
-                />
-              </div>
-            ))}
-          </div>
-          
-          {/* عرض التصنيف المحدد */}
-          {selectedCategory && (
-            <div className="mt-6 text-center">
-              <Badge
-                variant="secondary"
-                className="cursor-pointer"
-                onClick={() => setSelectedCategory(null)}
-              >
-                {selectedCategory} ✕
-              </Badge>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Latest Listings */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">
-              {selectedCategory
-                ? `إعلانات ${selectedCategory}`
-                : searchQuery
-                ? "نتائج البحث"
-                : "أحدث الإعلانات"}
-            </h2>
-            <div className="text-muted-foreground">
-              {filteredListings.length} إعلان
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">جاري التحميل...</p>
-            </div>
-          ) : filteredListings.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">لا توجد إعلانات</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredListings.map((listing) => (
-                <ListingCard
-                  id={listing.id}
-                  key={listing.id}
-                  title={listing.title}
-                  price={listing.price.toLocaleString("ar-SA")}
-                  location={listing.location}
-                  time={getTimeAgo(listing.created_at)}
-                  image={
-                    listing.images && listing.images.length > 0
-                      ? listing.images[0]
-                      : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
-                  }
-                  category={listing.categories?.name || "عام"}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="bg-card border-t py-12 mt-16">
+      <footer className="border-t border-border/50 py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-bold text-lg mb-4">إعلاناتي</h3>
-              <p className="text-muted-foreground text-sm">
-                منصتك الموثوقة للإعلانات المبوبة في المملكة
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">روابط سريعة</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-smooth">من نحن</a></li>
-                <li><a href="#" className="hover:text-foreground transition-smooth">اتصل بنا</a></li>
-                <li><a href="#" className="hover:text-foreground transition-smooth">الشروط والأحكام</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">التصنيفات</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {categories.slice(0, 3).map((cat) => (
-                  <li key={cat.id}>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleCategoryClick(cat.name);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                      className="hover:text-foreground transition-smooth"
-                    >
-                      {cat.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">تابعنا</h4>
-              <p className="text-muted-foreground text-sm">
-                ابق على تواصل معنا عبر منصات التواصل الاجتماعي
-              </p>
-            </div>
-          </div>
-          <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2024 إعلاناتي. جميع الحقوق محفوظة.</p>
+          <div className="text-center text-muted-foreground font-arabic">
+            <p className="text-lg">© 2024 MQ - مك. جميع الحقوق محفوظة.</p>
+            <p className="mt-2">منصة الإعلانات المبوبة الفاخرة</p>
           </div>
         </div>
       </footer>

@@ -770,7 +770,7 @@ const Profile = () => {
                             key={listing.id} 
                             id={listing.id}
                             title={listing.title}
-                            price={`${listing.price.toLocaleString('ar-SA')} ر.س`}
+                            price={listing.price}
                             location={listing.location}
                             time={new Date(listing.created_at).toLocaleDateString('ar-SA')}
                             image={listing.images?.[0] || "/placeholder.svg"}
@@ -792,7 +792,7 @@ const Profile = () => {
                             key={listing.id} 
                             id={listing.id}
                             title={listing.title}
-                            price={`${listing.price.toLocaleString('ar-SA')} ر.س`}
+                            price={listing.price}
                             location={listing.location}
                             time={new Date(listing.created_at).toLocaleDateString('ar-SA')}
                             image={listing.images?.[0] || "/placeholder.svg"}
