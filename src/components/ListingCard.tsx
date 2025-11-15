@@ -10,7 +10,7 @@ import { toast } from "sonner";
 interface ListingCardProps {
   id: string;
   title: string;
-  price: string;
+  price: number;
   location: string;
   time: string;
   image: string;
@@ -24,7 +24,7 @@ const ListingCard = ({ id, title, price, location, time, image, category }: List
 
   useEffect(() => {
     checkFavoriteStatus();
-  }, [id]);
+  }, []);
 
   const checkFavoriteStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -82,43 +82,59 @@ const ListingCard = ({ id, title, price, location, time, image, category }: List
 
   return (
     <Card 
-      className="overflow-hidden hover:shadow-elegant transition-smooth cursor-pointer group"
+      className="overflow-hidden hover:shadow-glow transition-smooth cursor-pointer group border-border/30 bg-card/50 backdrop-blur-sm hover:scale-[1.02] hover:border-primary/30"
       onClick={() => navigate(`/listing/${id}`)}
     >
-      <div className="aspect-[4/3] overflow-hidden bg-muted">
+      <div className="aspect-[4/3] overflow-hidden bg-muted relative">
         <img 
           src={image} 
           alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-smooth"
+          className="w-full h-full object-cover group-hover:scale-110 transition-smooth duration-500"
         />
+        <div className="absolute top-3 right-3 z-10">
+          <Badge className="bg-primary/90 backdrop-blur-sm text-primary-foreground font-bold shadow-glow-secondary">
+            {category}
+          </Badge>
+        </div>
       </div>
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-foreground line-clamp-2 flex-1">{title}</h3>
+      <div className="p-5 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-luxury font-bold text-lg text-foreground line-clamp-2 flex-1 group-hover:text-primary transition-smooth">
+            {title}
+          </h3>
           <div className="flex items-center gap-1 shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className={`h-9 w-9 rounded-full transition-smooth hover:scale-110 ${
+                isFavorite 
+                  ? "text-destructive hover:text-destructive" 
+                  : "text-muted-foreground hover:text-primary"
+              }`}
               onClick={toggleFavorite}
               disabled={favoriteLoading}
             >
-              <Heart className={`h-4 w-4 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+              <Heart 
+                className={`h-5 w-5 transition-all ${
+                  isFavorite ? "fill-current" : ""
+                }`}
+              />
             </Button>
-            <Badge variant="secondary">{category}</Badge>
           </div>
         </div>
-        <p className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-3">
-          {price} ريال
-        </p>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            <span>{location}</span>
+
+        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+          <div className="space-y-1">
+            <p className="text-2xl font-bold text-gradient-primary">
+              {typeof price === 'number' ? price.toLocaleString('ar-SA') : price} <span className="text-sm font-normal">ر.س</span>
+            </p>
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {location}
+            </p>
           </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>{time}</span>
+          <div className="text-xs text-muted-foreground">
+            {time}
           </div>
         </div>
       </div>

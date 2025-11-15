@@ -129,7 +129,7 @@ const Favorites = () => {
                 key={listing.id}
                 id={listing.id}
                 title={listing.title}
-                price={listing.price.toLocaleString("ar-SA")}
+                price={listing.price}
                 location={listing.location}
                 time={getTimeAgo(listing.created_at)}
                 image={
