@@ -12,6 +12,22 @@ import { toast } from "sonner";
 import { getSession } from "@/lib/auth";
 import ImageLightbox from "@/components/ImageLightbox";
 import ListingCard from "@/components/ListingCard";
+import AuctionTimer from "@/components/AuctionTimer";
+import BidForm from "@/components/BidForm";
+import AuctionBidsList from "@/components/AuctionBidsList";
+import AutoBidSettings from "@/components/AutoBidSettings";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface Auction {
+  id: string;
+  listing_id: string;
+  starting_price: number;
+  current_bid: number | null;
+  highest_bidder_id: string | null;
+  bid_increment: number;
+  end_time: string;
+  status: string;
+}
 
 interface Listing {
   id: string;
@@ -45,9 +61,12 @@ const ListingDetails = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [similarListings, setSimilarListings] = useState<Listing[]>([]);
+  const [auction, setAuction] = useState<Auction | null>(null);
+  const [bidsCount, setBidsCount] = useState(0);
 
   useEffect(() => {
     fetchListing();
+    fetchAuction();
     incrementViews();
     checkFavoriteStatus();
   }, [id]);
@@ -57,6 +76,43 @@ const ListingDetails = () => {
       fetchSimilarListings();
     }
   }, [listing]);
+
+  useEffect(() => {
+    if (auction) {
+      // Subscribe to auction updates
+      const channel = supabase
+        .channel(`auction-${auction.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'auctions',
+            filter: `id=eq.${auction.id}`
+          },
+          () => {
+            fetchAuction();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'bids',
+            filter: `auction_id=eq.${auction.id}`
+          },
+          () => {
+            fetchAuction();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [auction?.id]);
 
   const fetchListing = async () => {
     try {
@@ -89,6 +145,31 @@ const ListingDetails = () => {
       navigate("/");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAuction = async () => {
+    try {
+      const { data: auctionData, error } = await supabase
+        .from("auctions")
+        .select("*")
+        .eq("listing_id", id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (auctionData) {
+        setAuction(auctionData);
+        
+        // Get bids count
+        const { count } = await supabase
+          .from("bids")
+          .select("*", { count: "exact", head: true })
+          .eq("auction_id", auctionData.id);
+        
+        setBidsCount(count || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching auction:", error);
     }
   };
 
@@ -424,9 +505,49 @@ const ListingDetails = () => {
               </div>
 
               <div className="mb-6">
-                <p className="text-4xl font-bold text-qultura-blue">
-                  {listing.price.toLocaleString('ar-SA')} ريال
-                </p>
+                {auction ? (
+                  // Auction Information
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-6 border-2 border-primary/30">
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-2xl">🔥</span>
+                        <h3 className="text-xl font-bold text-primary">هذا المنتج في مزاد مباشر!</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">السعر الابتدائي</p>
+                          <p className="text-lg font-bold text-foreground">
+                            {auction.starting_price.toLocaleString('ar-SA')} ريال
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">العرض الحالي</p>
+                          <p className="text-2xl font-bold text-primary">
+                            {auction.current_bid
+                              ? `${auction.current_bid.toLocaleString('ar-SA')} ريال`
+                              : "لا توجد عروض بعد"
+                            }
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <span>👥</span>
+                          <span>{bidsCount} عرض</span>
+                        </div>
+                      </div>
+
+                      <AuctionTimer endTime={auction.end_time} />
+                    </div>
+                  </div>
+                ) : (
+                  // Regular Price
+                  <p className="text-4xl font-bold text-qultura-blue">
+                    {listing.price.toLocaleString('ar-SA')} ريال
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground pb-6 border-b border-gray-100">
@@ -454,25 +575,54 @@ const ListingDetails = () => {
           </div>
 
           {/* Seller Info Sidebar */}
-          <div className="lg:sticky lg:top-4 h-fit">
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold mb-4 text-foreground">معلومات البائع</h2>
-              
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-qultura-blue/10 flex items-center justify-center">
-                    <span className="text-lg font-bold text-qultura-blue">
-                      {listing.profiles?.full_name?.charAt(0) || "م"}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {listing.profiles?.full_name || "مستخدم"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">بائع</p>
+          <div className="lg:sticky lg:top-4 h-fit space-y-4">
+            {auction ? (
+              // Auction Bidding Section
+              <>
+                <BidForm
+                  auctionId={auction.id}
+                  currentBid={auction.current_bid}
+                  startingPrice={auction.starting_price}
+                  bidIncrement={auction.bid_increment}
+                  onBidPlaced={fetchAuction}
+                />
+                
+                <AutoBidSettings
+                  auctionId={auction.id}
+                  minBidAmount={auction.current_bid 
+                    ? auction.current_bid + auction.bid_increment 
+                    : auction.starting_price
+                  }
+                />
+
+                <Card className="p-6">
+                  <h3 className="text-lg font-bold text-foreground mb-4">سجل العروض</h3>
+                  <AuctionBidsList 
+                    auctionId={auction.id} 
+                    highestBidderId={auction.highest_bidder_id || undefined}
+                  />
+                </Card>
+              </>
+            ) : (
+              // Regular Seller Contact Section
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold mb-4 text-foreground">معلومات البائع</h2>
+                
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-qultura-blue/10 flex items-center justify-center">
+                      <span className="text-lg font-bold text-qultura-blue">
+                        {listing.profiles?.full_name?.charAt(0) || "م"}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {listing.profiles?.full_name || "مستخدم"}
+                      </p>
+                      <p className="text-sm text-muted-foreground">بائع</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
               <div className="space-y-3">
                 <Button
@@ -509,7 +659,8 @@ const ListingDetails = () => {
                   ⚠️ تحذير: تأكد من المنتج قبل الشراء ولا تدفع مقدماً
                 </p>
               </div>
-            </div>
+              </div>
+            )}
           </div>
         </div>
 

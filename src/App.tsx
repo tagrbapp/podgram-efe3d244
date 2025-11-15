@@ -24,6 +24,7 @@ import DashboardGamification from "./pages/DashboardGamification";
 import DashboardAdvancedAnalytics from "./pages/DashboardAdvancedAnalytics";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import DashboardReportsAdmin from "./pages/DashboardReportsAdmin";
+import DashboardAuctions from "./pages/DashboardAuctions";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/dashboard/gamification" element={<DashboardGamification />} />
           <Route path="/dashboard/reports" element={<DashboardReports />} />
           <Route path="/dashboard/reports/admin" element={<DashboardReportsAdmin />} />
+          <Route path="/dashboard/auctions" element={<DashboardAuctions />} />
           <Route path="/dashboard/admin" element={<DashboardAdmin />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
