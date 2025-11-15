@@ -6,7 +6,7 @@ const TopBar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-10 text-xs text-gray-600">
           <div className="flex items-center gap-6">
-            <span>أول منصة في قطاع السلع الفاخرة</span>
+            <span>Podgram - أول منصة فاخرة في المنطقة</span>
             <span className="hidden md:inline">توصيل سريع وآمن</span>
           </div>
           
