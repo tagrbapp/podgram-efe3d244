@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, Plus, User, Heart } from "lucide-react";
+import { Notifications } from "@/components/Notifications";
 
 const Navbar = () => {
   return (
@@ -34,6 +35,8 @@ const Navbar = () => {
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
             </Button>
+            
+            <Notifications />
             
             <Link to="/favorites">
               <Button variant="ghost" size="icon" className="transition-smooth">
