@@ -141,10 +141,8 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
-        
-        <div className="flex-1">
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <div className="flex-1 order-2">
           <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
@@ -204,6 +202,10 @@ const Dashboard = () => {
               </Tabs>
             </Card>
           </main>
+        </div>
+        
+        <div className="order-1">
+          <AppSidebar />
         </div>
       </div>
     </SidebarProvider>
