@@ -108,18 +108,53 @@ const Index = () => {
 
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
-            <div className="relative rounded-3xl overflow-hidden h-[400px] bg-gradient-to-r from-emerald-400 to-emerald-500">
-              <img src={heroGreenBanner} alt="Luxury Brands" className="absolute inset-0 w-full h-full object-cover opacity-20" />
-              <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
-                <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">Podgram</h1>
-                <p className="text-2xl md:text-3xl text-white/90 mb-2">أكثر من 249 علامة فاخرة</p>
-                <p className="text-lg text-white/80 mb-8">المنصة الأولى للمنتجات الفاخرة في المنطقة</p>
-                <BrandLogos />
+            <div className="grid lg:grid-cols-2 gap-8 items-center">
+              {/* Left Side - Green Section with Brands */}
+              <div className="relative rounded-3xl overflow-hidden h-[500px] bg-gradient-to-br from-[hsl(var(--qultura-green))] to-[hsl(159,58%,47%)]">
+                <img src={heroGreenBanner} alt="Luxury Brands" className="absolute inset-0 w-full h-full object-cover opacity-10" />
+                <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8">
+                  <p className="text-lg text-white/90 mb-4">أكثر من 249 علامة فاخرة على المنصة</p>
+                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                    Largest selection of<br/>
+                    <span className="text-white/80">luxury brands</span>
+                  </h2>
+                  <div className="mt-8">
+                    <BrandLogos />
+                  </div>
+                </div>
+                {/* Navigation Arrows */}
+                <button className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors">
+                  <span className="text-2xl">←</span>
+                </button>
+                <button className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-colors">
+                  <span className="text-2xl">→</span>
+                </button>
+                {/* Indicator Dots */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                  <div className="w-2 h-2 rounded-full bg-white/60"></div>
+                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                  <div className="w-2 h-2 rounded-full bg-white/60"></div>
+                </div>
+              </div>
+
+              {/* Right Side - Text Section */}
+              <div className="text-center lg:text-right px-8">
+                <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+                  It is profitable to buy<br/>
+                  <span className="text-foreground">It is profitable to sell</span>
+                </h1>
+                <p className="text-xl text-muted-foreground mb-8">
+                  المنصة الأولى لإعادة بيع المنتجات الفاخرة<br/>
+                  مع خدمات ثابتة
+                </p>
+                <button className="px-8 py-3 bg-[hsl(var(--qultura-light-blue))] text-[hsl(var(--qultura-blue))] rounded-lg hover:opacity-90 transition-opacity font-medium">
+                  اكتشف المزيد
+                </button>
               </div>
             </div>
 
             {/* Announcements Section */}
-            <div className="mt-8">
+            <div className="mt-12">
               <AnnouncementBanner />
             </div>
           </div>
