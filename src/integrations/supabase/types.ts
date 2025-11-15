@@ -47,6 +47,91 @@ export type Database = {
         }
         Relationships: []
       }
+      auction_alerts: {
+        Row: {
+          alert_type: string
+          auction_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_triggered: boolean | null
+          target_price: number | null
+          time_before_end: number | null
+          triggered_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          auction_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_triggered?: boolean | null
+          target_price?: number | null
+          time_before_end?: number | null
+          triggered_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          auction_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_triggered?: boolean | null
+          target_price?: number | null
+          time_before_end?: number | null
+          triggered_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_alerts_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auction_invitations: {
+        Row: {
+          auction_id: string
+          created_at: string | null
+          id: string
+          invitee_id: string
+          inviter_id: string
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          auction_id: string
+          created_at?: string | null
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          auction_id?: string
+          created_at?: string | null
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_invitations_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auctions: {
         Row: {
           bid_increment: number
@@ -55,6 +140,8 @@ export type Database = {
           end_time: string
           highest_bidder_id: string | null
           id: string
+          invited_bidders: string[] | null
+          is_private: boolean | null
           listing_id: string
           reserve_price: number | null
           start_time: string
@@ -69,6 +156,8 @@ export type Database = {
           end_time: string
           highest_bidder_id?: string | null
           id?: string
+          invited_bidders?: string[] | null
+          is_private?: boolean | null
           listing_id: string
           reserve_price?: number | null
           start_time?: string
@@ -83,6 +172,8 @@ export type Database = {
           end_time?: string
           highest_bidder_id?: string | null
           id?: string
+          invited_bidders?: string[] | null
+          is_private?: boolean | null
           listing_id?: string
           reserve_price?: number | null
           start_time?: string
@@ -174,6 +265,86 @@ export type Database = {
           name?: string
           requirement_type?: string
           requirement_value?: number
+        }
+        Relationships: []
+      }
+      bidder_reviews: {
+        Row: {
+          auction_id: string
+          bidder_id: string
+          comment: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          review_type: string
+          reviewer_id: string
+        }
+        Insert: {
+          auction_id: string
+          bidder_id: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          review_type: string
+          reviewer_id: string
+        }
+        Update: {
+          auction_id?: string
+          bidder_id?: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          review_type?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bidder_reviews_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bidder_stats: {
+        Row: {
+          avg_rating: number | null
+          communication_rating: number | null
+          created_at: string | null
+          id: string
+          payment_speed_rating: number | null
+          reliability_score: number | null
+          total_bids: number | null
+          updated_at: string | null
+          user_id: string
+          won_auctions: number | null
+        }
+        Insert: {
+          avg_rating?: number | null
+          communication_rating?: number | null
+          created_at?: string | null
+          id?: string
+          payment_speed_rating?: number | null
+          reliability_score?: number | null
+          total_bids?: number | null
+          updated_at?: string | null
+          user_id: string
+          won_auctions?: number | null
+        }
+        Update: {
+          avg_rating?: number | null
+          communication_rating?: number | null
+          created_at?: string | null
+          id?: string
+          payment_speed_rating?: number | null
+          reliability_score?: number | null
+          total_bids?: number | null
+          updated_at?: string | null
+          user_id?: string
+          won_auctions?: number | null
         }
         Relationships: []
       }
