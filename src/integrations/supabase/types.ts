@@ -47,6 +47,59 @@ export type Database = {
         }
         Relationships: []
       }
+      auctions: {
+        Row: {
+          bid_increment: number
+          created_at: string | null
+          current_bid: number | null
+          end_time: string
+          highest_bidder_id: string | null
+          id: string
+          listing_id: string
+          reserve_price: number | null
+          start_time: string
+          starting_price: number
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          bid_increment?: number
+          created_at?: string | null
+          current_bid?: number | null
+          end_time: string
+          highest_bidder_id?: string | null
+          id?: string
+          listing_id: string
+          reserve_price?: number | null
+          start_time?: string
+          starting_price: number
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          bid_increment?: number
+          created_at?: string | null
+          current_bid?: number | null
+          end_time?: string
+          highest_bidder_id?: string | null
+          id?: string
+          listing_id?: string
+          reserve_price?: number | null
+          start_time?: string
+          starting_price?: number
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           category: string
@@ -82,6 +135,41 @@ export type Database = {
           requirement_value?: number
         }
         Relationships: []
+      }
+      bids: {
+        Row: {
+          auction_id: string
+          bid_amount: number
+          created_at: string | null
+          id: string
+          is_autobid: boolean | null
+          user_id: string
+        }
+        Insert: {
+          auction_id: string
+          bid_amount: number
+          created_at?: string | null
+          id?: string
+          is_autobid?: boolean | null
+          user_id: string
+        }
+        Update: {
+          auction_id?: string
+          bid_amount?: number
+          created_at?: string | null
+          id?: string
+          is_autobid?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blocked_users: {
         Row: {
@@ -672,6 +760,7 @@ export type Database = {
         Returns: number
       }
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
+      end_expired_auctions: { Args: never; Returns: undefined }
       get_admin_users_overview: {
         Args: never
         Returns: {
@@ -711,6 +800,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      place_bid: {
+        Args: { _auction_id: string; _bid_amount: number; _user_id: string }
+        Returns: Json
       }
     }
     Enums: {
