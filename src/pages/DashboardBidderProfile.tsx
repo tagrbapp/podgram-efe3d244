@@ -52,26 +52,51 @@ export default function DashboardBidderProfile() {
         .eq('id', user.id)
         .single();
 
-      const { data: statsData } = await supabase
-        .from('bidder_stats' as any)
+      const { data: statsData, error: statsError } = await supabase
+        .from('bidder_stats')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      const { data: reviewsData } = await supabase
-        .from('bidder_reviews' as any)
-        .select('*, profiles(full_name, avatar_url)')
+      // جلب المراجعات مع بيانات المراجعين
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('bidder_reviews')
+        .select('id, rating, comment, review_type, created_at, reviewer_id')
         .eq('bidder_id', user.id)
         .order('created_at', { ascending: false });
+
+      if (reviewsError) console.error('Error fetching reviews:', reviewsError);
+
+      // جلب بيانات المراجعين
+      let enrichedReviews: Review[] = [];
+      if (reviewsData && reviewsData.length > 0) {
+        const reviewerIds = reviewsData.map(r => r.reviewer_id);
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .in('id', reviewerIds);
+
+        enrichedReviews = reviewsData.map(review => ({
+          id: review.id,
+          rating: review.rating,
+          comment: review.comment || '',
+          review_type: review.review_type,
+          created_at: review.created_at,
+          reviewer: profilesData?.find(p => p.id === review.reviewer_id) || { full_name: 'مستخدم', avatar_url: null }
+        }));
+      }
 
       const { data: badgesData } = await supabase
         .from('user_badges')
         .select('*, badges(*)')
         .eq('user_id', user.id);
 
+      if (statsError) console.error('Error fetching stats:', statsError);
+      if (reviewsError) console.error('Error fetching reviews:', reviewsError);
+
       setProfile(profileData);
-      setStats((statsData as any) || { total_bids: 0, won_auctions: 0, avg_rating: 0, reliability_score: 0, payment_speed_rating: 0, communication_rating: 0 });
-      setReviews((reviewsData as any) || []);
+      setStats(statsData || { total_bids: 0, won_auctions: 0, avg_rating: 0, reliability_score: 0, payment_speed_rating: 0, communication_rating: 0 });
+      setReviews(enrichedReviews);
       setBadges(badgesData || []);
     } catch (error) {
       console.error('Error fetching data:', error);

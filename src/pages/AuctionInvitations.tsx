@@ -14,7 +14,7 @@ interface Invitation {
   id: string;
   auction_id: string;
   status: string;
-  sent_at: string;
+  created_at: string;
   listing?: {
     id: string;
     title: string;
@@ -47,27 +47,27 @@ export default function AuctionInvitations() {
       }
 
       const { data: incomingData } = await supabase
-        .from('auction_invitations' as any)
+        .from('auction_invitations')
         .select(`
           *,
           auctions(listing_id, listings(id, title, images)),
           profiles(full_name)
         `)
         .eq('invitee_id', user.id)
-        .order('sent_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       const { data: sentData } = await supabase
-        .from('auction_invitations' as any)
+        .from('auction_invitations')
         .select(`
           *,
           auctions(listing_id, listings(id, title, images)),
           profiles(full_name)
         `)
         .eq('inviter_id', user.id)
-        .order('sent_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      setIncoming((incomingData as any) || []);
-      setSent((sentData as any) || []);
+      setIncoming(incomingData || []);
+      setSent(sentData || []);
     } catch (error) {
       console.error('Error fetching invitations:', error);
     } finally {
@@ -141,7 +141,7 @@ export default function AuctionInvitations() {
                  invitation.status === 'accepted' ? 'مقبولة' : 'مرفوضة'}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(invitation.sent_at), { addSuffix: true, locale: ar })}
+                {formatDistanceToNow(new Date(invitation.created_at), { addSuffix: true, locale: ar })}
               </span>
             </div>
 

@@ -49,9 +49,9 @@ export const BidderReviewForm = ({ auctionId, bidderId, bidderName, onSubmit }: 
       ];
 
       for (const review of reviews) {
-        const { error } = await supabase
-          .from('bidder_reviews' as any)
-          .insert({
+    const { error } = await supabase
+      .from('bidder_reviews')
+      .insert({
             auction_id: auctionId,
             reviewer_id: user.id,
             bidder_id: bidderId,
