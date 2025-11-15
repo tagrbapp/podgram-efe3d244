@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 
 const mainItems = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
@@ -46,6 +47,7 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingReportsCount, setPendingReportsCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const isActive = (path: string) => currentPath === path;
 
@@ -56,6 +58,8 @@ export function AppSidebar() {
   const checkAdminStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    setCurrentUserId(user.id);
 
     const { data: roles } = await supabase
       .from("user_roles")
@@ -95,13 +99,16 @@ export function AppSidebar() {
       <SidebarContent className="bg-card border-l">
         {/* Logo */}
         <div className="p-4 border-b transition-all duration-300">
-          <div className="flex items-center gap-3">
-            <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain flex-shrink-0 transition-transform duration-300 hover:scale-110" />
-            {state !== "collapsed" && (
-              <span className="text-xl font-bold text-qultura-blue animate-fade-in">
-                Podgram
-              </span>
-            )}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain flex-shrink-0 transition-transform duration-300 hover:scale-110" />
+              {state !== "collapsed" && (
+                <span className="text-xl font-bold text-qultura-blue animate-fade-in">
+                  Podgram
+                </span>
+              )}
+            </div>
+            {state !== "collapsed" && <NotificationsDropdown userId={currentUserId} />}
           </div>
         </div>
 

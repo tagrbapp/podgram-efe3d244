@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, ShoppingCart, Heart } from "lucide-react";
-import { Notifications } from "@/components/Notifications";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
@@ -146,7 +146,7 @@ const Navbar = () => {
                 <ShoppingCart className="h-5 w-5 text-gray-600" />
               </Button>
 
-              <Notifications />
+              <NotificationsDropdown userId={user?.id || null} />
 
               <Link to="/favorites">
                 <Button variant="ghost" size="icon" className="hover:bg-gray-100 transition-smooth">
