@@ -23,6 +23,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { announcementTemplates, AnnouncementTemplate } from "@/lib/announcementTemplates";
+import { Sparkles } from "lucide-react";
 
 interface Announcement {
   id: string;
@@ -56,6 +58,7 @@ const DashboardAnnouncements = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [priority, setPriority] = useState(0);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -124,10 +127,21 @@ const DashboardAnnouncements = () => {
       setStartDate(announcement.start_date ? announcement.start_date.split("T")[0] : "");
       setEndDate(announcement.end_date ? announcement.end_date.split("T")[0] : "");
       setPriority(announcement.priority);
+      setShowTemplates(false);
     } else {
       resetForm();
+      setShowTemplates(true);
     }
     setIsDialogOpen(true);
+  };
+
+  const handleSelectTemplate = (template: AnnouncementTemplate) => {
+    setTitle(template.title);
+    setDescription(template.descriptionText);
+    setButtonText(template.buttonText);
+    setPriority(template.priority);
+    setShowTemplates(false);
+    toast.success("تم تطبيق القالب بنجاح");
   };
 
   const handleSave = async () => {
@@ -368,7 +382,53 @@ const DashboardAnnouncements = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          {showTemplates ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-lg">اختر قالباً جاهزاً</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTemplates(false)}
+                >
+                  أو ابدأ من الصفر
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
+                {announcementTemplates.map((template) => (
+                  <Card
+                    key={template.id}
+                    className="p-4 cursor-pointer hover:border-primary transition-colors"
+                    onClick={() => handleSelectTemplate(template)}
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{template.icon}</span>
+                        <h4 className="font-semibold">{template.name}</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {template.description}
+                      </p>
+                      <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
+                        <p className="truncate">"{template.title}"</p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {!editingId && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowTemplates(true)}
+                >
+                  <Sparkles className="h-4 w-4 ml-2" />
+                  اختر من القوالب الجاهزة
+                </Button>
+              )}
             <div>
               <Label htmlFor="title">عنوان الإعلان *</Label>
               <Input
@@ -463,7 +523,8 @@ const DashboardAnnouncements = () => {
               />
               <Label htmlFor="isActive">نشط</Label>
             </div>
-          </div>
+            </div>
+          )}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
