@@ -28,6 +28,7 @@ import DashboardAuctions from "./pages/DashboardAuctions";
 import DashboardAuctionAnalytics from "./pages/DashboardAuctionAnalytics";
 import DashboardBidderProfile from "./pages/DashboardBidderProfile";
 import AuctionInvitations from "./pages/AuctionInvitations";
+import TestNotifications from "./pages/TestNotifications";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/test-notifications" element={<TestNotifications />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/listing/:id" element={<ListingDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
