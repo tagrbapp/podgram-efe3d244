@@ -1,4 +1,4 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +39,7 @@ const settingsItems = [
 
 const adminItems = [
   { title: "إدارة البلاغات", url: "/dashboard/reports/admin", icon: Shield },
+  { title: "إدارة الإعلانات", url: "/dashboard/announcements", icon: Megaphone },
 ];
 
 export function AppSidebar() {

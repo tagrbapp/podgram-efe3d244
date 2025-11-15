@@ -29,6 +29,7 @@ import DashboardAuctionAnalytics from "./pages/DashboardAuctionAnalytics";
 import DashboardBidderProfile from "./pages/DashboardBidderProfile";
 import AuctionInvitations from "./pages/AuctionInvitations";
 import TestNotifications from "./pages/TestNotifications";
+import DashboardAnnouncements from "./pages/DashboardAnnouncements";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/dashboard/bidder-profile" element={<DashboardBidderProfile />} />
           <Route path="/auction-invitations" element={<AuctionInvitations />} />
           <Route path="/dashboard/admin" element={<DashboardAdmin />} />
+          <Route path="/dashboard/announcements" element={<DashboardAnnouncements />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
