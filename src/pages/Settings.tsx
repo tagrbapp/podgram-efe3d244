@@ -80,10 +80,8 @@ const Settings = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
-        
-        <div className="flex-1">
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <div className="flex-1 order-2">
           <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
             <SidebarTrigger />
             <h1 className="text-2xl font-bold mr-4">الإعدادات</h1>
@@ -163,6 +161,10 @@ const Settings = () => {
               </Card>
             </div>
           </main>
+        </div>
+        
+        <div className="order-1">
+          <AppSidebar />
         </div>
       </div>
     </SidebarProvider>
