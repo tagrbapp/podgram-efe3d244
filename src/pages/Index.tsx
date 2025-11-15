@@ -254,6 +254,7 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredListings.map((listing) => (
                 <ListingCard
+                  id={listing.id}
                   key={listing.id}
                   title={listing.title}
                   price={listing.price.toLocaleString("ar-SA")}
