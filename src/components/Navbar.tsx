@@ -101,6 +101,9 @@ const Navbar = () => {
               <Link to="/about" className="text-gray-600 hover:text-qultura-blue transition-smooth">
                 عن الشركة
               </Link>
+              <Link to="/auctions" className="text-gray-600 hover:text-qultura-blue transition-smooth font-semibold">
+                المزادات المباشرة 🔥
+              </Link>
               <Link to="/delivery" className="text-gray-600 hover:text-qultura-blue transition-smooth">
                 التوصيل
               </Link>
