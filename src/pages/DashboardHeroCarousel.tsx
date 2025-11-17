@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Upload, Image as ImageIcon, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, Image as ImageIcon, Eye, ExternalLink, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BrandLogos from "@/components/BrandLogos";
 
@@ -28,6 +28,7 @@ interface CarouselSlide {
 
 export default function DashboardHeroCarousel() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [editingSlide, setEditingSlide] = useState<CarouselSlide | null>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -39,6 +40,7 @@ export default function DashboardHeroCarousel() {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const queryClient = useQueryClient();
 
@@ -199,6 +201,13 @@ export default function DashboardHeroCarousel() {
     }
   };
 
+  const handleRefreshPreview = () => {
+    if (iframeRef.current) {
+      iframeRef.current.src = iframeRef.current.src;
+      toast.success("تم تحديث المعاينة");
+    }
+  };
+
   if (isLoading) {
     return <div className="p-8">جاري التحميل...</div>;
   }
@@ -207,14 +216,56 @@ export default function DashboardHeroCarousel() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">إدارة شرائح الـ Hero</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setEditingSlide(null)}>
-              <Plus className="w-4 h-4 mr-2" />
-              إضافة شريحة جديدة
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="flex gap-2">
+          <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Eye className="w-4 h-4 mr-2" />
+                معاينة مباشرة
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] w-full h-[90vh] p-0">
+              <DialogHeader className="p-4 border-b">
+                <div className="flex items-center justify-between">
+                  <DialogTitle>معاينة مباشرة للصفحة الرئيسية</DialogTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleRefreshPreview}
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      تحديث المعاينة
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => window.open("/", "_blank")}
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      فتح في نافذة جديدة
+                    </Button>
+                  </div>
+                </div>
+              </DialogHeader>
+              <div className="w-full h-[calc(90vh-80px)]">
+                <iframe
+                  ref={iframeRef}
+                  src="/"
+                  className="w-full h-full border-0"
+                  title="Live Preview"
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setEditingSlide(null)}>
+                <Plus className="w-4 h-4 mr-2" />
+                إضافة شريحة جديدة
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingSlide ? "تعديل الشريحة" : "إضافة شريحة جديدة"}
@@ -379,6 +430,7 @@ export default function DashboardHeroCarousel() {
             </Tabs>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
