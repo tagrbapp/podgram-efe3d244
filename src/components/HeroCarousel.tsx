@@ -1,38 +1,40 @@
 import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import BrandLogos from "./BrandLogos";
+import { supabase } from "@/integrations/supabase/client";
 import heroGreenBanner from "@/assets/hero-green-banner.jpg";
 
-const slides = [
-  {
-    id: 1,
-    title: "Largest selection of",
-    subtitle: "luxury brands",
-    description: "أكثر من 249 علامة فاخرة على المنصة",
-    bgColor: "from-[hsl(var(--qultura-green))] to-[hsl(159,58%,47%)]",
-  },
-  {
-    id: 2,
-    title: "Exclusive collection of",
-    subtitle: "designer items",
-    description: "مجموعة حصرية من العلامات الفاخرة",
-    bgColor: "from-[hsl(var(--qultura-blue))] to-[hsl(219,78%,46%)]",
-  },
-  {
-    id: 3,
-    title: "Premium quality",
-    subtitle: "authentic luxury",
-    description: "جودة ممتازة وأصالة مضمونة",
-    bgColor: "from-[hsl(25,95%,58%)] to-[hsl(25,95%,48%)]",
-  },
-];
+interface CarouselSlide {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  image_url: string | null;
+  bg_color: string;
+  display_order: number;
+}
 
 export default function HeroCarousel() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isAutoplayActive, setIsAutoplayActive] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+
+  const { data: slides = [], isLoading } = useQuery({
+    queryKey: ["carousel-slides"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("carousel_slides")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order");
+
+      if (error) throw error;
+      return data as CarouselSlide[];
+    },
+  });
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -76,6 +78,16 @@ export default function HeroCarousel() {
     setIsAutoplayActive((prev) => !prev);
   }, []);
 
+  if (isLoading || slides.length === 0) {
+    return (
+      <div className="relative overflow-hidden rounded-3xl h-[500px] bg-gradient-to-br from-[hsl(var(--qultura-green))] to-[hsl(159,58%,47%)] animate-pulse">
+        <div className="flex items-center justify-center h-full">
+          <p className="text-white text-lg">جاري التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       className="relative overflow-hidden rounded-3xl" 
@@ -86,10 +98,10 @@ export default function HeroCarousel() {
       <div className="flex">
         {slides.map((slide) => (
           <div key={slide.id} className="flex-[0_0_100%] min-w-0">
-            <div className={`relative overflow-hidden h-[500px] bg-gradient-to-br ${slide.bgColor}`}>
+            <div className={`relative overflow-hidden h-[500px] bg-gradient-to-br ${slide.bg_color}`}>
               <img
-                src={heroGreenBanner}
-                alt="Luxury Brands"
+                src={slide.image_url || heroGreenBanner}
+                alt={slide.title}
                 className="absolute inset-0 w-full h-full object-cover opacity-10"
               />
               <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8 animate-fade-in">
