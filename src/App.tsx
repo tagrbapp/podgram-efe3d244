@@ -30,6 +30,7 @@ import DashboardBidderProfile from "./pages/DashboardBidderProfile";
 import AuctionInvitations from "./pages/AuctionInvitations";
 import TestNotifications from "./pages/TestNotifications";
 import DashboardAnnouncements from "./pages/DashboardAnnouncements";
+import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
           <Route path="/auction-invitations" element={<AuctionInvitations />} />
           <Route path="/dashboard/admin" element={<DashboardAdmin />} />
           <Route path="/dashboard/announcements" element={<DashboardAnnouncements />} />
+          <Route path="/dashboard/hero-carousel" element={<DashboardHeroCarousel />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
