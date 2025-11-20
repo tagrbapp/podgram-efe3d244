@@ -32,6 +32,7 @@ import AuctionInvitations from "./pages/AuctionInvitations";
 import TestNotifications from "./pages/TestNotifications";
 import DashboardAnnouncements from "./pages/DashboardAnnouncements";
 import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
+import DashboardHomepage from "./pages/DashboardHomepage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -72,6 +73,7 @@ const App = () => (
           <Route path="/dashboard/user-approvals" element={<DashboardUserApprovals />} />
           <Route path="/dashboard/announcements" element={<DashboardAnnouncements />} />
           <Route path="/dashboard/hero-carousel" element={<DashboardHeroCarousel />} />
+          <Route path="/dashboard/homepage" element={<DashboardHomepage />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
