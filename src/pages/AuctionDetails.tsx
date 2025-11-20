@@ -18,6 +18,8 @@ import { useAuctionRealtime } from "@/hooks/useAuctionRealtime";
 import AuctionAlertSettings from "@/components/AuctionAlertSettings";
 import SimilarAuctions from "@/components/SimilarAuctions";
 import AuctionSellerSidebar from "@/components/AuctionSellerSidebar";
+import { BidderReviewForm } from "@/components/BidderReviewForm";
+import { AuctionReportDialog } from "@/components/AuctionReportDialog";
 
 interface Auction {
   id: string;
@@ -59,6 +61,8 @@ const AuctionDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [userHasBid, setUserHasBid] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -96,7 +100,15 @@ const AuctionDetails = () => {
         .eq("auction_id", id)
         .order("created_at", { ascending: false });
 
-      if (bidsData) setBids(bidsData);
+      if (bidsData) {
+        setBids(bidsData);
+        // Check if current user has bid
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const hasBid = bidsData.some(bid => bid.user_id === user.id);
+          setUserHasBid(hasBid);
+        }
+      }
     } catch (error) {
       console.error("Error fetching auction:", error);
       toast.error("فشل تحميل تفاصيل المزاد");
@@ -146,7 +158,7 @@ const AuctionDetails = () => {
       <Navbar />
       
       <div className="container mx-auto px-4 py-8" dir="rtl">
-        {/* Enhanced Header with Back button and Share button */}
+        {/* Enhanced Header with Back button, Share button, and Report */}
         <div className="flex items-center justify-between mb-8 bg-card/50 backdrop-blur-sm rounded-2xl p-4 border border-border/50">
           <Button
             variant="ghost"
@@ -156,10 +168,18 @@ const AuctionDetails = () => {
             <ArrowLeft className="h-4 w-4" />
             العودة للمزادات
           </Button>
-          <AuctionShareButtons 
-            auctionId={auction.id} 
-            title={auction.title}
-          />
+          <div className="flex items-center gap-3">
+            {!isOwner && currentUser && (
+              <AuctionReportDialog 
+                auctionId={auction.id}
+                sellerId={auction.user_id}
+              />
+            )}
+            <AuctionShareButtons 
+              auctionId={auction.id} 
+              title={auction.title}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -323,6 +343,39 @@ const AuctionDetails = () => {
                 auctionId={auction.id}
                 currentUserId={currentUser?.id}
               />
+            )}
+
+            {/* Review Form - Only for bidders after auction ends */}
+            {!isActive && !isOwner && userHasBid && auction.highest_bidder_id && currentUser && (
+              <Card className="p-6 bg-gradient-to-br from-card to-accent/5 border-2 border-border/50">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold">تقييم المزاد</h3>
+                    <p className="text-sm text-muted-foreground">
+                      ساعد الآخرين من خلال تقييم تجربتك
+                    </p>
+                  </div>
+                  {!showReviewForm && (
+                    <Button 
+                      onClick={() => setShowReviewForm(true)}
+                      variant="outline"
+                    >
+                      إضافة تقييم
+                    </Button>
+                  )}
+                </div>
+                {showReviewForm && (
+                  <BidderReviewForm
+                    auctionId={auction.id}
+                    bidderId={auction.highest_bidder_id}
+                    bidderName="الفائز بالمزاد"
+                    onSubmit={() => {
+                      setShowReviewForm(false);
+                      toast.success("شكراً لتقييمك!");
+                    }}
+                  />
+                )}
+              </Card>
             )}
 
             {/* Similar Auctions */}
