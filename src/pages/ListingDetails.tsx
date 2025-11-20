@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -385,10 +387,27 @@ const ListingDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={`${listing.title} - ${listing.category?.name || 'إعلان'} | Podgram`}
+        description={listing.description.slice(0, 160)}
+        keywords={`${listing.title}, ${listing.category?.name || ''}, ${listing.location}, إعلانات, منتجات فاخرة, بيع, شراء`}
+        image={listing.images?.[0]}
+        type="product"
+      />
       <Navbar />
       
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Breadcrumb */}
+        {/* Breadcrumbs */}
+        <Breadcrumbs 
+          items={[
+            { label: "الرئيسية", href: "/" },
+            { label: "الكتالوج", href: "/catalog" },
+            ...(listing.category ? [{ label: listing.category.name, href: `/catalog?category=${listing.category_id}` }] : []),
+            { label: listing.title }
+          ]}
+        />
+        
+        {/* Old Back Button - can be removed or kept for extra navigation */}
         <Button
           variant="ghost"
           onClick={() => navigate("/")}

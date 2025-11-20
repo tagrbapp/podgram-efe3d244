@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import SimilarAuctions from "@/components/SimilarAuctions";
 import AuctionSellerSidebar from "@/components/AuctionSellerSidebar";
 import { BidderReviewForm } from "@/components/BidderReviewForm";
 import { AuctionReportDialog } from "@/components/AuctionReportDialog";
+import SEO from "@/components/SEO";
 
 interface Auction {
   id: string;
@@ -155,9 +157,25 @@ const AuctionDetails = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={`${auction.title} - مزاد مباشر | Podgram`}
+        description={auction.description || `شارك في مزاد ${auction.title}. السعر الحالي: ${auction.current_bid || auction.starting_price} ريال. مزادات المنتجات الفاخرة.`}
+        keywords={`مزاد ${auction.title}, ${category?.name || ''}, مزادات, منتجات فاخرة`}
+        image={auction.images?.[0]}
+        type="product"
+      />
       <Navbar />
       
       <div className="container mx-auto px-4 py-8" dir="rtl">
+        {/* Breadcrumbs */}
+        <Breadcrumbs 
+          items={[
+            { label: "الرئيسية", href: "/" },
+            { label: "المزادات", href: "/auctions" },
+            { label: auction.title }
+          ]}
+        />
+        
         {/* Enhanced Header with Back button, Share button, and Report */}
         <div className="flex items-center justify-between mb-8 bg-card/50 backdrop-blur-sm rounded-2xl p-4 border border-border/50">
           <Button
