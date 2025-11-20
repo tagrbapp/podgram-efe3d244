@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Bell, DollarSign, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { convertArabicToEnglishNumbers } from '@/lib/utils';
 
 interface AuctionAlertFormProps {
   auctionId: string;
@@ -96,11 +97,11 @@ export const AuctionAlertForm = ({ auctionId, currentBid, onSuccess }: AuctionAl
           <div className="space-y-2">
             <Label>السعر المستهدف (ريال)</Label>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={targetPrice}
-              onChange={(e) => setTargetPrice(e.target.value)}
+              onChange={(e) => setTargetPrice(convertArabicToEnglishNumbers(e.target.value))}
               placeholder={currentBid ? `أعلى من ${currentBid}` : 'أدخل السعر'}
-              min={currentBid || 0}
               dir="rtl"
             />
             <p className="text-xs text-muted-foreground">
@@ -111,11 +112,11 @@ export const AuctionAlertForm = ({ auctionId, currentBid, onSuccess }: AuctionAl
           <div className="space-y-2">
             <Label>الوقت قبل الانتهاء (دقيقة)</Label>
             <Input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={timeBeforeEnd}
-              onChange={(e) => setTimeBeforeEnd(e.target.value)}
+              onChange={(e) => setTimeBeforeEnd(convertArabicToEnglishNumbers(e.target.value))}
               placeholder="30"
-              min="1"
               dir="rtl"
             />
             <p className="text-xs text-muted-foreground">

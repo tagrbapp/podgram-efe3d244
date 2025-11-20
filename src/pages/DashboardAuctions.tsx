@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Gavel, TrendingUp, Timer, DollarSign, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { convertArabicToEnglishNumbers } from "@/lib/utils";
 
 interface Listing {
   id: string;
@@ -297,11 +298,11 @@ const DashboardAuctions = () => {
                     <Label htmlFor="startingPrice">السعر الابتدائي (ريال)</Label>
                     <Input
                       id="startingPrice"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       value={startingPrice}
-                      onChange={(e) => setStartingPrice(e.target.value)}
+                      onChange={(e) => setStartingPrice(convertArabicToEnglishNumbers(e.target.value))}
                       placeholder="1000"
-                      min="1"
                       required
                     />
                   </div>
@@ -310,11 +311,11 @@ const DashboardAuctions = () => {
                     <Label htmlFor="bidIncrement">الحد الأدنى للزيادة (ريال)</Label>
                     <Input
                       id="bidIncrement"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       value={bidIncrement}
-                      onChange={(e) => setBidIncrement(e.target.value)}
+                      onChange={(e) => setBidIncrement(convertArabicToEnglishNumbers(e.target.value))}
                       placeholder="100"
-                      min="1"
                       required
                     />
                   </div>
@@ -323,11 +324,11 @@ const DashboardAuctions = () => {
                     <Label htmlFor="reservePrice">السعر المحجوز (اختياري)</Label>
                     <Input
                       id="reservePrice"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       value={reservePrice}
-                      onChange={(e) => setReservePrice(e.target.value)}
+                      onChange={(e) => setReservePrice(convertArabicToEnglishNumbers(e.target.value))}
                       placeholder="5000"
-                      min="1"
                     />
                   </div>
 
