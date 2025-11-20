@@ -96,24 +96,8 @@ const Navbar = () => {
               </span>
             </Link>
 
-            {/* Desktop Navigation Links */}
+            {/* Desktop Navigation - Catalog Button Only */}
             <div className="hidden lg:flex items-center gap-4 text-sm">
-              <Link to="/about" className="text-gray-600 hover:text-qultura-blue transition-smooth">
-                عن الشركة
-              </Link>
-              <Link to="/auctions" className="text-gray-600 hover:text-qultura-blue transition-smooth font-semibold">
-                المزادات المباشرة 🔥
-              </Link>
-              <Link to="/delivery" className="text-gray-600 hover:text-qultura-blue transition-smooth">
-                التوصيل
-              </Link>
-              <Link to="/pickup" className="text-gray-600 hover:text-qultura-blue transition-smooth">
-                الاستلام
-              </Link>
-              <Link to="/trade-in" className="text-gray-600 hover:text-qultura-blue transition-smooth">
-                استبدال
-              </Link>
-
               <Button
                 className="bg-qultura-blue hover:bg-qultura-blue/90 text-white px-6 h-12"
                 asChild
