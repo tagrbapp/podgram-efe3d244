@@ -285,6 +285,46 @@ const AuctionDetails = () => {
               />
             </Card>
 
+            {/* Enhanced Auction Info Card */}
+            <Card className="p-6 bg-gradient-to-br from-card to-muted/20 border-2 border-border/50">
+              <h3 className="font-bold mb-4 flex items-center gap-2 text-lg">
+                <Calendar className="h-5 w-5 text-primary" />
+                معلومات إضافية
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <span className="text-muted-foreground">رقم المزاد</span>
+                  <span className="font-mono font-bold">{auction.id.slice(0, 8)}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <span className="text-muted-foreground">تاريخ البدء</span>
+                  <span className="font-medium">
+                    {format(new Date(auction.created_at), "PP", { locale: ar })}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <span className="text-muted-foreground">تاريخ الانتهاء</span>
+                  <span className="font-medium">
+                    {format(new Date(auction.end_time), "PP", { locale: ar })}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <span className="text-muted-foreground">الحالة</span>
+                  <Badge variant={isActive ? "default" : "secondary"} className="font-medium">
+                    {isActive ? "نشط" : "منتهي"}
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+
+            {/* Alert Settings */}
+            {isActive && (
+              <AuctionAlertSettings
+                auctionId={auction.id}
+                currentUserId={currentUser?.id}
+              />
+            )}
+
             {/* Similar Auctions */}
             <SimilarAuctions
               categoryId={auction.category_id}
@@ -382,46 +422,6 @@ const AuctionDetails = () => {
                 )}
               </div>
             </Card>
-
-            {/* Enhanced Auction Info Card */}
-            <Card className="p-6 bg-gradient-to-br from-card to-muted/20 border-2 border-border/50">
-              <h3 className="font-bold mb-4 flex items-center gap-2 text-lg">
-                <Calendar className="h-5 w-5 text-primary" />
-                معلومات إضافية
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <span className="text-muted-foreground">رقم المزاد</span>
-                  <span className="font-mono font-bold">{auction.id.slice(0, 8)}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <span className="text-muted-foreground">تاريخ البدء</span>
-                  <span className="font-medium">
-                    {format(new Date(auction.created_at), "PP", { locale: ar })}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <span className="text-muted-foreground">تاريخ الانتهاء</span>
-                  <span className="font-medium">
-                    {format(new Date(auction.end_time), "PP", { locale: ar })}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                  <span className="text-muted-foreground">الحالة</span>
-                  <Badge variant={isActive ? "default" : "secondary"} className="font-medium">
-                    {isActive ? "نشط" : "منتهي"}
-                  </Badge>
-                </div>
-              </div>
-            </Card>
-
-            {/* Alert Settings */}
-            {isActive && (
-              <AuctionAlertSettings
-                auctionId={auction.id}
-                currentUserId={currentUser?.id}
-              />
-            )}
           </div>
         </div>
       </div>
