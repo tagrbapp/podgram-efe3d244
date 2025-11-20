@@ -73,5 +73,13 @@
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
+  
+  <!-- FAQ -->
+  <url>
+    <loc>https://podgram.lovable.app/faq</loc>
+    <lastmod>2025-11-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 
 </urlset>
