@@ -34,6 +34,7 @@ import DashboardAnnouncements from "./pages/DashboardAnnouncements";
 import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/add-listing" element={<AddListing />} />
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/auctions" element={<Auctions />} />

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { signIn, signUp, getSession } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import podgramLogo from "@/assets/podgram-logo.png";
@@ -97,10 +98,22 @@ const Auth = () => {
           toast.error("خطأ في إنشاء الحساب", { description: error.message });
         }
       } else {
-        toast.success("تم إنشاء الحساب بنجاح!", {
-          description: "جاري تحويلك إلى لوحة التحكم..."
-        });
-        navigate("/dashboard");
+        // Check if email confirmation is enabled
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          // Email confirmation required - redirect to verify page
+          toast.success("تم إنشاء الحساب!", {
+            description: "تحقق من بريدك الإلكتروني لتفعيل حسابك"
+          });
+          navigate("/verify-email", { state: { email: validation.email } });
+        } else {
+          // Auto-confirmed - proceed to dashboard
+          toast.success("تم إنشاء الحساب بنجاح!", {
+            description: "جاري تحويلك إلى لوحة التحكم..."
+          });
+          navigate("/dashboard");
+        }
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
