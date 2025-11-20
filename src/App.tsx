@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Catalog from "./pages/Catalog";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
+import FAQ from "./pages/FAQ";
 import Auctions from "./pages/Auctions";
 import AuctionDetails from "./pages/AuctionDetails";
 import DashboardListings from "./pages/DashboardListings";
@@ -60,6 +61,7 @@ const App = () => (
           <Route path="/auction/:id" element={<AuctionDetails />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/listings" element={<DashboardListings />} />
           <Route path="/dashboard/analytics" element={<DashboardAnalytics />} />

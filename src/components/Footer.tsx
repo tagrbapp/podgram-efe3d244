@@ -100,6 +100,11 @@ const Footer = () => {
             <h3 className="text-white font-semibold text-lg mb-4">الدعم والمساعدة</h3>
             <ul className="space-y-3">
               <li>
+                <Link to="/faq" className="hover:text-qultura-blue transition-smooth text-sm">
+                  الأسئلة الشائعة
+                </Link>
+              </li>
+              <li>
                 <Link to="/help" className="hover:text-qultura-blue transition-smooth text-sm">
                   مركز المساعدة
                 </Link>
