@@ -15,37 +15,38 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { convertArabicToEnglishNumbers } from "@/lib/utils";
 
-interface Listing {
+interface Category {
   id: string;
-  title: string;
-  price: number;
-  images: string[];
+  name: string;
+  icon: string;
 }
 
 interface Auction {
   id: string;
-  listing_id: string;
+  listing_id: string | null;
+  category_id: string | null;
+  title: string;
+  description: string | null;
+  images: string[] | null;
   starting_price: number;
   current_bid: number | null;
   bid_increment: number;
   end_time: string;
   status: string;
-  listings: {
-    title: string;
-    images: string[];
-  };
   bids_count: number;
 }
 
 const DashboardAuctions = () => {
   const navigate = useNavigate();
-  const [activeListings, setActiveListings] = useState<Listing[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
   // Form state
-  const [selectedListing, setSelectedListing] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [auctionTitle, setAuctionTitle] = useState<string>("");
+  const [auctionDescription, setAuctionDescription] = useState<string>("");
   const [startingPrice, setStartingPrice] = useState<string>("");
   const [bidIncrement, setBidIncrement] = useState<string>("100");
   const [reservePrice, setReservePrice] = useState<string>("");
@@ -63,21 +64,16 @@ const DashboardAuctions = () => {
         return;
       }
 
-      // Fetch active listings without auctions
-      const { data: listingsData } = await supabase
-        .from('listings')
-        .select('id, title, price, images')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .not('id', 'in', `(SELECT listing_id FROM auctions WHERE status = 'active')`);
+      // Fetch categories
+      const { data: categoriesData } = await supabase
+        .from('categories')
+        .select('id, name, icon')
+        .order('name');
 
       // Fetch user's auctions
       const { data: auctionsData } = await supabase
         .from('auctions')
-        .select(`
-          *,
-          listings:listings(title, images)
-        `)
+        .select('*')
         .in('listing_id', (
           await supabase
             .from('listings')
@@ -104,7 +100,7 @@ const DashboardAuctions = () => {
         setAuctions(auctionsWithCounts);
       }
 
-      setActiveListings(listingsData || []);
+      setCategories(categoriesData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("فشل تحميل البيانات");
@@ -116,7 +112,7 @@ const DashboardAuctions = () => {
   const handleCreateAuction = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedListing || !startingPrice || !endTime) {
+    if (!selectedCategory || !auctionTitle || !startingPrice || !endTime) {
       toast.error("الرجاء ملء جميع الحقول المطلوبة");
       return;
     }
@@ -131,7 +127,9 @@ const DashboardAuctions = () => {
 
     try {
       const { error } = await supabase.from('auctions').insert({
-        listing_id: selectedListing,
+        category_id: selectedCategory,
+        title: auctionTitle,
+        description: auctionDescription || null,
         starting_price: parseFloat(startingPrice),
         bid_increment: parseFloat(bidIncrement),
         reserve_price: reservePrice ? parseFloat(reservePrice) : null,
@@ -144,7 +142,9 @@ const DashboardAuctions = () => {
       toast.success("تم إنشاء المزاد بنجاح! 🎉");
       
       // Reset form
-      setSelectedListing("");
+      setSelectedCategory("");
+      setAuctionTitle("");
+      setAuctionDescription("");
       setStartingPrice("");
       setBidIncrement("100");
       setReservePrice("");
@@ -279,19 +279,31 @@ const DashboardAuctions = () => {
               <form onSubmit={handleCreateAuction} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="listing">اختر المنتج</Label>
-                    <Select value={selectedListing} onValueChange={setSelectedListing}>
+                    <Label htmlFor="category">تحديد الفئة *</Label>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر منتج من إعلاناتك" />
+                        <SelectValue placeholder="اختر الفئة" />
                       </SelectTrigger>
                       <SelectContent>
-                        {activeListings.map((listing) => (
-                          <SelectItem key={listing.id} value={listing.id}>
-                            {listing.title}
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="auctionTitle">عنوان المزاد *</Label>
+                    <Input
+                      id="auctionTitle"
+                      value={auctionTitle}
+                      onChange={(e) => setAuctionTitle(e.target.value)}
+                      placeholder="مثال: ساعة رولكس نادرة"
+                      className="text-right"
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -333,6 +345,17 @@ const DashboardAuctions = () => {
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="auctionDescription">وصف المزاد</Label>
+                    <Input
+                      id="auctionDescription"
+                      value={auctionDescription}
+                      onChange={(e) => setAuctionDescription(e.target.value)}
+                      placeholder="أضف وصفاً تفصيلياً للمزاد"
+                      className="text-right"
+                    />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="endTime">تاريخ ووقت النهاية</Label>
                     <Input
                       id="endTime"
@@ -346,7 +369,7 @@ const DashboardAuctions = () => {
 
                 <Button
                   type="submit"
-                  disabled={isCreating || activeListings.length === 0}
+                  disabled={isCreating || categories.length === 0}
                   className="w-full md:w-auto"
                 >
                   <Plus className="h-4 w-4 ml-2" />
@@ -392,14 +415,14 @@ const DashboardAuctions = () => {
                         <TableRow key={auction.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              {auction.listings.images && auction.listings.images[0] && (
+                              {auction.images && auction.images[0] && (
                                 <img
-                                  src={auction.listings.images[0]}
-                                  alt={auction.listings.title}
+                                  src={auction.images[0]}
+                                  alt={auction.title}
                                   className="w-12 h-12 object-cover rounded-lg"
                                 />
                               )}
-                              <span className="font-medium">{auction.listings.title}</span>
+                              <span className="font-medium">{auction.title}</span>
                             </div>
                           </TableCell>
                           <TableCell>{auction.starting_price.toLocaleString("ar-SA")} ريال</TableCell>
@@ -424,13 +447,15 @@ const DashboardAuctions = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => navigate(`/listing/${auction.listing_id}`)}
-                              >
-                                عرض
-                              </Button>
+                              {auction.listing_id && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => navigate(`/listing/${auction.listing_id}`)}
+                                >
+                                  عرض
+                                </Button>
+                              )}
                               {auction.status === 'active' && (
                                 <Button
                                   size="sm"
