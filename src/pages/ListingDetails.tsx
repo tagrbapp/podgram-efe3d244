@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import SEO from "@/components/SEO";
+import ProductSchema from "@/components/ProductSchema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -393,6 +394,21 @@ const ListingDetails = () => {
         keywords={`${listing.title}, ${listing.category?.name || ''}, ${listing.location}, إعلانات, منتجات فاخرة, بيع, شراء`}
         image={listing.images?.[0]}
         type="product"
+      />
+      <ProductSchema 
+        name={listing.title}
+        description={listing.description}
+        image={listing.images}
+        price={listing.price}
+        priceCurrency="SAR"
+        availability="InStock"
+        condition="UsedCondition"
+        category={listing.category?.name}
+        url={`https://podgram.lovable.app/listing/${listing.id}`}
+        seller={listing.profiles ? {
+          name: listing.profiles.full_name,
+          url: `https://podgram.lovable.app/profile/${listing.user_id}`
+        } : undefined}
       />
       <Navbar />
       
