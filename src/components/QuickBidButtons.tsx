@@ -29,7 +29,7 @@ const QuickBidButtons = ({ minBid, bidIncrement, onBidSelect }: QuickBidButtonsP
             <Icon className="h-4 w-4" />
             <span className="text-xs font-medium">{bid.label}</span>
             <span className="text-xs font-bold">
-              {bid.amount.toLocaleString("ar-SA")}
+              {bid.amount.toLocaleString("en-US")}
             </span>
           </Button>
         );

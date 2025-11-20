@@ -239,8 +239,8 @@ const AuctionDetails = () => {
                       <Tag className="h-4 w-4" />
                       <span className="text-sm">السعر الابتدائي</span>
                     </div>
-                    <p className="text-2xl font-bold text-primary">
-                      {auction.starting_price.toLocaleString("ar-SA")} <span className="text-sm">ريال</span>
+                    <p className="text-2xl font-bold text-foreground">
+                      {auction.starting_price.toLocaleString("en-US")} <span className="text-sm">ريال</span>
                     </p>
                   </div>
 
@@ -249,8 +249,8 @@ const AuctionDetails = () => {
                       <TrendingUp className="h-4 w-4" />
                       <span className="text-sm">الحد الأدنى للزيادة</span>
                     </div>
-                    <p className="text-2xl font-bold text-accent">
-                      {auction.bid_increment.toLocaleString("ar-SA")} <span className="text-sm">ريال</span>
+                    <p className="text-2xl font-bold text-foreground">
+                      {auction.bid_increment.toLocaleString("en-US")} <span className="text-sm">ريال</span>
                     </p>
                   </div>
 
@@ -312,10 +312,10 @@ const AuctionDetails = () => {
                     <span className="text-sm text-muted-foreground font-medium">السعر الحالي</span>
                   </div>
                   <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 rounded-2xl p-6 border border-primary/20">
-                    <p className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    <p className="text-5xl font-bold text-foreground">
                       {auction.current_bid
-                        ? auction.current_bid.toLocaleString("ar-SA")
-                        : auction.starting_price.toLocaleString("ar-SA")}
+                        ? auction.current_bid.toLocaleString("en-US")
+                        : auction.starting_price.toLocaleString("en-US")}
                     </p>
                     <p className="text-xl font-bold text-muted-foreground mt-2">ريال</p>
                   </div>
@@ -330,7 +330,7 @@ const AuctionDetails = () => {
                 {auction.reserve_price && (
                   <div className="p-3 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      السعر المحجوز: {auction.reserve_price.toLocaleString("ar-SA")} ريال
+                      السعر المحجوز: {auction.reserve_price.toLocaleString("en-US")} ريال
                     </p>
                   </div>
                 )}

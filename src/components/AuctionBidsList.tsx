@@ -185,7 +185,7 @@ const AuctionBidsList = ({ auctionId, startingPrice, highestBidderId }: AuctionB
                     <div className="bg-muted/50 rounded-lg p-2">
                       <p className="text-xs text-muted-foreground mb-1">السعر السابق</p>
                       <p className="text-sm font-semibold text-foreground">
-                        {(bid.previous_bid || startingPrice).toLocaleString("ar-SA")} ريال
+                        {(bid.previous_bid || startingPrice).toLocaleString("en-US")} ريال
                       </p>
                     </div>
 
@@ -195,14 +195,14 @@ const AuctionBidsList = ({ auctionId, startingPrice, highestBidderId }: AuctionB
                         الزيادة
                       </p>
                       <p className="text-sm font-bold text-green-600 dark:text-green-400">
-                        +{increase.toLocaleString("ar-SA")} ريال
+                        +{increase.toLocaleString("en-US")} ريال
                       </p>
                     </div>
 
                     <div className="bg-primary/10 rounded-lg p-2">
                       <p className="text-xs text-muted-foreground mb-1">المبلغ الجديد</p>
-                      <p className="text-sm font-bold text-primary">
-                        {bid.bid_amount.toLocaleString("ar-SA")} ريال
+                      <p className="text-sm font-bold text-foreground">
+                        {bid.bid_amount.toLocaleString("en-US")} ريال
                       </p>
                     </div>
                   </div>
