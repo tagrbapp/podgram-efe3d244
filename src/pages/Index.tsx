@@ -165,163 +165,246 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main>
-        <section className={`py-12 ${sectionSettings.hero?.background_color || "bg-gray-50"}`}>
-          <div className="container mx-auto px-4">
-            {/* Hero Section */}
-            {sectionVisibility.hero && (
-              <div className="grid lg:grid-cols-2 gap-8 items-center mb-12">
-                <HeroCarousel />
-                <div className="text-center lg:text-right px-8">
-                  <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-                    It is profitable to buy<br/>
-                    <span className="text-foreground">It is profitable to sell</span>
-                  </h1>
-                  <p className="text-xl text-muted-foreground mb-8">
-                    المنصة الأولى لإعادة بيع المنتجات الفاخرة<br/>
-                    مع خدمات ثابتة
-                  </p>
-                  <button className="px-8 py-3 bg-[hsl(var(--qultura-light-blue))] text-[hsl(var(--qultura-blue))] rounded-lg hover:opacity-90 transition-opacity font-medium">
-                    اكتشف المزيد
-                  </button>
+      <main className="overflow-hidden">
+        {/* Hero Section */}
+        {sectionVisibility.hero && (
+          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-muted via-background to-accent/10">
+            <div className="container mx-auto px-4">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                {/* Carousel */}
+                <div className="order-2 lg:order-1 animate-fade-in">
+                  <HeroCarousel />
+                </div>
+
+                {/* Hero Content */}
+                <div className="order-1 lg:order-2 text-center lg:text-right space-y-8 animate-fade-in">
+                  <div className="space-y-4">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
+                      من المربح أن تشتري
+                      <br />
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent">
+                        من المربح أن تبيع
+                      </span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                      المنصة الأولى لإعادة بيع المنتجات الفاخرة
+                      <br />
+                      <span className="text-primary font-semibold">مع خدمات موثوقة ومضمونة</span>
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
+                    <button className="group px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:shadow-elegant transition-all hover:-translate-y-0.5 hover:scale-105">
+                      <span>اكتشف المزيد</span>
+                    </button>
+                    <button className="px-8 py-4 bg-accent text-accent-foreground rounded-xl font-semibold hover:bg-accent/80 transition-all">
+                      <span>تصفح المزادات</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Announcements Section */}
-            {sectionVisibility.announcements && (
-              <div className="mt-12">
-                <AnnouncementBanner />
-              </div>
-            )}
-          </div>
-        </section>
+              {/* Announcements */}
+              {sectionVisibility.announcements && (
+                <div className="mt-16 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  <AnnouncementBanner />
+                </div>
+              )}
+            </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute top-0 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10" />
+          </section>
+        )}
 
         {/* Live Auctions Section */}
         {sectionVisibility.live_auctions && (
-          <section className={`py-12 ${sectionSettings.live_auctions?.background_color || "bg-background"}`}>
+          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-muted/30 to-background">
             <div className="container mx-auto px-4">
-              <div className="text-center mb-8">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <h2 className="text-4xl font-bold text-foreground">المزادات المباشرة</h2>
-                  <Gavel className="w-10 h-10 text-primary" />
+              {/* Section Header */}
+              <div className="text-center mb-12 space-y-4 animate-fade-in">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-full mb-4">
+                  <Gavel className="w-6 h-6 text-primary animate-pulse" />
+                  <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+                    مزادات مباشرة
+                  </span>
                 </div>
-                <p className="text-lg text-muted-foreground">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                  المزادات المباشرة
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                   شارك في المزادات الحية واحصل على أفضل المنتجات الفاخرة بأسعار تنافسية
                 </p>
               </div>
 
+              {/* Tabs */}
               <Tabs defaultValue="active" className="w-full" dir="rtl">
-                <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-                  <TabsTrigger value="active" className="gap-2">
-                    <TrendingUp className="w-4 h-4" />
+                <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-12 h-14 bg-muted/50 backdrop-blur-sm">
+                  <TabsTrigger value="active" className="gap-2 text-base data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    <TrendingUp className="w-5 h-5" />
                     المزادات النشطة
                   </TabsTrigger>
-                  <TabsTrigger value="ended" className="gap-2">
-                    <Gavel className="w-4 h-4" />
+                  <TabsTrigger value="ended" className="gap-2 text-base data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    <Gavel className="w-5 h-5" />
                     المزادات المنتهية
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="active">
+                <TabsContent value="active" className="animate-fade-in">
                   {auctionsLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-96 bg-card rounded-2xl animate-pulse" />
+                        <div key={i} className="h-96 bg-card rounded-3xl animate-pulse shadow-card" />
                       ))}
                     </div>
                   ) : auctions.filter(a => a.status === "active").length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {auctions
                         .filter(a => a.status === "active")
                         .map((auction) => (
-                          <AuctionCard
-                            key={auction.id}
-                            id={auction.id}
-                            listingId={auction.listing_id || ""}
-                            title={auction.title}
-                            currentBid={auction.current_bid}
-                            startingPrice={auction.starting_price}
-                            endTime={auction.end_time}
-                            image={auction.images?.[0] || "/placeholder.svg"}
-                            category={auction.categories?.name || "غير محدد"}
-                            status={auction.status}
-                            totalBids={auction.bid_count}
-                          />
+                          <div key={auction.id} className="animate-scale-in hover-lift">
+                            <AuctionCard
+                              id={auction.id}
+                              listingId={auction.listing_id || ""}
+                              title={auction.title}
+                              currentBid={auction.current_bid}
+                              startingPrice={auction.starting_price}
+                              endTime={auction.end_time}
+                              image={auction.images?.[0] || "/placeholder.svg"}
+                              category={auction.categories?.name || "غير محدد"}
+                              status={auction.status}
+                              totalBids={auction.bid_count}
+                            />
+                          </div>
                         ))}
                     </div>
                   ) : (
-                    <div className="text-center py-16">
-                      <Gavel className="w-24 h-24 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold text-foreground mb-2">
+                    <div className="text-center py-20 animate-fade-in">
+                      <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-muted mb-6">
+                        <Gavel className="w-12 h-12 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground mb-3">
                         لا توجد مزادات نشطة حالياً
                       </h3>
-                      <p className="text-muted-foreground">تابعنا لمعرفة المزادات القادمة</p>
+                      <p className="text-muted-foreground text-lg">تابعنا لمعرفة المزادات القادمة</p>
                     </div>
                   )}
                 </TabsContent>
 
-                <TabsContent value="ended">
+                <TabsContent value="ended" className="animate-fade-in">
                   {auctionsLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-96 bg-card rounded-2xl animate-pulse" />
+                        <div key={i} className="h-96 bg-card rounded-3xl animate-pulse shadow-card" />
                       ))}
                     </div>
                   ) : auctions.filter(a => a.status === "ended").length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {auctions
                         .filter(a => a.status === "ended")
                         .map((auction) => (
-                          <AuctionCard
-                            key={auction.id}
-                            id={auction.id}
-                            listingId={auction.listing_id || ""}
-                            title={auction.title}
-                            currentBid={auction.current_bid}
-                            startingPrice={auction.starting_price}
-                            endTime={auction.end_time}
-                            image={auction.images?.[0] || "/placeholder.svg"}
-                            category={auction.categories?.name || "غير محدد"}
-                            status={auction.status}
-                            totalBids={auction.bid_count}
-                          />
+                          <div key={auction.id} className="animate-scale-in hover-lift">
+                            <AuctionCard
+                              id={auction.id}
+                              listingId={auction.listing_id || ""}
+                              title={auction.title}
+                              currentBid={auction.current_bid}
+                              startingPrice={auction.starting_price}
+                              endTime={auction.end_time}
+                              image={auction.images?.[0] || "/placeholder.svg"}
+                              category={auction.categories?.name || "غير محدد"}
+                              status={auction.status}
+                              totalBids={auction.bid_count}
+                            />
+                          </div>
                         ))}
                     </div>
                   ) : (
-                    <div className="text-center py-16">
-                      <Gavel className="w-24 h-24 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold text-foreground mb-2">
+                    <div className="text-center py-20 animate-fade-in">
+                      <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-muted mb-6">
+                        <Gavel className="w-12 h-12 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground mb-3">
                         لا توجد مزادات منتهية
                       </h3>
-                      <p className="text-muted-foreground">لم تنته أي مزادات بعد</p>
+                      <p className="text-muted-foreground text-lg">لم تنته أي مزادات بعد</p>
                     </div>
                   )}
                 </TabsContent>
               </Tabs>
             </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute top-1/2 left-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-0 right-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl -z-10" />
           </section>
         )}
 
         {/* Featured Listings Section */}
         {sectionVisibility.featured_listings && (
-          <section className={`py-12 ${sectionSettings.featured_listings?.background_color || "bg-gray-50"}`}>
+          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-muted/30 via-background to-muted/30">
             <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold mb-8 text-gray-900">الإعلانات المميزة</h2>
+              {/* Section Header */}
+              <div className="flex items-center justify-between mb-12 animate-fade-in">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-full mb-2">
+                    <TrendingUp className="w-5 h-5 text-secondary" />
+                    <span className="text-sm font-semibold text-secondary uppercase tracking-wider">
+                      مميز
+                    </span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                    الإعلانات المميزة
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    اكتشف أحدث المنتجات الفاخرة المعروضة للبيع
+                  </p>
+                </div>
+                <button className="hidden md:inline-flex px-6 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:shadow-elegant transition-all hover:-translate-y-0.5">
+                  عرض الكل
+                </button>
+              </div>
+
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[...Array(8)].map((_, i) => (<div key={i} className="h-80 bg-white rounded-2xl animate-pulse" />))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="h-80 bg-card rounded-3xl animate-pulse shadow-card" />
+                  ))}
                 </div>
               ) : filteredListings.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {filteredListings.map((listing) => (
-                    <ListingCard key={listing.id} id={listing.id} title={listing.title} price={listing.price} location={listing.location} time={getTimeAgo(listing.created_at)} image={listing.images?.[0] || "/placeholder.svg"} category={listing.category_name || "غير محدد"} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {filteredListings.map((listing, index) => (
+                    <div 
+                      key={listing.id} 
+                      className="animate-scale-in hover-lift"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <ListingCard
+                        id={listing.id}
+                        title={listing.title}
+                        price={listing.price}
+                        location={listing.location}
+                        time={getTimeAgo(listing.created_at)}
+                        image={listing.images?.[0] || "/placeholder.svg"}
+                        category={listing.category_name || "غير محدد"}
+                      />
+                    </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12"><p className="text-gray-500">لا توجد إعلانات حالياً</p></div>
+                <div className="text-center py-20 animate-fade-in">
+                  <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-muted mb-6">
+                    <TrendingUp className="w-12 h-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-3">لا توجد إعلانات حالياً</h3>
+                  <p className="text-muted-foreground text-lg">تحقق لاحقاً من الإعلانات الجديدة</p>
+                </div>
               )}
             </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10" />
           </section>
         )}
       </main>
