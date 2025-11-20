@@ -150,13 +150,13 @@ const AuctionCard = ({
             <div>
               <p className="text-xs text-muted-foreground mb-1">السعر الابتدائي</p>
               <p className="text-base font-semibold text-foreground">
-                {startingPrice.toLocaleString("ar-SA")} ₽
+                {startingPrice.toLocaleString("en-US")} ₽
               </p>
             </div>
             <div className="text-left">
               <p className="text-xs text-muted-foreground mb-1">العرض الحالي</p>
               <p className="text-xl font-bold text-primary">
-                {(currentBid || startingPrice).toLocaleString("ar-SA")} ₽
+                {(currentBid || startingPrice).toLocaleString("en-US")} ₽
               </p>
             </div>
           </div>
