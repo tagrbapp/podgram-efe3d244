@@ -41,7 +41,7 @@ const BidForm = ({
 
     const amount = parseFloat(bidAmount);
     if (amount < minBid) {
-      toast.error(`الحد الأدنى للمزايدة هو ${minBid.toLocaleString("ar-SA")} ريال`);
+      toast.error(`الحد الأدنى للمزايدة هو ${minBid.toLocaleString("en-US")} ريال`);
       return;
     }
 
@@ -105,11 +105,11 @@ const BidForm = ({
               onChange={(e) => setBidAmount(convertArabicToEnglishNumbers(e.target.value))}
               className="text-2xl font-bold h-14 text-center bg-muted/50 border-2 border-border/50 focus:border-primary rounded-xl"
               disabled={isSubmitting}
-              placeholder={minBid.toLocaleString("ar-SA")}
+              placeholder={minBid.toLocaleString("en-US")}
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            الحد الأدنى للمزايدة: <span className="font-bold text-primary">{minBid.toLocaleString("ar-SA")} ريال</span>
+            الحد الأدنى للمزايدة: <span className="font-bold text-primary">{minBid.toLocaleString("en-US")} ريال</span>
           </p>
         </div>
 

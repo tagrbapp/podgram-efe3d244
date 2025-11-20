@@ -76,7 +76,7 @@ const AutoBidSettings = ({ auctionId, minBidAmount }: AutoBidSettingsProps) => {
 
     const amount = parseFloat(maxBidAmount);
     if (isNaN(amount) || amount < minBidAmount) {
-      toast.error(`الحد الأقصى يجب أن يكون ${minBidAmount.toLocaleString("ar-SA")} ريال على الأقل`);
+      toast.error(`الحد الأقصى يجب أن يكون ${minBidAmount.toLocaleString("en-US")} ريال على الأقل`);
       return;
     }
 
@@ -154,12 +154,12 @@ const AutoBidSettings = ({ auctionId, minBidAmount }: AutoBidSettingsProps) => {
                 inputMode="decimal"
                 value={maxBidAmount}
                 onChange={(e) => setMaxBidAmount(convertArabicToEnglishNumbers(e.target.value))}
-                placeholder={`مثال: ${(minBidAmount * 2).toLocaleString("ar-SA")}`}
+                placeholder={`مثال: ${(minBidAmount * 2).toLocaleString("en-US")}`}
                 className="text-lg font-bold"
                 disabled={isLoading}
               />
               <p className="text-xs text-muted-foreground mt-2">
-                الحد الأدنى: {minBidAmount.toLocaleString("ar-SA")} ريال
+                الحد الأدنى: {minBidAmount.toLocaleString("en-US")} ريال
               </p>
             </div>
 

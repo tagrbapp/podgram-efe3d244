@@ -141,7 +141,7 @@ export default function AuctionInvitations() {
                  invitation.status === 'accepted' ? 'مقبولة' : 'مرفوضة'}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(invitation.created_at), { addSuffix: true, locale: ar })}
+                {formatDistanceToNow(new Date(invitation.created_at), { addSuffix: true })}
               </span>
             </div>
 

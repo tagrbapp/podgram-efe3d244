@@ -251,7 +251,7 @@ export default function DashboardBidderProfile() {
                         {review.review_type === 'payment_speed' ? 'سرعة الدفع' :
                          review.review_type === 'communication' ? 'التواصل' : 'الموثوقية'}
                       </Badge>
-                      <span>{formatDistanceToNow(new Date(review.created_at), { addSuffix: true, locale: ar })}</span>
+                      <span>{formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}</span>
                     </div>
                   </div>
                 ))}

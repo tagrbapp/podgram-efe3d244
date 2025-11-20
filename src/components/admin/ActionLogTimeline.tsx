@@ -75,7 +75,7 @@ const ActionLogTimeline = ({ actions }: ActionLogTimelineProps) => {
                       <p className="text-sm text-muted-foreground">السبب: {action.reason}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(action.created_at), "PPp", { locale: ar })}
+                      {format(new Date(action.created_at), "PPp")}
                     </p>
                   </div>
                 </div>

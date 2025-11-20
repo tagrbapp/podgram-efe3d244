@@ -97,7 +97,6 @@ const SimilarAuctions = ({ categoryId, currentAuctionId }: SimilarAuctionsProps)
           {auctions.map((auction) => {
             const timeLeft = formatDistanceToNow(new Date(auction.end_time), {
               addSuffix: true,
-              locale: ar,
             });
 
             return (

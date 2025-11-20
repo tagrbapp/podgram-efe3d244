@@ -520,14 +520,14 @@ const ListingDetails = () => {
                         <div>
                           <p className="text-sm text-muted-foreground">السعر الابتدائي</p>
                           <p className="text-lg font-bold text-foreground">
-                            {auction.starting_price.toLocaleString('ar-SA')} ريال
+                            {auction.starting_price.toLocaleString('en-US')} ريال
                           </p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">العرض الحالي</p>
                           <p className="text-2xl font-bold text-primary">
                             {auction.current_bid
-                              ? `${auction.current_bid.toLocaleString('ar-SA')} ريال`
+                              ? `${auction.current_bid.toLocaleString('en-US')} ريال`
                               : "لا توجد عروض بعد"
                             }
                           </p>
@@ -547,7 +547,7 @@ const ListingDetails = () => {
                 ) : (
                   // Regular Price
                   <p className="text-4xl font-bold text-qultura-blue">
-                    {listing.price.toLocaleString('ar-SA')} ريال
+                    {listing.price.toLocaleString('en-US')} ريال
                   </p>
                 )}
               </div>

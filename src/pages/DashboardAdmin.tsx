@@ -370,7 +370,7 @@ const DashboardAdmin = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(listing.created_at), "PP", { locale: ar })}
+                      {format(new Date(listing.created_at), "PP")}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

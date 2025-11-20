@@ -301,9 +301,7 @@ const DashboardAnnouncements = () => {
                                 <Calendar className="h-4 w-4" />
                                 <span>
                                   من:{" "}
-                                  {format(new Date(announcement.start_date), "PPP", {
-                                    locale: ar,
-                                  })}
+                                  {format(new Date(announcement.start_date), "PPP")}
                                 </span>
                               </div>
                             )}
@@ -312,9 +310,7 @@ const DashboardAnnouncements = () => {
                                 <Calendar className="h-4 w-4" />
                                 <span>
                                   إلى:{" "}
-                                  {format(new Date(announcement.end_date), "PPP", {
-                                    locale: ar,
-                                  })}
+                                  {format(new Date(announcement.end_date), "PPP")}
                                 </span>
                               </div>
                             )}

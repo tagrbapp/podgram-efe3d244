@@ -121,7 +121,7 @@ export const ListingsTable = ({ listings, onDelete, onStatusChange }: ListingsTa
                     </h3>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
                       <span className="font-medium text-lg text-primary">
-                        {listing.price.toLocaleString("ar-SA")} ريال
+                        {listing.price.toLocaleString("en-US")} ريال
                       </span>
                       <span>•</span>
                       <span>{listing.location}</span>
