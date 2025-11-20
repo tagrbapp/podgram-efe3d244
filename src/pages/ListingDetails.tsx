@@ -598,9 +598,10 @@ const ListingDetails = () => {
                 />
 
                 <Card className="p-6">
-                  <h3 className="text-lg font-bold text-foreground mb-4">سجل العروض</h3>
+                  <h3 className="text-lg font-bold text-foreground mb-4">سجل المزايدات</h3>
                   <AuctionBidsList 
-                    auctionId={auction.id} 
+                    auctionId={auction.id}
+                    startingPrice={auction.starting_price}
                     highestBidderId={auction.highest_bidder_id || undefined}
                   />
                 </Card>

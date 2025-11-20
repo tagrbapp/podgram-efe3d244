@@ -28,6 +28,7 @@ interface Auction {
   status: string;
   user_id: string;
   created_at: string;
+  highest_bidder_id: string | null;
 }
 
 interface Category {
@@ -247,11 +248,11 @@ const AuctionDetails = () => {
 
             {/* Bids History */}
             <Card className="p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Gavel className="h-5 w-5 text-primary" />
-                سجل المزايدات
-              </h2>
-              <AuctionBidsList auctionId={auction.id} />
+              <AuctionBidsList 
+                auctionId={auction.id}
+                startingPrice={auction.starting_price}
+                highestBidderId={auction.highest_bidder_id || undefined}
+              />
             </Card>
           </div>
 
