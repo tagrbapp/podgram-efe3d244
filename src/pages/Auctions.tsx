@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AuctionCard from "@/components/AuctionCard";
+import SEO from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gavel, TrendingUp } from "lucide-react";
@@ -91,6 +92,11 @@ const Auctions = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO 
+        title="المزادات المباشرة - Podgram | مزادات المنتجات الفاخرة"
+        description="شارك في المزادات الحية واحصل على أفضل المنتجات الفاخرة بأسعار تنافسية. ساعات، حقائب، مجوهرات، سيارات وعقارات."
+        keywords="مزادات مباشرة, مزادات فاخرة, مزادات سيارات, مزادات ساعات, مزادات عقارات, السعودية"
+      />
       <Navbar />
       
       <main className="flex-1 container mx-auto px-4 py-8 mt-20">
