@@ -17,6 +17,7 @@ import Catalog from "./pages/Catalog";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Auctions from "./pages/Auctions";
+import AuctionDetails from "./pages/AuctionDetails";
 import DashboardListings from "./pages/DashboardListings";
 import DashboardAnalytics from "./pages/DashboardAnalytics";
 import DashboardReports from "./pages/DashboardReports";
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/add-listing" element={<AddListing />} />
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/auctions" element={<Auctions />} />
+          <Route path="/auction/:id" element={<AuctionDetails />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/dashboard" element={<Dashboard />} />

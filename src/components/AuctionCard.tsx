@@ -97,8 +97,8 @@ const AuctionCard = ({
 
   return (
     <Card
-      className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 bg-card border-2 border-primary/20 group"
-      onClick={() => navigate(`/listing/${listingId}`)}
+      className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:translate-y-2 bg-card border-2 border-primary/20 group"
+      onClick={() => navigate(`/auction/${id}`)}
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         <img
@@ -170,7 +170,7 @@ const AuctionCard = ({
           className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground font-bold h-12 text-base rounded-xl shadow-lg"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/listing/${listingId}`);
+            navigate(`/auction/${id}`);
           }}
         >
           <Gavel className="h-5 w-5 ml-2" />
