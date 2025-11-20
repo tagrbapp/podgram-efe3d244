@@ -47,35 +47,60 @@ const Index = () => {
     live_auctions: true,
     featured_listings: true,
   });
+  const [sectionSettings, setSectionSettings] = useState({
+    hero: { items_limit: 12, background_color: "bg-gray-50" },
+    announcements: { items_limit: 12, background_color: "bg-gray-50" },
+    live_auctions: { items_limit: 6, background_color: "bg-background" },
+    featured_listings: { items_limit: 12, background_color: "bg-gray-50" },
+  });
 
   useEffect(() => {
-    fetchSectionSettings();
-    fetchListings();
-    fetchAuctions();
+    const initializeData = async () => {
+      const settings = await fetchSectionSettings();
+      if (settings) {
+        fetchListings(settings);
+        fetchAuctions(settings);
+      }
+    };
+    initializeData();
   }, []);
 
   const fetchSectionSettings = async () => {
     const { data } = await supabase
       .from("homepage_sections")
-      .select("section_key, is_visible");
+      .select("section_key, is_visible, items_limit, background_color");
     
     if (data) {
       const visibility: Record<string, boolean> = {};
+      const settings: Record<string, any> = {};
+      
       data.forEach((section) => {
         visibility[section.section_key] = section.is_visible;
+        settings[section.section_key] = {
+          items_limit: section.items_limit,
+          background_color: section.background_color,
+        };
       });
+      
       setSectionVisibility(visibility as any);
+      setSectionSettings(settings as any);
+      
+      return settings;
     }
+    return null;
   };
 
-  const fetchListings = async () => {
+  const fetchListings = async (settings?: any) => {
     setLoading(true);
+    const currentSettings = settings || sectionSettings;
+    const listingLimit = currentSettings.featured_listings?.items_limit || 12;
+    
     const { data } = await supabase
       .from("listings")
       .select(`*, categories (name)`)
       .eq("status", "active")
       .order("created_at", { ascending: false })
-      .limit(12);
+      .limit(listingLimit);
 
     if (data) {
       const formattedListings = data.map((listing) => ({
@@ -88,8 +113,11 @@ const Index = () => {
     setLoading(false);
   };
 
-  const fetchAuctions = async () => {
+  const fetchAuctions = async (settings?: any) => {
     setAuctionsLoading(true);
+    const currentSettings = settings || sectionSettings;
+    const auctionLimit = currentSettings.live_auctions?.items_limit || 6;
+    
     const { data } = await supabase
       .from("auctions")
       .select(`
@@ -100,7 +128,7 @@ const Index = () => {
       `)
       .in("status", ["active", "ended"])
       .order("created_at", { ascending: false })
-      .limit(6);
+      .limit(auctionLimit);
 
     if (data) {
       const auctionsWithCounts = await Promise.all(
@@ -138,7 +166,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        <section className="py-12 bg-gray-50">
+        <section className={`py-12 ${sectionSettings.hero?.background_color || "bg-gray-50"}`}>
           <div className="container mx-auto px-4">
             {/* Hero Section */}
             {sectionVisibility.hero && (
@@ -171,7 +199,7 @@ const Index = () => {
 
         {/* Live Auctions Section */}
         {sectionVisibility.live_auctions && (
-          <section className="py-12 bg-background">
+          <section className={`py-12 ${sectionSettings.live_auctions?.background_color || "bg-background"}`}>
             <div className="container mx-auto px-4">
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center gap-3 mb-4">
@@ -277,7 +305,7 @@ const Index = () => {
 
         {/* Featured Listings Section */}
         {sectionVisibility.featured_listings && (
-          <section className="py-12 bg-gray-50">
+          <section className={`py-12 ${sectionSettings.featured_listings?.background_color || "bg-gray-50"}`}>
             <div className="container mx-auto px-4">
               <h2 className="text-3xl font-bold mb-8 text-gray-900">الإعلانات المميزة</h2>
               {loading ? (
