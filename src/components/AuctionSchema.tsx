@@ -40,7 +40,7 @@ const AuctionSchema = ({
       "@type": "Product",
       "name": name,
       "description": description || `مزاد مباشر: ${name}`,
-      "image": image.length > 0 ? image : undefined,
+      "image": image && image.length > 0 ? image : undefined,
       "category": category,
       "offers": {
         "@type": "AggregateOffer",

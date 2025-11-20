@@ -49,7 +49,7 @@ const ProductSchema = ({
       "@type": "Product",
       "name": name,
       "description": description || `منتج فاخر: ${name}`,
-      "image": image.length > 0 ? image : undefined,
+      "image": image && image.length > 0 ? image : undefined,
       "brand": brand ? {
         "@type": "Brand",
         "name": brand
