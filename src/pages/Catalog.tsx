@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import ListingCard from "@/components/ListingCard";
+import AuctionCard from "@/components/AuctionCard";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -11,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { SlidersHorizontal, X, GitCompare } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import ProductComparisonDialog from "@/components/ProductComparisonDialog";
 
@@ -28,7 +29,27 @@ interface Listing {
     id: string;
     name: string;
   } | null;
+  type: 'listing';
 }
+
+interface Auction {
+  id: string;
+  listing_id: string | null;
+  title: string | null;
+  starting_price: number;
+  current_bid: number | null;
+  end_time: string;
+  status: string;
+  images: string[] | null;
+  category: {
+    id: string;
+    name: string;
+  } | null;
+  total_bids: number;
+  type: 'auction';
+}
+
+type CatalogItem = Listing | Auction;
 
 interface Category {
   id: string;
@@ -37,19 +58,20 @@ interface Category {
 
 const Catalog = () => {
   const [searchParams] = useSearchParams();
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [items, setItems] = useState<CatalogItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [sortBy, setSortBy] = useState<"newest" | "price-asc" | "price-desc">("newest");
+  const [activeTab, setActiveTab] = useState<"active" | "ended">("active");
   const [compareProducts, setCompareProducts] = useState<Listing[]>([]);
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchCategories();
-    fetchListings();
-  }, [searchParams, selectedCategories, priceRange, sortBy]);
+    fetchItems();
+  }, [searchParams, selectedCategories, priceRange, sortBy, activeTab]);
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -60,9 +82,12 @@ const Catalog = () => {
     if (data) setCategories(data);
   };
 
-  const fetchListings = async () => {
+  const fetchItems = async () => {
     setLoading(true);
-    let query = supabase
+    const searchQuery = searchParams.get("q");
+    
+    // Fetch listings
+    let listingsQuery = supabase
       .from("listings")
       .select(`
         id,
@@ -75,33 +100,103 @@ const Catalog = () => {
         description,
         category:categories(id, name)
       `)
-      .eq("status", "active")
+      .eq("status", activeTab === "active" ? "active" : "sold")
       .gte("price", priceRange[0])
       .lte("price", priceRange[1]);
 
-    // Filter by category
     if (selectedCategories.length > 0) {
-      query = query.in("category_id", selectedCategories);
+      listingsQuery = listingsQuery.in("category_id", selectedCategories);
     }
 
-    // Filter by search query
-    const searchQuery = searchParams.get("q");
     if (searchQuery) {
-      query = query.ilike("title", `%${searchQuery}%`);
+      listingsQuery = listingsQuery.ilike("title", `%${searchQuery}%`);
     }
 
-    // Sort
     if (sortBy === "newest") {
-      query = query.order("created_at", { ascending: false });
+      listingsQuery = listingsQuery.order("created_at", { ascending: false });
     } else if (sortBy === "price-asc") {
-      query = query.order("price", { ascending: true });
+      listingsQuery = listingsQuery.order("price", { ascending: true });
     } else if (sortBy === "price-desc") {
-      query = query.order("price", { ascending: false });
+      listingsQuery = listingsQuery.order("price", { ascending: false });
     }
 
-    const { data } = await query.limit(50);
+    // Fetch auctions
+    let auctionsQuery = supabase
+      .from("auctions")
+      .select(`
+        id,
+        listing_id,
+        title,
+        starting_price,
+        current_bid,
+        end_time,
+        status,
+        images,
+        category:categories(id, name)
+      `)
+      .eq("status", activeTab === "active" ? "active" : "ended")
+      .gte("starting_price", priceRange[0])
+      .lte("starting_price", priceRange[1]);
+
+    if (selectedCategories.length > 0) {
+      auctionsQuery = auctionsQuery.in("category_id", selectedCategories);
+    }
+
+    if (searchQuery) {
+      auctionsQuery = auctionsQuery.ilike("title", `%${searchQuery}%`);
+    }
+
+    if (sortBy === "newest") {
+      auctionsQuery = auctionsQuery.order("created_at", { ascending: false });
+    }
+
+    const [listingsResult, auctionsResult] = await Promise.all([
+      listingsQuery.limit(30),
+      auctionsQuery.limit(30),
+    ]);
+
+    // Get bid counts for auctions
+    const auctionIds = auctionsResult.data?.map((a) => a.id) || [];
+    const { data: bidsData } = await supabase
+      .from("bids")
+      .select("auction_id")
+      .in("auction_id", auctionIds);
+
+    const bidCounts: Record<string, number> = {};
+    bidsData?.forEach((bid) => {
+      bidCounts[bid.auction_id] = (bidCounts[bid.auction_id] || 0) + 1;
+    });
+
+    // Combine and format data
+    const formattedListings: Listing[] = (listingsResult.data || []).map((item) => ({
+      ...item,
+      type: 'listing' as const,
+    }));
+
+    const formattedAuctions: Auction[] = (auctionsResult.data || []).map((item) => ({
+      ...item,
+      total_bids: bidCounts[item.id] || 0,
+      type: 'auction' as const,
+    }));
+
+    // Merge and sort
+    const allItems: CatalogItem[] = [...formattedListings, ...formattedAuctions];
     
-    if (data) setListings(data);
+    if (sortBy === "price-asc") {
+      allItems.sort((a, b) => {
+        const priceA = a.type === 'listing' ? a.price : a.starting_price;
+        const priceB = b.type === 'listing' ? b.price : b.starting_price;
+        return priceA - priceB;
+      });
+    } else if (sortBy === "price-desc") {
+      allItems.sort((a, b) => {
+        const priceA = a.type === 'listing' ? a.price : a.starting_price;
+        const priceB = b.type === 'listing' ? b.price : b.starting_price;
+        return priceB - priceA;
+      });
+    }
+
+    setItems(allItems);
     setLoading(false);
   };
 
@@ -119,17 +214,22 @@ const Catalog = () => {
     setSortBy("newest");
   };
 
-  const toggleCompare = (listing: Listing) => {
+  const toggleCompare = (item: CatalogItem) => {
+    if (item.type !== 'listing') {
+      toast.error("يمكنك مقارنة الإعلانات فقط");
+      return;
+    }
+    
     setCompareProducts((prev) => {
-      const exists = prev.find((p) => p.id === listing.id);
+      const exists = prev.find((p) => p.id === item.id);
       if (exists) {
-        return prev.filter((p) => p.id !== listing.id);
+        return prev.filter((p) => p.id !== item.id);
       } else {
         if (prev.length >= 3) {
           toast.error("يمكنك مقارنة 3 منتجات فقط");
           return prev;
         }
-        return [...prev, listing];
+        return [...prev, item];
       }
     });
   };
@@ -218,7 +318,7 @@ const Catalog = () => {
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">الكتالوج</h1>
             <p className="text-muted-foreground">
-              {loading ? "جاري التحميل..." : `${listings.length} منتج متاح`}
+              {loading ? "جاري التحميل..." : `${items.length} عنصر متاح`}
             </p>
           </div>
 
@@ -274,44 +374,114 @@ const Catalog = () => {
 
           {/* Products Grid */}
           <main className="md:col-span-3">
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(9)].map((_, i) => (
-                  <Skeleton key={i} className="h-80 rounded-2xl" />
-                ))}
-              </div>
-            ) : listings.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">لا توجد منتجات متاحة</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {listings.map((listing) => (
-                  <div key={listing.id} className="relative">
-                    <ListingCard
-                      id={listing.id}
-                      title={listing.title}
-                      price={listing.price}
-                      location={listing.location}
-                      time={getTimeAgo(listing.created_at)}
-                      image={listing.images?.[0] || "/placeholder.svg"}
-                      category={listing.category?.name || "غير محدد"}
-                    />
-                    {/* Compare Button */}
-                    <div className="absolute top-4 left-4 z-10">
-                      <Button
-                        variant={isInCompare(listing.id) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => toggleCompare(listing)}
-                        className={isInCompare(listing.id) ? "bg-qultura-blue hover:bg-qultura-blue/90" : "bg-white/90 hover:bg-white"}
-                      >
-                        <GitCompare className="h-4 w-4" />
-                      </Button>
-                    </div>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "ended")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="active">النشطة</TabsTrigger>
+                <TabsTrigger value="ended">المنتهية</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="active" className="mt-0">
+                {loading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(9)].map((_, i) => (
+                      <Skeleton key={i} className="h-80 rounded-2xl" />
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                ) : items.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground text-lg">لا توجد عناصر نشطة</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map((item) => (
+                      <div key={`${item.type}-${item.id}`} className="relative">
+                        {item.type === 'listing' ? (
+                          <>
+                            <ListingCard
+                              id={item.id}
+                              title={item.title}
+                              price={item.price}
+                              location={item.location}
+                              time={getTimeAgo(item.created_at)}
+                              image={item.images?.[0] || "/placeholder.svg"}
+                              category={item.category?.name || "غير محدد"}
+                            />
+                            <div className="absolute top-4 left-4 z-10">
+                              <Button
+                                variant={isInCompare(item.id) ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => toggleCompare(item)}
+                                className={isInCompare(item.id) ? "bg-qultura-blue hover:bg-qultura-blue/90" : "bg-white/90 hover:bg-white"}
+                              >
+                                <GitCompare className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </>
+                        ) : (
+                          <AuctionCard
+                            id={item.id}
+                            listingId={item.listing_id}
+                            title={item.title || "مزاد"}
+                            currentBid={item.current_bid || 0}
+                            startingPrice={item.starting_price}
+                            endTime={item.end_time}
+                            image={item.images?.[0] || "/placeholder.svg"}
+                            category={item.category?.name || "غير محدد"}
+                            status={item.status}
+                            totalBids={item.total_bids}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="ended" className="mt-0">
+                {loading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(9)].map((_, i) => (
+                      <Skeleton key={i} className="h-80 rounded-2xl" />
+                    ))}
+                  </div>
+                ) : items.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground text-lg">لا توجد عناصر منتهية</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {items.map((item) => (
+                      <div key={`${item.type}-${item.id}`}>
+                        {item.type === 'listing' ? (
+                          <ListingCard
+                            id={item.id}
+                            title={item.title}
+                            price={item.price}
+                            location={item.location}
+                            time={getTimeAgo(item.created_at)}
+                            image={item.images?.[0] || "/placeholder.svg"}
+                            category={item.category?.name || "غير محدد"}
+                          />
+                        ) : (
+                          <AuctionCard
+                            id={item.id}
+                            listingId={item.listing_id}
+                            title={item.title || "مزاد"}
+                            currentBid={item.current_bid || 0}
+                            startingPrice={item.starting_price}
+                            endTime={item.end_time}
+                            image={item.images?.[0] || "/placeholder.svg"}
+                            category={item.category?.name || "غير محدد"}
+                            status={item.status}
+                            totalBids={item.total_bids}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </main>
         </div>
       </div>
