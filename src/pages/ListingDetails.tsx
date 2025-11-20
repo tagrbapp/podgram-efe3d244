@@ -46,7 +46,7 @@ interface Listing {
   category_id?: string;
   category: {
     name: string;
-  };
+  } | null;
   profiles?: {
     full_name: string;
     phone: string;
@@ -499,7 +499,7 @@ const ListingDetails = () => {
                       variant="secondary" 
                       className="bg-qultura-blue/10 text-qultura-blue border-0"
                     >
-                      {listing.category.name}
+                      {listing.category?.name || "غير محدد"}
                     </Badge>
                   </div>
                   <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
