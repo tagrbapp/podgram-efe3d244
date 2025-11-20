@@ -6,7 +6,10 @@ import CategoryCircle from "@/components/CategoryCircle";
 import ActionCard from "@/components/ActionCard";
 import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+import AuctionCard from "@/components/AuctionCard";
 import { supabase } from "@/integrations/supabase/client";
+import { Gavel, TrendingUp } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import categoryWatches from "@/assets/category-watches.jpg";
 import categoryBags from "@/assets/category-bags.jpg";
@@ -34,15 +37,33 @@ interface Listing {
   category_name?: string;
 }
 
+interface Auction {
+  id: string;
+  listing_id: string;
+  starting_price: number;
+  current_bid: number | null;
+  end_time: string;
+  status: string;
+  listings: {
+    title: string;
+    images: string[] | null;
+    categories: { name: string } | null;
+  } | null;
+  bids: { count: number }[];
+}
+
 const Index = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [auctionsLoading, setAuctionsLoading] = useState(true);
 
   useEffect(() => {
     fetchCategories();
     fetchListings();
+    fetchAuctions();
   }, []);
 
   const fetchCategories = async () => {
@@ -77,6 +98,29 @@ const Index = () => {
       setFilteredListings(formattedListings);
     }
     setLoading(false);
+  };
+
+  const fetchAuctions = async () => {
+    setAuctionsLoading(true);
+    const { data } = await supabase
+      .from("auctions")
+      .select(`
+        *,
+        listings (
+          title,
+          images,
+          categories (name)
+        ),
+        bids (count)
+      `)
+      .in("status", ["active", "ended"])
+      .order("created_at", { ascending: false })
+      .limit(6);
+
+    if (data) {
+      setAuctions(data as unknown as Auction[]);
+    }
+    setAuctionsLoading(false);
   };
 
   const getTimeAgo = (dateString: string) => {
@@ -131,6 +175,110 @@ const Index = () => {
             <div className="mt-12">
               <AnnouncementBanner />
             </div>
+          </div>
+        </section>
+
+        {/* Live Auctions Section */}
+        <section className="py-12 bg-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <h2 className="text-4xl font-bold text-foreground">المزادات المباشرة</h2>
+                <Gavel className="w-10 h-10 text-primary" />
+              </div>
+              <p className="text-lg text-muted-foreground">
+                شارك في المزادات الحية واحصل على أفضل المنتجات الفاخرة بأسعار تنافسية
+              </p>
+            </div>
+
+            <Tabs defaultValue="active" className="w-full" dir="rtl">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+                <TabsTrigger value="active" className="gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  المزادات النشطة
+                </TabsTrigger>
+                <TabsTrigger value="ended" className="gap-2">
+                  <Gavel className="w-4 h-4" />
+                  المزادات المنتهية
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="active">
+                {auctionsLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-96 bg-card rounded-2xl animate-pulse" />
+                    ))}
+                  </div>
+                ) : auctions.filter(a => a.status === "active").length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {auctions
+                      .filter(a => a.status === "active")
+                      .map((auction) => (
+                        <AuctionCard
+                          key={auction.id}
+                          id={auction.id}
+                          listingId={auction.listing_id}
+                          title={auction.listings?.title || "غير محدد"}
+                          currentBid={auction.current_bid || 0}
+                          startingPrice={auction.starting_price}
+                          endTime={auction.end_time}
+                          image={auction.listings?.images?.[0] || "/placeholder.svg"}
+                          category={auction.listings?.categories?.name || "غير محدد"}
+                          status={auction.status}
+                          totalBids={auction.bids?.[0]?.count || 0}
+                        />
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <Gavel className="w-24 h-24 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold text-foreground mb-2">
+                      لا توجد مزادات نشطة حالياً
+                    </h3>
+                    <p className="text-muted-foreground">تابعنا لمعرفة المزادات القادمة</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="ended">
+                {auctionsLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-96 bg-card rounded-2xl animate-pulse" />
+                    ))}
+                  </div>
+                ) : auctions.filter(a => a.status === "ended").length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {auctions
+                      .filter(a => a.status === "ended")
+                      .map((auction) => (
+                        <AuctionCard
+                          key={auction.id}
+                          id={auction.id}
+                          listingId={auction.listing_id}
+                          title={auction.listings?.title || "غير محدد"}
+                          currentBid={auction.current_bid || 0}
+                          startingPrice={auction.starting_price}
+                          endTime={auction.end_time}
+                          image={auction.listings?.images?.[0] || "/placeholder.svg"}
+                          category={auction.listings?.categories?.name || "غير محدد"}
+                          status={auction.status}
+                          totalBids={auction.bids?.[0]?.count || 0}
+                        />
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16">
+                    <Gavel className="w-24 h-24 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold text-foreground mb-2">
+                      لا توجد مزادات منتهية
+                    </h3>
+                    <p className="text-muted-foreground">لم تنته أي مزادات بعد</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         </section>
 
