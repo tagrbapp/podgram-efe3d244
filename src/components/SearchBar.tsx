@@ -28,12 +28,12 @@ const SearchBar = ({ value, onChange, onSearch }: SearchBarProps) => {
               <ChevronDown className="h-4 w-4 mr-2" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>ساعات فاخرة</DropdownMenuItem>
-            <DropdownMenuItem>حقائب يد</DropdownMenuItem>
-            <DropdownMenuItem>مجوهرات</DropdownMenuItem>
-            <DropdownMenuItem>أزياء رجالية</DropdownMenuItem>
-            <DropdownMenuItem>أزياء نسائية</DropdownMenuItem>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem>سيارات</DropdownMenuItem>
+            <DropdownMenuItem>عقارات</DropdownMenuItem>
+            <DropdownMenuItem>إلكترونيات واتصالات</DropdownMenuItem>
+            <DropdownMenuItem>أثاث ومفروشات</DropdownMenuItem>
+            <DropdownMenuItem>خدمات</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
