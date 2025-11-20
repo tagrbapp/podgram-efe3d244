@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { signIn, signUp, getSession } from "@/lib/auth";
 import { ArrowRight, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import podgramLogo from "@/assets/podgram-logo.png";
+import heroImage from "@/assets/hero-luxury.jpg";
 
 const loginSchema = z.object({
   email: z.string().trim().email("البريد الإلكتروني غير صحيح"),
@@ -110,31 +112,54 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8 animate-fade-in">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6 hover-scale">
-            <div className="h-12 w-12 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
-              <span className="text-2xl font-bold text-primary-foreground">إ</span>
-            </div>
-            <span className="text-2xl font-bold text-gradient-primary">
-              إعلاناتي
-            </span>
-          </Link>
-          <h1 className="text-3xl font-bold mt-4 mb-2">مرحباً بك</h1>
-          <p className="text-muted-foreground">سجل دخولك أو أنشئ حساب جديد للبدء</p>
+    <div className="min-h-screen flex">
+      {/* الجانب الأيسر - صورة الخلفية */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <img 
+            src={heroImage} 
+            alt="Luxury Background" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-qultura-blue/90 via-qultura-green/80 to-qultura-blue/90" />
         </div>
+        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 text-center">
+          <img src={podgramLogo} alt="Podgram" className="h-20 w-20 mb-6" />
+          <h2 className="text-4xl font-bold mb-4">Podgram</h2>
+          <p className="text-xl mb-2">أول منصة فاخرة في المنطقة</p>
+          <p className="text-white/90 max-w-md">
+            اكتشف عالماً من المنتجات الفاخرة والعروض الحصرية
+          </p>
+        </div>
+      </div>
 
-        <Card className="p-6 shadow-elegant animate-scale-in">
-          <Tabs defaultValue="login" dir="rtl">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login" className="transition-smooth">تسجيل الدخول</TabsTrigger>
-              <TabsTrigger value="register" className="transition-smooth">حساب جديد</TabsTrigger>
-            </TabsList>
+      {/* الجانب الأيمن - نموذج المصادقة */}
+      <div className="flex-1 flex items-center justify-center p-4 bg-background">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8 lg:hidden">
+            <Link to="/" className="inline-flex items-center gap-3 mb-6 hover-scale">
+              <img src={podgramLogo} alt="Podgram" className="h-12 w-12" />
+              <span className="text-2xl font-bold" style={{ color: 'hsl(var(--qultura-blue))' }}>
+                Podgram
+              </span>
+            </Link>
+          </div>
 
-            {/* تسجيل الدخول */}
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
+          <div className="hidden lg:block text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2">مرحباً بك</h1>
+            <p className="text-muted-foreground">سجل دخولك أو أنشئ حساب جديد للبدء</p>
+          </div>
+
+          <Card className="p-8 shadow-elegant border-2">
+            <Tabs defaultValue="login" dir="rtl">
+              <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
+                <TabsTrigger value="login" className="text-base">تسجيل الدخول</TabsTrigger>
+                <TabsTrigger value="register" className="text-base">حساب جديد</TabsTrigger>
+              </TabsList>
+
+              {/* تسجيل الدخول */}
+              <TabsContent value="login">
+                <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
@@ -180,28 +205,31 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-primary hover:opacity-90 transition-smooth shadow-glow"
-                  size="lg"
+                  className="w-full h-12 text-base font-semibold transition-smooth"
+                  style={{ 
+                    background: 'linear-gradient(135deg, hsl(219, 78%, 56%), hsl(219, 78%, 66%))',
+                    color: 'white'
+                  }}
                   disabled={isLoading}
                 >
                   {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-                  <ArrowRight className="mr-2 h-4 w-4" />
+                  <ArrowRight className="mr-2 h-5 w-5" />
                 </Button>
 
-                <div className="text-center pt-4">
+                <div className="text-center pt-6">
                   <Link 
                     to="/" 
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                   >
                     العودة للرئيسية
                   </Link>
                 </div>
               </form>
-            </TabsContent>
+              </TabsContent>
 
-            {/* إنشاء حساب */}
-            <TabsContent value="register">
-              <form onSubmit={handleRegister} className="space-y-4">
+              {/* إنشاء حساب */}
+              <TabsContent value="register">
+                <form onSubmit={handleRegister} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
@@ -292,30 +320,36 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-secondary hover:opacity-90 transition-smooth shadow-glow-secondary"
-                  size="lg"
+                  className="w-full h-12 text-base font-semibold transition-smooth"
+                  style={{ 
+                    background: 'linear-gradient(135deg, hsl(159, 58%, 57%), hsl(159, 58%, 67%))',
+                    color: 'white'
+                  }}
                   disabled={isLoading}
                 >
                   {isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
-                  <ArrowRight className="mr-2 h-4 w-4" />
+                  <ArrowRight className="mr-2 h-5 w-5" />
                 </Button>
 
-                <div className="text-center pt-4">
+                <div className="text-center pt-6">
                   <Link 
                     to="/" 
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                   >
                     العودة للرئيسية
                   </Link>
                 </div>
               </form>
-            </TabsContent>
-          </Tabs>
-        </Card>
+              </TabsContent>
+            </Tabs>
+          </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          بالتسجيل، أنت توافق على شروط الاستخدام وسياسة الخصوصية
-        </p>
+          <div className="mt-6 text-center space-y-2">
+            <p className="text-xs text-muted-foreground">
+              بالتسجيل، أنت توافق على <Link to="/terms" className="underline">شروط الاستخدام</Link> و<Link to="/privacy" className="underline">سياسة الخصوصية</Link>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
