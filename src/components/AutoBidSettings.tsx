@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Zap, TrendingUp } from "lucide-react";
+import { convertArabicToEnglishNumbers } from "@/lib/utils";
 
 interface AutoBidSettingsProps {
   auctionId: string;
@@ -149,10 +150,10 @@ const AutoBidSettings = ({ auctionId, minBidAmount }: AutoBidSettingsProps) => {
                 الحد الأقصى للمزايدة (ريال)
               </label>
               <Input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={maxBidAmount}
-                onChange={(e) => setMaxBidAmount(e.target.value)}
-                min={minBidAmount}
+                onChange={(e) => setMaxBidAmount(convertArabicToEnglishNumbers(e.target.value))}
                 placeholder={`مثال: ${(minBidAmount * 2).toLocaleString("ar-SA")}`}
                 className="text-lg font-bold"
                 disabled={isLoading}

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Gavel, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { convertArabicToEnglishNumbers } from "@/lib/utils";
 
 interface BidFormProps {
   auctionId: string;
@@ -111,11 +112,10 @@ const BidForm = ({
             المبلغ (ريال)
           </label>
           <Input
-            type="number"
+            type="text"
+            inputMode="decimal"
             value={bidAmount}
-            onChange={(e) => setBidAmount(e.target.value)}
-            min={minBid}
-            step={bidIncrement}
+            onChange={(e) => setBidAmount(convertArabicToEnglishNumbers(e.target.value))}
             className="text-lg font-bold"
             disabled={isSubmitting}
           />

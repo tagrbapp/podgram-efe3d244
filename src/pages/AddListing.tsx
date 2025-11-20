@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
 import type { User, Session } from "@supabase/supabase-js";
+import { convertArabicToEnglishNumbers } from "@/lib/utils";
 
 interface Category {
   id: string;
@@ -250,11 +251,13 @@ const AddListing = () => {
                   <Input 
                     id="price" 
                     name="price"
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0"
                     className="text-right"
+                    onChange={(e) => {
+                      e.target.value = convertArabicToEnglishNumbers(e.target.value);
+                    }}
                     required
                   />
                 </div>
