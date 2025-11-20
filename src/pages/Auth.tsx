@@ -216,6 +216,15 @@ const Auth = () => {
                   <ArrowRight className="mr-2 h-5 w-5" />
                 </Button>
 
+                <div className="text-center pt-4">
+                  <Link 
+                    to="/forgot-password" 
+                    className="text-sm text-primary hover:underline transition-colors"
+                  >
+                    نسيت كلمة المرور؟
+                  </Link>
+                </div>
+
                 <div className="text-center pt-6">
                   <Link 
                     to="/" 
