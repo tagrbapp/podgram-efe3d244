@@ -120,8 +120,11 @@ const SimilarAuctions = ({ categoryId, currentAuctionId }: SimilarAuctionsProps)
                     </div>
                   )}
                   <div className="absolute top-2 right-2">
-                    <Badge className="bg-green-600 text-white animate-pulse">
-                      نشط
+                    <Badge 
+                      variant={auction.status === "active" ? "default" : "secondary"}
+                      className={auction.status === "active" ? "bg-green-600 hover:bg-green-700 animate-pulse" : ""}
+                    >
+                      {auction.status === "active" ? "نشط" : "منتهي"}
                     </Badge>
                   </div>
                 </div>
@@ -143,10 +146,10 @@ const SimilarAuctions = ({ categoryId, currentAuctionId }: SimilarAuctionsProps)
                       <p className="text-xs text-muted-foreground mb-1">
                         السعر الحالي
                       </p>
-                      <p className="text-lg font-bold text-primary">
+                       <p className="text-lg font-bold text-primary">
                         {auction.current_bid
-                          ? auction.current_bid.toLocaleString("ar-SA")
-                          : auction.starting_price.toLocaleString("ar-SA")}{" "}
+                          ? auction.current_bid.toLocaleString("en-US")
+                          : auction.starting_price.toLocaleString("en-US")}{" "}
                         <span className="text-sm">ريال</span>
                       </p>
                     </div>
