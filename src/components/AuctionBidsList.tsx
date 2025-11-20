@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Clock } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { Card } from "@/components/ui/card";
+import { TrendingUp, Clock, ArrowUpCircle, User } from "lucide-react";
+import { formatDistanceToNow, format } from "date-fns";
 import { ar } from "date-fns/locale";
 
 interface Bid {
@@ -11,42 +13,51 @@ interface Bid {
   bid_amount: number;
   created_at: string;
   user_id: string;
+  is_autobid: boolean;
   profiles?: {
     full_name: string;
     avatar_url?: string;
   };
+  previous_bid?: number;
 }
 
 interface AuctionBidsListProps {
   auctionId: string;
+  startingPrice: number;
   highestBidderId?: string;
 }
 
-const AuctionBidsList = ({ auctionId, highestBidderId }: AuctionBidsListProps) => {
+const AuctionBidsList = ({ auctionId, startingPrice, highestBidderId }: AuctionBidsListProps) => {
+  const navigate = useNavigate();
   const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchBids = async () => {
     const { data, error } = await supabase
       .from("bids")
-      .select("id, bid_amount, created_at, user_id")
+      .select("id, bid_amount, created_at, user_id, is_autobid")
       .eq("auction_id", auctionId)
-      .order("created_at", { ascending: false })
-      .limit(10);
+      .order("created_at", { ascending: false });
 
     if (!error && data) {
-      // Fetch profiles separately
+      // Fetch profiles and calculate previous bids
       const bidsWithProfiles = await Promise.all(
-        data.map(async (bid) => {
+        data.map(async (bid, index) => {
           const { data: profile } = await supabase
             .from("profiles")
             .select("full_name, avatar_url")
             .eq("id", bid.user_id)
             .single();
           
+          // Get previous bid amount (the bid before this one)
+          const previousBid = index < data.length - 1 
+            ? data[index + 1].bid_amount 
+            : startingPrice;
+          
           return {
             ...bid,
             profiles: profile || { full_name: "مستخدم", avatar_url: undefined },
+            previous_bid: previousBid,
           };
         })
       );
@@ -109,60 +120,112 @@ const AuctionBidsList = ({ auctionId, highestBidderId }: AuctionBidsListProps) =
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-bold text-foreground">سجل العروض</h3>
+        <h3 className="text-lg font-bold text-foreground">سجل المزايدات</h3>
         <Badge variant="secondary" className="mr-auto">
-          {bids.length} عرض
+          {bids.length} مزايدة
         </Badge>
       </div>
 
-      <div className="space-y-3 max-h-96 overflow-y-auto">
-        {bids.map((bid, index) => (
-          <div
-            key={bid.id}
-            className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-              bid.user_id === highestBidderId && index === 0
-                ? "bg-primary/10 border-2 border-primary/30"
-                : "bg-muted/50 hover:bg-muted"
-            }`}
-          >
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={bid.profiles?.avatar_url} />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {bid.profiles?.full_name?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
+      <div className="space-y-3">
+        {bids.map((bid, index) => {
+          const increase = bid.bid_amount - (bid.previous_bid || 0);
+          const isHighest = bid.user_id === highestBidderId && index === 0;
+          
+          return (
+            <Card
+              key={bid.id}
+              className={`p-4 transition-all hover:shadow-md ${
+                isHighest
+                  ? "bg-primary/5 border-2 border-primary"
+                  : "bg-card border border-border"
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                {/* Avatar and User Info */}
+                <div className="flex-shrink-0">
+                  <div 
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/profile/${bid.user_id}`)}
+                  >
+                    <Avatar className="h-14 w-14 ring-2 ring-primary/20">
+                      <AvatarImage src={bid.profiles?.avatar_url} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                        {bid.profiles?.full_name?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
 
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-foreground">
-                  {bid.profiles?.full_name || "مستخدم"}
-                </p>
-                {bid.user_id === highestBidderId && index === 0 && (
-                  <Badge className="bg-green-600 text-white">أعلى عرض</Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <Clock className="h-3 w-3 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(bid.created_at), {
-                    addSuffix: true,
-                    locale: ar,
-                  })}
-                </p>
-              </div>
-            </div>
+                {/* Bid Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <button
+                      onClick={() => navigate(`/profile/${bid.user_id}`)}
+                      className="font-bold text-foreground hover:text-primary transition-colors"
+                    >
+                      {bid.profiles?.full_name || "مستخدم"}
+                    </button>
+                    {isHighest && (
+                      <Badge className="bg-green-600 text-white">
+                        أعلى مزايدة
+                      </Badge>
+                    )}
+                    {bid.is_autobid && (
+                      <Badge variant="outline" className="text-xs">
+                        مزايدة تلقائية
+                      </Badge>
+                    )}
+                  </div>
 
-            <div className="text-left">
-              <p className="text-xl font-bold text-primary">
-                {bid.bid_amount.toLocaleString("ar-SA")}
-              </p>
-              <p className="text-xs text-muted-foreground">ريال</p>
-            </div>
-          </div>
-        ))}
+                  {/* Bid Amounts Grid */}
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    <div className="bg-muted/50 rounded-lg p-2">
+                      <p className="text-xs text-muted-foreground mb-1">السعر السابق</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {(bid.previous_bid || startingPrice).toLocaleString("ar-SA")} ريال
+                      </p>
+                    </div>
+
+                    <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+                      <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                        <ArrowUpCircle className="h-3 w-3" />
+                        الزيادة
+                      </p>
+                      <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                        +{increase.toLocaleString("ar-SA")} ريال
+                      </p>
+                    </div>
+
+                    <div className="bg-primary/10 rounded-lg p-2">
+                      <p className="text-xs text-muted-foreground mb-1">المبلغ الجديد</p>
+                      <p className="text-sm font-bold text-primary">
+                        {bid.bid_amount.toLocaleString("ar-SA")} ريال
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Time */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {formatDistanceToNow(new Date(bid.created_at), {
+                        addSuffix: true,
+                        locale: ar,
+                      })}
+                    </span>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span>
+                      {format(new Date(bid.created_at), "PPp", { locale: ar })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
