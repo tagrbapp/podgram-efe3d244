@@ -183,6 +183,7 @@ export type Database = {
       auctions: {
         Row: {
           bid_increment: number
+          category_id: string | null
           created_at: string | null
           current_bid: number | null
           end_time: string
@@ -190,7 +191,7 @@ export type Database = {
           id: string
           invited_bidders: string[] | null
           is_private: boolean | null
-          listing_id: string
+          listing_id: string | null
           reserve_price: number | null
           start_time: string
           starting_price: number
@@ -199,6 +200,7 @@ export type Database = {
         }
         Insert: {
           bid_increment?: number
+          category_id?: string | null
           created_at?: string | null
           current_bid?: number | null
           end_time: string
@@ -206,7 +208,7 @@ export type Database = {
           id?: string
           invited_bidders?: string[] | null
           is_private?: boolean | null
-          listing_id: string
+          listing_id?: string | null
           reserve_price?: number | null
           start_time?: string
           starting_price: number
@@ -215,6 +217,7 @@ export type Database = {
         }
         Update: {
           bid_increment?: number
+          category_id?: string | null
           created_at?: string | null
           current_bid?: number | null
           end_time?: string
@@ -222,7 +225,7 @@ export type Database = {
           id?: string
           invited_bidders?: string[] | null
           is_private?: boolean | null
-          listing_id?: string
+          listing_id?: string | null
           reserve_price?: number | null
           start_time?: string
           starting_price?: number
@@ -230,6 +233,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "auctions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "auctions_listing_id_fkey"
             columns: ["listing_id"]
