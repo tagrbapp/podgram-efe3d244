@@ -13,6 +13,7 @@ import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
 import type { User, Session } from "@supabase/supabase-js";
 import { convertArabicToEnglishNumbers } from "@/lib/utils";
+import { AccountApprovalBanner } from "@/components/AccountApprovalBanner";
 
 interface Category {
   id: string;
@@ -29,6 +30,7 @@ const AddListing = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const subscription = onAuthStateChange((session, user) => {
@@ -38,6 +40,8 @@ const AddListing = () => {
       if (!session || !user) {
         toast.error("يجب تسجيل الدخول أولاً");
         navigate("/auth");
+      } else {
+        checkApprovalStatus(user.id);
       }
     });
 
@@ -48,6 +52,8 @@ const AddListing = () => {
       if (!session || !user) {
         toast.error("يجب تسجيل الدخول أولاً");
         navigate("/auth");
+      } else {
+        checkApprovalStatus(user.id);
       }
     });
 
@@ -55,6 +61,18 @@ const AddListing = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkApprovalStatus = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("approval_status")
+      .eq("id", userId)
+      .single();
+
+    if (profile) {
+      setApprovalStatus(profile.approval_status);
+    }
+  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -143,6 +161,13 @@ const AddListing = () => {
       return;
     }
 
+    // Check approval status
+    if (approvalStatus !== "approved") {
+      toast.error("يجب الموافقة على حسابك أولاً لإضافة إعلانات");
+      setIsLoading(false);
+      return;
+    }
+
     const title = formData.get("title") as string;
     const priceStr = formData.get("price") as string;
     const location = formData.get("location") as string;
@@ -215,6 +240,8 @@ const AddListing = () => {
             <h1 className="text-4xl font-bold mb-4">أضف إعلانك</h1>
             <p className="text-muted-foreground">املأ البيانات التالية لنشر إعلانك</p>
           </div>
+
+          <AccountApprovalBanner />
 
           <Card className="p-6 md:p-8 shadow-elegant">
             <form onSubmit={handleSubmit} className="space-y-6">
