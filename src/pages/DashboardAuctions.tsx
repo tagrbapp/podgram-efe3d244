@@ -445,15 +445,13 @@ const DashboardAuctions = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              {auction.listing_id && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => navigate(`/listing/${auction.listing_id}`)}
-                                >
-                                  عرض
-                                </Button>
-                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => navigate(`/auction/${auction.id}`)}
+                              >
+                                عرض
+                              </Button>
                               {auction.status === 'active' && (
                                 <Button
                                   size="sm"

@@ -9,18 +9,18 @@ import { Gavel, TrendingUp } from "lucide-react";
 
 interface Auction {
   id: string;
-  listing_id: string;
+  listing_id: string | null;
+  category_id: string | null;
+  title: string;
+  description: string | null;
+  images: string[] | null;
   starting_price: number;
   current_bid: number | null;
   end_time: string;
   status: string;
-  listings: {
-    title: string;
-    images: string[];
-    categories: {
-      name: string;
-    };
-  };
+  categories: {
+    name: string;
+  } | null;
   bid_count: number;
 }
 
@@ -36,12 +36,8 @@ const Auctions = () => {
       .from("auctions")
       .select(`
         *,
-        listings!inner (
-          title,
-          images,
-          categories (
-            name
-          )
+        categories (
+          name
         )
       `)
       .eq("status", status)
@@ -149,13 +145,13 @@ const Auctions = () => {
                   <AuctionCard
                     key={auction.id}
                     id={auction.id}
-                    listingId={auction.listing_id}
-                    title={auction.listings.title}
+                    listingId={auction.listing_id || ""}
+                    title={auction.title}
                     currentBid={auction.current_bid}
                     startingPrice={auction.starting_price}
                     endTime={auction.end_time}
-                    image={auction.listings.images?.[0] || "/placeholder.svg"}
-                    category={auction.listings.categories?.name || "عام"}
+                    image={auction.images?.[0] || "/placeholder.svg"}
+                    category={auction.categories?.name || "عام"}
                     status={auction.status}
                     totalBids={auction.bid_count}
                   />
