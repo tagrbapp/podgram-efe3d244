@@ -677,6 +677,60 @@ export type Database = {
           },
         ]
       }
+      footer_settings: {
+        Row: {
+          address: string | null
+          brand_description: string
+          brand_name: string
+          copyright_text: string | null
+          email: string | null
+          facebook_url: string | null
+          id: string
+          instagram_url: string | null
+          is_active: boolean
+          linkedin_url: string | null
+          phone: string | null
+          twitter_url: string | null
+          updated_at: string | null
+          updated_by: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          brand_description?: string
+          brand_name?: string
+          copyright_text?: string | null
+          email?: string | null
+          facebook_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          is_active?: boolean
+          linkedin_url?: string | null
+          phone?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          brand_description?: string
+          brand_name?: string
+          copyright_text?: string | null
+          email?: string | null
+          facebook_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          is_active?: boolean
+          linkedin_url?: string | null
+          phone?: string | null
+          twitter_url?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       homepage_section_history: {
         Row: {
           background_color: string | null

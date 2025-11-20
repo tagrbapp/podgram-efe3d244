@@ -35,6 +35,7 @@ import DashboardAnnouncements from "./pages/DashboardAnnouncements";
 import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
 import DashboardHomepage from "./pages/DashboardHomepage";
 import DashboardTopBar from "./pages/DashboardTopBar";
+import DashboardFooter from "./pages/DashboardFooter";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
@@ -80,6 +81,7 @@ const App = () => (
           <Route path="/dashboard/hero-carousel" element={<DashboardHeroCarousel />} />
           <Route path="/dashboard/homepage" element={<DashboardHomepage />} />
           <Route path="/dashboard/top-bar" element={<DashboardTopBar />} />
+          <Route path="/dashboard/footer" element={<DashboardFooter />} />
           <Route path="/dashboard/roles" element={<DashboardRoles />} />
           <Route path="/dashboard/categories" element={<DashboardCategories />} />
           <Route path="/messages" element={<Messages />} />
