@@ -679,29 +679,38 @@ export type Database = {
       }
       homepage_sections: {
         Row: {
+          background_color: string | null
           display_order: number
           id: string
           is_visible: boolean
+          items_limit: number | null
           section_key: string
           section_name: string
+          settings: Json | null
           updated_at: string | null
           updated_by: string | null
         }
         Insert: {
+          background_color?: string | null
           display_order?: number
           id?: string
           is_visible?: boolean
+          items_limit?: number | null
           section_key: string
           section_name: string
+          settings?: Json | null
           updated_at?: string | null
           updated_by?: string | null
         }
         Update: {
+          background_color?: string | null
           display_order?: number
           id?: string
           is_visible?: boolean
+          items_limit?: number | null
           section_key?: string
           section_name?: string
+          settings?: Json | null
           updated_at?: string | null
           updated_by?: string | null
         }

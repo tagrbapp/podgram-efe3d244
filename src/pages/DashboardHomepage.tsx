@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff, GripVertical, RefreshCw, LayoutGrid, Megaphone, Gavel, Package } from "lucide-react";
+import { Eye, EyeOff, GripVertical, RefreshCw, LayoutGrid, Megaphone, Gavel, Package, Settings2 } from "lucide-react";
 
 interface HomepageSection {
   id: string;
@@ -15,6 +17,9 @@ interface HomepageSection {
   is_visible: boolean;
   display_order: number;
   updated_at: string;
+  items_limit: number;
+  background_color: string;
+  settings: Record<string, any>;
 }
 
 const sectionIcons: Record<string, { icon: any; color: string; bgColor: string }> = {
@@ -40,9 +45,26 @@ const sectionIcons: Record<string, { icon: any; color: string; bgColor: string }
   },
 };
 
+const backgroundColorOptions = [
+  { value: "bg-white", label: "أبيض", preview: "#ffffff" },
+  { value: "bg-gray-50", label: "رمادي فاتح", preview: "#f9fafb" },
+  { value: "bg-gray-100", label: "رمادي", preview: "#f3f4f6" },
+  { value: "bg-background", label: "خلفية افتراضية", preview: "#ffffff" },
+  { value: "bg-slate-50", label: "سليت فاتح", preview: "#f8fafc" },
+  { value: "bg-blue-50", label: "أزرق فاتح", preview: "#eff6ff" },
+  { value: "bg-green-50", label: "أخضر فاتح", preview: "#f0fdf4" },
+  { value: "bg-purple-50", label: "بنفسجي فاتح", preview: "#faf5ff" },
+];
+
 export default function DashboardHomepage() {
   const queryClient = useQueryClient();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [editingSection, setEditingSection] = useState<HomepageSection | null>(null);
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+  const [settingsForm, setSettingsForm] = useState({
+    items_limit: 12,
+    background_color: "bg-gray-50",
+  });
 
   const { data: sections, isLoading } = useQuery({
     queryKey: ["homepage-sections", refreshKey],
@@ -60,14 +82,14 @@ export default function DashboardHomepage() {
   const updateSectionMutation = useMutation({
     mutationFn: async ({
       id,
-      is_visible,
+      updates,
     }: {
       id: string;
-      is_visible: boolean;
+      updates: Partial<HomepageSection>;
     }) => {
       const { error } = await supabase
         .from("homepage_sections")
-        .update({ is_visible, updated_by: (await supabase.auth.getUser()).data.user?.id })
+        .update({ ...updates, updated_by: (await supabase.auth.getUser()).data.user?.id })
         .eq("id", id);
 
       if (error) throw error;
@@ -82,7 +104,27 @@ export default function DashboardHomepage() {
   });
 
   const handleToggleVisibility = (id: string, currentVisibility: boolean) => {
-    updateSectionMutation.mutate({ id, is_visible: !currentVisibility });
+    updateSectionMutation.mutate({ id, updates: { is_visible: !currentVisibility } });
+  };
+
+  const handleOpenSettings = (section: HomepageSection) => {
+    setEditingSection(section);
+    setSettingsForm({
+      items_limit: section.items_limit,
+      background_color: section.background_color,
+    });
+    setIsSettingsDialogOpen(true);
+  };
+
+  const handleSaveSettings = () => {
+    if (!editingSection) return;
+    
+    updateSectionMutation.mutate({
+      id: editingSection.id,
+      updates: settingsForm,
+    });
+    setIsSettingsDialogOpen(false);
+    setEditingSection(null);
   };
 
   const handleRefreshPreview = () => {
@@ -186,6 +228,32 @@ export default function DashboardHomepage() {
                     }
                   />
                 </div>
+
+                {/* Additional Settings Info */}
+                <div className="space-y-2 p-3 bg-muted/20 rounded-lg text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">عدد العناصر:</span>
+                    <span className="font-medium">{section.items_limit}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">لون الخلفية:</span>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded border ${section.background_color}`}></div>
+                      <span className="font-medium text-xs">{section.background_color}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleOpenSettings(section)}
+                >
+                  <Settings2 className="w-4 h-4 mr-2" />
+                  إعدادات متقدمة
+                </Button>
+
                 <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
                   <RefreshCw className="w-3 h-3" />
                   <span>
@@ -204,6 +272,97 @@ export default function DashboardHomepage() {
           );
         })}
       </div>
+
+      {/* Settings Dialog */}
+      <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>إعدادات القسم: {editingSection?.section_name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Items Limit */}
+            {(editingSection?.section_key === "live_auctions" || 
+              editingSection?.section_key === "featured_listings") && (
+              <div className="space-y-2">
+                <Label htmlFor="items_limit">عدد العناصر المعروضة</Label>
+                <Input
+                  id="items_limit"
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={settingsForm.items_limit}
+                  onChange={(e) =>
+                    setSettingsForm({
+                      ...settingsForm,
+                      items_limit: parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  عدد {editingSection?.section_key === "live_auctions" ? "المزادات" : "الإعلانات"} التي سيتم عرضها في هذا القسم
+                </p>
+              </div>
+            )}
+
+            {/* Background Color */}
+            <div className="space-y-3">
+              <Label>لون الخلفية</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {backgroundColorOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        background_color: option.value,
+                      })
+                    }
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all hover:scale-105 ${
+                      settingsForm.background_color === option.value
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-primary/50"
+                    }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded border-2 ${option.value}`}
+                      style={{ backgroundColor: option.preview }}
+                    ></div>
+                    <div className="text-right flex-1">
+                      <p className="text-sm font-medium">{option.label}</p>
+                      <p className="text-xs text-muted-foreground">{option.value}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Preview */}
+            <div className="space-y-2">
+              <Label>معاينة</Label>
+              <div className={`p-6 rounded-lg border-2 ${settingsForm.background_color}`}>
+                <p className="text-sm text-center text-muted-foreground">
+                  معاينة القسم بالإعدادات الجديدة
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleSaveSettings} className="flex-1">
+              حفظ التغييرات
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSettingsDialogOpen(false);
+                setEditingSection(null);
+              }}
+            >
+              إلغاء
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card className="mt-8 max-w-3xl">
         <CardHeader>
