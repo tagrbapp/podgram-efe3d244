@@ -37,7 +37,6 @@ const DashboardAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<any[]>([]);
   const [listings, setListings] = useState<any[]>([]);
-  const [auctions, setAuctions] = useState<any[]>([]);
   const [actions, setActions] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -104,25 +103,6 @@ const DashboardAdmin = () => {
         console.error("Error loading listings:", listingsError);
       } else {
         setListings(listingsData || []);
-      }
-
-      // Load auctions
-      const { data: auctionsData, error: auctionsError } = await supabase
-        .from("auctions")
-        .select(`
-          *,
-          listings (
-            title,
-            profiles:user_id (full_name)
-          )
-        `)
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (auctionsError) {
-        console.error("Error loading auctions:", auctionsError);
-      } else {
-        setAuctions(auctionsData || []);
       }
 
       // Load admin actions
@@ -226,11 +206,6 @@ const DashboardAdmin = () => {
       listing.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredAuctions = auctions.filter(
-    (auction) =>
-      auction.listings?.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   if (loading) {
     return (
       <SidebarProvider>
@@ -266,10 +241,9 @@ const DashboardAdmin = () => {
       <AdminStats {...stats} />
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="users">المستخدمون ({users.length})</TabsTrigger>
-          <TabsTrigger value="listings">الإعلانات ({listings.length})</TabsTrigger>
-          <TabsTrigger value="auctions">المزادات ({auctions.length})</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="users">المستخدمون</TabsTrigger>
+          <TabsTrigger value="listings">الإعلانات</TabsTrigger>
           <TabsTrigger value="actions">سجل الإجراءات</TabsTrigger>
         </TabsList>
 
@@ -415,59 +389,6 @@ const DashboardAdmin = () => {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="auctions" className="space-y-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="بحث في المزادات..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-9"
-              />
-            </div>
-          </div>
-
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>العنوان</TableHead>
-                  <TableHead>البائع</TableHead>
-                  <TableHead>السعر الابتدائي</TableHead>
-                  <TableHead>السعر الحالي</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead>تاريخ البدء</TableHead>
-                  <TableHead>تاريخ الانتهاء</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAuctions.map((auction) => (
-                  <TableRow key={auction.id}>
-                    <TableCell className="font-medium">{auction.listings?.title || "-"}</TableCell>
-                    <TableCell>{auction.listings?.profiles?.full_name || "-"}</TableCell>
-                    <TableCell>{auction.starting_price.toLocaleString()} ريال</TableCell>
-                    <TableCell>
-                      {auction.current_bid ? `${auction.current_bid.toLocaleString()} ريال` : "-"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={auction.status === "active" ? "default" : auction.status === "ended" ? "secondary" : "outline"}>
-                        {auction.status === "active" ? "نشط" : auction.status === "ended" ? "منتهي" : auction.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(auction.start_time), "PP", { locale: ar })}
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(auction.end_time), "PP", { locale: ar })}
                     </TableCell>
                   </TableRow>
                 ))}
