@@ -1097,6 +1097,51 @@ export type Database = {
         }
         Relationships: []
       }
+      top_bar_settings: {
+        Row: {
+          background_color: string | null
+          cta_link: string
+          cta_text: string
+          delivery_text: string
+          id: string
+          is_active: boolean
+          phone_number: string | null
+          text_color: string | null
+          title: string
+          updated_at: string | null
+          updated_by: string | null
+          working_hours: string
+        }
+        Insert: {
+          background_color?: string | null
+          cta_link?: string
+          cta_text?: string
+          delivery_text?: string
+          id?: string
+          is_active?: boolean
+          phone_number?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          working_hours?: string
+        }
+        Update: {
+          background_color?: string | null
+          cta_link?: string
+          cta_text?: string
+          delivery_text?: string
+          id?: string
+          is_active?: boolean
+          phone_number?: string | null
+          text_color?: string | null
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          working_hours?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
