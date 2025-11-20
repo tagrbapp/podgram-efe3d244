@@ -187,7 +187,7 @@ const DashboardGamification = () => {
                   <div className="flex-1">
                     <p className="font-medium">{item.reason}</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(item.created_at), "PPp", { locale: ar })}
+                      {format(new Date(item.created_at), "PPp")}
                     </p>
                   </div>
                   <div

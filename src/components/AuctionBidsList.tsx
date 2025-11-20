@@ -213,12 +213,11 @@ const AuctionBidsList = ({ auctionId, startingPrice, highestBidderId }: AuctionB
                     <span>
                       {formatDistanceToNow(new Date(bid.created_at), {
                         addSuffix: true,
-                        locale: ar,
                       })}
                     </span>
                     <span className="text-muted-foreground/50">•</span>
                     <span>
-                      {format(new Date(bid.created_at), "PPp", { locale: ar })}
+                      {format(new Date(bid.created_at), "PPp")}
                     </span>
                   </div>
                 </div>

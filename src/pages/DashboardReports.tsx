@@ -161,7 +161,7 @@ const DashboardReports = () => {
       ["Active Listings", activeListings.toString()],
       ["Sold Listings", soldListings.toString()],
       ["Total Views", totalViews.toString()],
-      ["Total Revenue (SAR)", totalRevenue.toLocaleString('ar-SA')],
+      ["Total Revenue (SAR)", totalRevenue.toLocaleString('en-US')],
     ];
 
     autoTable(doc, {
@@ -181,7 +181,7 @@ const DashboardReports = () => {
 
       const listingsData = listings.map(l => [
         l.title.substring(0, 30) + (l.title.length > 30 ? "..." : ""),
-        l.price.toLocaleString('ar-SA'),
+        l.price.toLocaleString('en-US'),
         l.categories?.name || "N/A",
         l.status === "active" ? "Active" : l.status === "sold" ? "Sold" : "Inactive",
         (l.views || 0).toString(),
@@ -398,7 +398,7 @@ const DashboardReports = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">إجمالي المبيعات</p>
-                    <p className="text-2xl font-bold">{totalRevenue.toLocaleString('ar-SA')} ر.س</p>
+                    <p className="text-2xl font-bold">{totalRevenue.toLocaleString('en-US')} ر.س</p>
                   </div>
                 </div>
               </Card>
@@ -439,7 +439,7 @@ const DashboardReports = () => {
                       {listings.map((listing) => (
                         <tr key={listing.id} className="border-b border-border/50 hover:bg-muted/30">
                           <td className="p-3 text-sm">{listing.title}</td>
-                          <td className="p-3 text-sm">{listing.price.toLocaleString('ar-SA')} ر.س</td>
+                          <td className="p-3 text-sm">{listing.price.toLocaleString('en-US')} ر.س</td>
                           <td className="p-3 text-sm">{listing.categories?.name || "غير محدد"}</td>
                           <td className="p-3 text-sm">
                             <span className={`px-2 py-1 rounded-full text-xs ${

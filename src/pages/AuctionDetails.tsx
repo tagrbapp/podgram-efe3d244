@@ -289,7 +289,7 @@ const AuctionDetails = () => {
                       <span className="text-sm">تاريخ النشر</span>
                     </div>
                     <p className="text-sm font-medium">
-                      {format(new Date(auction.created_at), "PPp", { locale: ar })}
+                      {format(new Date(auction.created_at), "PPp")}
                     </p>
                   </div>
                 </div>
@@ -319,13 +319,13 @@ const AuctionDetails = () => {
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <span className="text-muted-foreground">تاريخ البدء</span>
                   <span className="font-medium">
-                    {format(new Date(auction.created_at), "PP", { locale: ar })}
+                    {format(new Date(auction.created_at), "PP")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <span className="text-muted-foreground">تاريخ الانتهاء</span>
                   <span className="font-medium">
-                    {format(new Date(auction.end_time), "PP", { locale: ar })}
+                    {format(new Date(auction.end_time), "PP")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">

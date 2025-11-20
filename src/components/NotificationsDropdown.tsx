@@ -148,7 +148,6 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatDistanceToNow(new Date(notification.created_at), {
                           addSuffix: true,
-                          locale: ar,
                         })}
                       </p>
                     </div>

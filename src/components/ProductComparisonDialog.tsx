@@ -69,7 +69,7 @@ const ProductComparisonDialog = ({ products, open, onClose, onRemove }: ProductC
 
                 {/* Price */}
                 <p className="text-2xl font-bold text-qultura-blue">
-                  {product.price.toLocaleString('ar-SA')} ريال
+                  {product.price.toLocaleString('en-US')} ريال
                 </p>
 
                 {/* Location */}

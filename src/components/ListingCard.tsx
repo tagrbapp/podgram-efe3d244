@@ -151,10 +151,10 @@ const ListingCard = ({ id, title, price, location, time, image, category }: List
           </div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-lg font-bold text-primary">
-              {(price * 0.95).toLocaleString("ar-SA")} ₽
+              {(price * 0.95).toLocaleString("en-US")} ₽
             </span>
             <span className="text-xl font-bold text-foreground">
-              {price.toLocaleString("ar-SA")} ₽
+              {price.toLocaleString("en-US")} ₽
             </span>
           </div>
           <div className="flex items-center gap-1 justify-end">

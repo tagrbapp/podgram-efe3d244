@@ -423,16 +423,16 @@ const DashboardAuctions = () => {
                               <span className="font-medium">{auction.title}</span>
                             </div>
                           </TableCell>
-                          <TableCell>{auction.starting_price.toLocaleString("ar-SA")} ريال</TableCell>
+                          <TableCell>{auction.starting_price.toLocaleString("en-US")} ريال</TableCell>
                           <TableCell className="font-bold text-primary">
                             {auction.current_bid 
-                              ? `${auction.current_bid.toLocaleString("ar-SA")} ريال`
+                              ? `${auction.current_bid.toLocaleString("en-US")} ريال`
                               : "لا توجد عروض"
                             }
                           </TableCell>
                           <TableCell>{auction.bids_count}</TableCell>
                           <TableCell>
-                            {format(new Date(auction.end_time), "PPp", { locale: ar })}
+                            {format(new Date(auction.end_time), "PPp")}
                           </TableCell>
                           <TableCell>
                             <span className={`px-2 py-1 rounded-full text-xs ${
