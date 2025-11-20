@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff, GripVertical, RefreshCw } from "lucide-react";
+import { Eye, EyeOff, GripVertical, RefreshCw, LayoutGrid, Megaphone, Gavel, Package } from "lucide-react";
 
 interface HomepageSection {
   id: string;
@@ -16,6 +16,29 @@ interface HomepageSection {
   display_order: number;
   updated_at: string;
 }
+
+const sectionIcons: Record<string, { icon: any; color: string; bgColor: string }> = {
+  hero: {
+    icon: LayoutGrid,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+  },
+  announcements: {
+    icon: Megaphone,
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
+  },
+  live_auctions: {
+    icon: Gavel,
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+  },
+  featured_listings: {
+    icon: Package,
+    color: "text-green-600",
+    bgColor: "bg-green-50",
+  },
+};
 
 export default function DashboardHomepage() {
   const queryClient = useQueryClient();
@@ -92,56 +115,94 @@ export default function DashboardHomepage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1 max-w-3xl">
-        {sections?.map((section) => (
-          <Card key={section.id} className="relative">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div className="flex items-center gap-3">
-                <GripVertical className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <CardTitle className="text-lg">{section.section_name}</CardTitle>
-                  <CardDescription className="text-sm mt-1">
-                    {section.section_key}
-                  </CardDescription>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 max-w-5xl">
+        {sections?.map((section) => {
+          const sectionConfig = sectionIcons[section.section_key] || {
+            icon: LayoutGrid,
+            color: "text-gray-600",
+            bgColor: "bg-gray-50",
+          };
+          const IconComponent = sectionConfig.icon;
+          
+          return (
+            <Card 
+              key={section.id} 
+              className={`relative transition-all duration-300 hover:shadow-lg ${
+                section.is_visible ? "border-primary/20" : "border-muted"
+              }`}
+            >
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-xl ${sectionConfig.bgColor}`}>
+                      <IconComponent className={`w-6 h-6 ${sectionConfig.color}`} />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        {section.section_name}
+                        {section.is_visible && (
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 bg-green-50 rounded-full">
+                            نشط
+                          </span>
+                        )}
+                      </CardTitle>
+                      <CardDescription className="text-sm mt-1">
+                        {section.section_key}
+                      </CardDescription>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {section.is_visible ? (
-                  <Eye className="w-5 h-5 text-green-500" />
-                ) : (
-                  <EyeOff className="w-5 h-5 text-gray-400" />
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor={`section-${section.id}`}
-                  className="text-sm font-medium"
-                >
-                  {section.is_visible ? "ظاهر" : "مخفي"}
-                </Label>
-                <Switch
-                  id={`section-${section.id}`}
-                  checked={section.is_visible}
-                  onCheckedChange={() =>
-                    handleToggleVisibility(section.id, section.is_visible)
-                  }
-                />
-              </div>
-              <div className="mt-3 text-xs text-muted-foreground">
-                آخر تحديث:{" "}
-                {new Date(section.updated_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {section.is_visible ? (
+                      <>
+                        <Eye className="w-5 h-5 text-green-500" />
+                        <Label
+                          htmlFor={`section-${section.id}`}
+                          className="text-sm font-medium cursor-pointer"
+                        >
+                          القسم ظاهر للزوار
+                        </Label>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="w-5 h-5 text-gray-400" />
+                        <Label
+                          htmlFor={`section-${section.id}`}
+                          className="text-sm font-medium cursor-pointer text-muted-foreground"
+                        >
+                          القسم مخفي
+                        </Label>
+                      </>
+                    )}
+                  </div>
+                  <Switch
+                    id={`section-${section.id}`}
+                    checked={section.is_visible}
+                    onCheckedChange={() =>
+                      handleToggleVisibility(section.id, section.is_visible)
+                    }
+                  />
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
+                  <RefreshCw className="w-3 h-3" />
+                  <span>
+                    آخر تحديث:{" "}
+                    {new Date(section.updated_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <Card className="mt-8 max-w-3xl">
