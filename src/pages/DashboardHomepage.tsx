@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff, GripVertical, RefreshCw, LayoutGrid, Megaphone, Gavel, Package, Settings2 } from "lucide-react";
+import { Eye, EyeOff, GripVertical, RefreshCw, LayoutGrid, Megaphone, Gavel, Package, Settings2, History, RotateCcw } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HomepageSection {
   id: string;
@@ -20,6 +21,17 @@ interface HomepageSection {
   items_limit: number;
   background_color: string;
   settings: Record<string, any>;
+}
+
+interface SectionHistory {
+  id: string;
+  section_id: string;
+  changed_by: string | null;
+  items_limit: number;
+  background_color: string;
+  is_visible: boolean;
+  settings: Record<string, any>;
+  created_at: string;
 }
 
 const sectionIcons: Record<string, { icon: any; color: string; bgColor: string }> = {
@@ -61,6 +73,7 @@ export default function DashboardHomepage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [editingSection, setEditingSection] = useState<HomepageSection | null>(null);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [settingsForm, setSettingsForm] = useState({
     items_limit: 12,
     background_color: "bg-gray-50",
@@ -77,6 +90,23 @@ export default function DashboardHomepage() {
       if (error) throw error;
       return data as HomepageSection[];
     },
+  });
+
+  const { data: history } = useQuery({
+    queryKey: ["section-history", editingSection?.id],
+    queryFn: async () => {
+      if (!editingSection?.id) return [];
+      const { data, error } = await supabase
+        .from("homepage_section_history")
+        .select("*")
+        .eq("section_id", editingSection.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data as SectionHistory[];
+    },
+    enabled: !!editingSection?.id && isHistoryDialogOpen,
   });
 
   const updateSectionMutation = useMutation({
@@ -131,6 +161,36 @@ export default function DashboardHomepage() {
     setRefreshKey((prev) => prev + 1);
     toast.success("تم تحديث المعاينة");
   };
+
+  const handleOpenHistory = (section: HomepageSection) => {
+    setEditingSection(section);
+    setIsHistoryDialogOpen(true);
+  };
+
+  const restoreHistoryMutation = useMutation({
+    mutationFn: async (historyItem: SectionHistory) => {
+      const { error } = await supabase
+        .from("homepage_sections")
+        .update({
+          items_limit: historyItem.items_limit,
+          background_color: historyItem.background_color,
+          is_visible: historyItem.is_visible,
+          settings: historyItem.settings,
+          updated_by: (await supabase.auth.getUser()).data.user?.id,
+        })
+        .eq("id", historyItem.section_id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["homepage-sections"] });
+      toast.success("تم استعادة الإعدادات بنجاح");
+      setIsHistoryDialogOpen(false);
+    },
+    onError: () => {
+      toast.error("حدث خطأ أثناء استعادة الإعدادات");
+    },
+  });
 
   if (isLoading) {
     return (
@@ -244,15 +304,26 @@ export default function DashboardHomepage() {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => handleOpenSettings(section)}
-                >
-                  <Settings2 className="w-4 h-4 mr-2" />
-                  إعدادات متقدمة
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleOpenSettings(section)}
+                  >
+                    <Settings2 className="w-4 h-4 mr-2" />
+                    إعدادات
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleOpenHistory(section)}
+                  >
+                    <History className="w-4 h-4 mr-2" />
+                    السجل
+                  </Button>
+                </div>
 
                 <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
                   <RefreshCw className="w-3 h-3" />
@@ -361,6 +432,74 @@ export default function DashboardHomepage() {
               إلغاء
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* History Dialog */}
+      <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>سجل التغييرات: {editingSection?.section_name}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="h-[500px] pr-4">
+            {history && history.length > 0 ? (
+              <div className="space-y-3">
+                {history.map((item) => (
+                  <Card key={item.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <History className="w-4 h-4" />
+                          <span>
+                            {new Date(item.created_at).toLocaleDateString("ar-SA", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">الحالة: </span>
+                            <span className={item.is_visible ? "text-green-600" : "text-gray-500"}>
+                              {item.is_visible ? "ظاهر" : "مخفي"}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">عدد العناصر: </span>
+                            <span className="font-medium">{item.items_limit}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">لون الخلفية: </span>
+                            <div className="inline-flex items-center gap-2">
+                              <div className={`w-4 h-4 rounded border ${item.background_color}`}></div>
+                              <span className="font-medium text-xs">{item.background_color}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => restoreHistoryMutation.mutate(item)}
+                        disabled={restoreHistoryMutation.isPending}
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        استعادة
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+                <History className="w-12 h-12 mb-2 opacity-50" />
+                <p>لا يوجد سجل تغييرات لهذا القسم</p>
+              </div>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
