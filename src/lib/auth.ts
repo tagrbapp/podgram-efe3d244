@@ -50,6 +50,20 @@ export const updatePassword = async (newPassword: string) => {
   return { error };
 };
 
+export const resendVerificationEmail = async (email: string) => {
+  const redirectUrl = `${window.location.origin}/`;
+  
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: {
+      emailRedirectTo: redirectUrl,
+    }
+  });
+  
+  return { error };
+};
+
 export const getSession = async (): Promise<{ session: Session | null; user: User | null }> => {
   const { data: { session }, error } = await supabase.auth.getSession();
   return { 
