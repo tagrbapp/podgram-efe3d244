@@ -2,27 +2,12 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ListingCard from "@/components/ListingCard";
-import CategoryCircle from "@/components/CategoryCircle";
 import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Gavel, TrendingUp } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import categoryWatches from "@/assets/category-watches.jpg";
-import categoryBags from "@/assets/category-bags.jpg";
-import categoryJewelry from "@/assets/category-jewelry.jpg";
-import categoryMens from "@/assets/category-mens.jpg";
-
-interface Category {
-  id: string;
-  name: string;
-  image: string;
-  count?: number;
-  badge?: string;
-  badgeColor?: string;
-}
 
 interface Listing {
   id: string;
@@ -50,7 +35,6 @@ interface Auction {
 }
 
 const Index = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
@@ -58,24 +42,9 @@ const Index = () => {
   const [auctionsLoading, setAuctionsLoading] = useState(true);
 
   useEffect(() => {
-    fetchCategories();
     fetchListings();
     fetchAuctions();
   }, []);
-
-  const fetchCategories = async () => {
-    const { data } = await supabase.from("categories").select("*");
-    if (data) {
-      const categoriesWithImages: Category[] = [
-        { id: data[0]?.id || "1", name: "ساعات فاخرة", image: categoryWatches, count: 120 },
-        { id: data[1]?.id || "2", name: "حقائب يد", image: categoryBags, count: 85, badge: "حمية", badgeColor: "bg-yellow-500" },
-        { id: data[2]?.id || "3", name: "مجوهرات", image: categoryJewelry, count: 95 },
-        { id: data[3]?.id || "4", name: "أزياء رجالية", image: categoryMens, count: 150 },
-        { id: data[0]?.id || "5", name: "عطور", image: categoryWatches, count: 60, badge: "خصم 60%", badgeColor: "bg-red-500" },
-      ];
-      setCategories(categoriesWithImages);
-    }
-  };
 
   const fetchListings = async () => {
     setLoading(true);
@@ -136,15 +105,6 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main>
-        <section className="py-8 bg-white border-b border-gray-100">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
-              {categories.map((category) => (
-                <CategoryCircle key={category.id} image={category.image} title={category.name} badge={category.badge} badgeColor={category.badgeColor} />
-              ))}
-            </div>
-          </div>
-        </section>
 
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
