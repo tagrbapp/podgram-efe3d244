@@ -3,7 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ListingCard from "@/components/ListingCard";
 import CategoryCircle from "@/components/CategoryCircle";
-import ActionCard from "@/components/ActionCard";
 import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
@@ -15,8 +14,6 @@ import categoryWatches from "@/assets/category-watches.jpg";
 import categoryBags from "@/assets/category-bags.jpg";
 import categoryJewelry from "@/assets/category-jewelry.jpg";
 import categoryMens from "@/assets/category-mens.jpg";
-import actionTradein from "@/assets/action-tradein.jpg";
-import actionSell from "@/assets/action-sell.jpg";
 
 interface Category {
   id: string;
@@ -279,18 +276,6 @@ const Index = () => {
                 )}
               </TabsContent>
             </Tabs>
-          </div>
-        </section>
-
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <ActionCard title="استبدال" image={actionTradein} bgColor="bg-sky-200" />
-              <ActionCard title="بيع منتجك" image={actionSell} bgColor="bg-amber-200" />
-              <ActionCard title="رهن" image={actionTradein} bgColor="bg-orange-200" />
-              <ActionCard title="تقييم" image={actionSell} bgColor="bg-blue-300" />
-              <ActionCard title="تنظيف الخزانة" image={actionTradein} bgColor="bg-stone-300" />
-            </div>
           </div>
         </section>
 
