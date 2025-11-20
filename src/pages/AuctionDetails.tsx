@@ -22,6 +22,7 @@ import AuctionSellerSidebar from "@/components/AuctionSellerSidebar";
 import { BidderReviewForm } from "@/components/BidderReviewForm";
 import { AuctionReportDialog } from "@/components/AuctionReportDialog";
 import SEO from "@/components/SEO";
+import AuctionSchema from "@/components/AuctionSchema";
 
 interface Auction {
   id: string;
@@ -163,6 +164,19 @@ const AuctionDetails = () => {
         keywords={`مزاد ${auction.title}, ${category?.name || ''}, مزادات, منتجات فاخرة`}
         image={auction.images?.[0]}
         type="product"
+      />
+      <AuctionSchema 
+        name={auction.title}
+        description={auction.description || undefined}
+        image={auction.images || undefined}
+        startingPrice={auction.starting_price}
+        currentBid={auction.current_bid || undefined}
+        priceCurrency="SAR"
+        auctionStart={auction.created_at}
+        auctionEnd={auction.end_time}
+        category={category?.name}
+        url={`https://podgram.lovable.app/auction/${auction.id}`}
+        status={auction.status as 'active' | 'ended'}
       />
       <Navbar />
       
