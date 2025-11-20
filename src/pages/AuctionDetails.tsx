@@ -107,7 +107,7 @@ const AuctionDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-12 text-center">
           <p>جاري التحميل...</p>
@@ -118,7 +118,7 @@ const AuctionDetails = () => {
 
   if (!auction) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="container mx-auto px-4 py-12 text-center">
           <h1 className="text-2xl font-bold mb-4">المزاد غير موجود</h1>
@@ -134,7 +134,7 @@ const AuctionDetails = () => {
   const isActive = auction.status === "active" && new Date(auction.end_time) > new Date();
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8" dir="rtl">
