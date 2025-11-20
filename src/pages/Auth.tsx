@@ -19,7 +19,19 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
-  fullName: z.string().trim().min(2, "الاسم يجب أن يكون حرفين على الأقل").max(50, "الاسم طويل جداً"),
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "الاسم يجب أن يكون حرفين على الأقل")
+    .max(50, "الاسم طويل جداً")
+    .refine(
+      (name) => /^[\u0600-\u06FF\s]+$/.test(name),
+      "الاسم يجب أن يحتوي على أحرف عربية فقط"
+    )
+    .refine(
+      (name) => name.split(/\s+/).filter(word => word.length > 0).length >= 2,
+      "يجب إدخال الاسم الكامل (اسمين على الأقل)"
+    ),
   email: z.string().trim().email("البريد الإلكتروني غير صحيح"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
   confirmPassword: z.string(),
@@ -174,9 +186,9 @@ const Auth = () => {
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2">
+                  <Label htmlFor="email" className="flex items-center gap-2 justify-end">
+                    <span>البريد الإلكتروني</span>
                     <Mail className="h-4 w-4" />
-                    البريد الإلكتروني
                   </Label>
                   <Input
                     id="email"
@@ -191,9 +203,9 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="flex items-center gap-2">
+                  <Label htmlFor="password" className="flex items-center gap-2 justify-end">
+                    <span>كلمة المرور</span>
                     <Lock className="h-4 w-4" />
-                    كلمة المرور
                   </Label>
                   <div className="relative">
                     <Input
@@ -253,9 +265,9 @@ const Auth = () => {
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="flex items-center gap-2">
+                  <Label htmlFor="name" className="flex items-center gap-2 justify-end">
+                    <span>الاسم الكامل</span>
                     <User className="h-4 w-4" />
-                    الاسم الكامل
                   </Label>
                   <Input
                     id="name"
@@ -264,14 +276,18 @@ const Auth = () => {
                     placeholder="أحمد محمد"
                     required
                     disabled={isLoading}
-                    className="transition-smooth"
+                    dir="rtl"
+                    className="transition-smooth text-right"
                   />
+                  <p className="text-xs text-muted-foreground text-right">
+                    يجب إدخال اسمين عربيين على الأقل (بدون أرقام أو رموز)
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="register-email" className="flex items-center gap-2">
+                  <Label htmlFor="register-email" className="flex items-center gap-2 justify-end">
+                    <span>البريد الإلكتروني</span>
                     <Mail className="h-4 w-4" />
-                    البريد الإلكتروني
                   </Label>
                   <Input
                     id="register-email"
@@ -286,9 +302,9 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="register-password" className="flex items-center gap-2">
+                  <Label htmlFor="register-password" className="flex items-center gap-2 justify-end">
+                    <span>كلمة المرور</span>
                     <Lock className="h-4 w-4" />
-                    كلمة المرور
                   </Label>
                   <div className="relative">
                     <Input
@@ -309,15 +325,15 @@ const Auth = () => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground text-right">
                     يجب أن تحتوي على 6 أحرف على الأقل
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password" className="flex items-center gap-2">
+                  <Label htmlFor="confirm-password" className="flex items-center gap-2 justify-end">
+                    <span>تأكيد كلمة المرور</span>
                     <Lock className="h-4 w-4" />
-                    تأكيد كلمة المرور
                   </Label>
                   <div className="relative">
                     <Input
