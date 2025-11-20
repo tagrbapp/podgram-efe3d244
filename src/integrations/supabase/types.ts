@@ -844,6 +844,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           created_at: string
           full_name: string
@@ -852,6 +855,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name: string
@@ -860,6 +866,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string
@@ -1119,6 +1128,10 @@ export type Database = {
       admin_unblock_user: {
         Args: { _admin_id: string; _user_id: string }
         Returns: undefined
+      }
+      approve_user: {
+        Args: { _admin_id: string; _approve: boolean; _user_id: string }
+        Returns: Json
       }
       calculate_auction_stats: {
         Args: { _days?: number; _user_id: string }

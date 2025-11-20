@@ -14,6 +14,7 @@ import { Gavel, TrendingUp, Timer, DollarSign, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { convertArabicToEnglishNumbers } from "@/lib/utils";
+import { AccountApprovalBanner } from "@/components/AccountApprovalBanner";
 
 interface Category {
   id: string;
@@ -42,6 +43,7 @@ const DashboardAuctions = () => {
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
 
   // Form state
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -62,6 +64,17 @@ const DashboardAuctions = () => {
       if (!user) {
         navigate("/auth");
         return;
+      }
+
+      // Check approval status
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("approval_status")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        setApprovalStatus(profile.approval_status);
       }
 
       // Fetch categories
@@ -109,6 +122,12 @@ const DashboardAuctions = () => {
 
     if (!selectedCategory || !auctionTitle || !startingPrice || !endTime) {
       toast.error("الرجاء ملء جميع الحقول المطلوبة");
+      return;
+    }
+
+    // Check approval status
+    if (approvalStatus !== "approved") {
+      toast.error("يجب الموافقة على حسابك أولاً لإنشاء مزادات");
       return;
     }
 
@@ -215,6 +234,8 @@ const DashboardAuctions = () => {
                 أنشئ وأدر مزادات منتجاتك الفاخرة
               </p>
             </div>
+
+            <AccountApprovalBanner />
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
