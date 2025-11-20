@@ -677,6 +677,36 @@ export type Database = {
           },
         ]
       }
+      homepage_sections: {
+        Row: {
+          display_order: number
+          id: string
+          is_visible: boolean
+          section_key: string
+          section_name: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          section_key: string
+          section_name: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          section_key?: string
+          section_name?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           category_id: string | null
