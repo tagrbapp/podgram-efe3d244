@@ -13,6 +13,7 @@ import AuctionTimer from "@/components/AuctionTimer";
 import BidForm from "@/components/BidForm";
 import AuctionBidsList from "@/components/AuctionBidsList";
 import ImageLightbox from "@/components/ImageLightbox";
+import AuctionShareButtons from "@/components/AuctionShareButtons";
 
 interface Auction {
   id: string;
@@ -138,14 +139,19 @@ const AuctionDetails = () => {
       <Navbar />
       
       <div className="container mx-auto px-4 py-8" dir="rtl">
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/auctions")}
-          className="mb-6"
-        >
-          ← العودة للمزادات
-        </Button>
+        {/* Back button and Share button */}
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/auctions")}
+          >
+            ← العودة للمزادات
+          </Button>
+          <AuctionShareButtons 
+            auctionId={auction.id} 
+            title={auction.title}
+          />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Right Side */}
