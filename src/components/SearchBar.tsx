@@ -7,6 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 interface SearchBarProps {
   value: string;
@@ -14,7 +16,26 @@ interface SearchBarProps {
   onSearch: () => void;
 }
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 const SearchBar = ({ value, onChange, onSearch }: SearchBarProps) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from("categories")
+        .select("id, name")
+        .order("name");
+      
+      if (data) setCategories(data);
+    };
+    
+    fetchCategories();
+  }, []);
   return (
     <div className="relative w-full max-w-2xl">
       <div className="flex items-center bg-gray-50 border border-gray-200 rounded-full h-14 overflow-hidden hover:border-qultura-blue transition-smooth">
@@ -29,11 +50,11 @@ const SearchBar = ({ value, onChange, onSearch }: SearchBarProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem>سيارات</DropdownMenuItem>
-            <DropdownMenuItem>عقارات</DropdownMenuItem>
-            <DropdownMenuItem>إلكترونيات واتصالات</DropdownMenuItem>
-            <DropdownMenuItem>أثاث ومفروشات</DropdownMenuItem>
-            <DropdownMenuItem>خدمات</DropdownMenuItem>
+            {categories.map((category) => (
+              <DropdownMenuItem key={category.id}>
+                {category.name}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 
