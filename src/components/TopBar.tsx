@@ -1,23 +1,84 @@
-import { Phone } from "lucide-react";
+import { Phone, Clock, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface TopBarSettings {
+  title: string;
+  delivery_text: string;
+  working_hours: string;
+  cta_text: string;
+  cta_link: string;
+  phone_number: string | null;
+  background_color: string;
+  text_color: string;
+}
 
 const TopBar = () => {
+  const [settings, setSettings] = useState<TopBarSettings>({
+    title: "Podgram - أول منصة فاخرة في المنطقة",
+    delivery_text: "توصيل سريع وآمن",
+    working_hours: "من 9:00 إلى 21:00",
+    cta_text: "بيع منتجك",
+    cta_link: "/add-listing",
+    phone_number: null,
+    background_color: "#1a1a1a",
+    text_color: "#ffffff",
+  });
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    const { data } = await supabase
+      .from("top_bar_settings")
+      .select("*")
+      .eq("is_active", true)
+      .single();
+
+    if (data) {
+      setSettings(data);
+    }
+  };
+
   return (
-    <div className="w-full bg-white border-b border-gray-100">
+    <div 
+      className="w-full border-b"
+      style={{
+        backgroundColor: settings.background_color,
+        color: settings.text_color,
+      }}
+    >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-10 text-xs text-gray-600">
+        <div className="flex items-center justify-between h-10 text-xs">
           <div className="flex items-center gap-6">
-            <span>Podgram - أول منصة فاخرة في المنطقة</span>
-            <span className="hidden md:inline">توصيل سريع وآمن</span>
+            <span className="font-medium">{settings.title}</span>
+            <span className="hidden md:inline flex items-center gap-1.5">
+              <Truck className="h-3 w-3" />
+              {settings.delivery_text}
+            </span>
           </div>
           
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Phone className="h-3 w-3" />
-              <span>من 9:00 إلى 21:00</span>
+          <div className="flex items-center gap-4 md:gap-6">
+            {settings.phone_number && (
+              <a 
+                href={`tel:${settings.phone_number}`}
+                className="hidden sm:flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
+                <Phone className="h-3 w-3" />
+                <span>{settings.phone_number}</span>
+              </a>
+            )}
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3" />
+              <span className="hidden sm:inline">{settings.working_hours}</span>
             </div>
-            <Link to="/dashboard" className="hover:text-qultura-blue transition-smooth">
-              بيع منتجك
+            <Link 
+              to={settings.cta_link} 
+              className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all font-medium"
+            >
+              {settings.cta_text}
             </Link>
           </div>
         </div>
