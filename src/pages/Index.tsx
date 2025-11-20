@@ -21,17 +21,18 @@ interface Listing {
 
 interface Auction {
   id: string;
-  listing_id: string;
+  listing_id: string | null;
+  title: string;
+  images: string[] | null;
+  category_id: string | null;
   starting_price: number;
   current_bid: number | null;
   end_time: string;
   status: string;
-  listings: {
-    title: string;
-    images: string[] | null;
-    categories: { name: string } | null;
+  categories: {
+    name: string;
   } | null;
-  bids: { count: number }[];
+  bid_count: number;
 }
 
 const Index = () => {
@@ -72,19 +73,31 @@ const Index = () => {
       .from("auctions")
       .select(`
         *,
-        listings (
-          title,
-          images,
-          categories (name)
-        ),
-        bids (count)
+        categories (
+          name
+        )
       `)
       .in("status", ["active", "ended"])
       .order("created_at", { ascending: false })
       .limit(6);
 
     if (data) {
-      setAuctions(data as unknown as Auction[]);
+      // Fetch bid counts for each auction
+      const auctionsWithCounts = await Promise.all(
+        data.map(async (auction) => {
+          const { count } = await supabase
+            .from("bids")
+            .select("*", { count: "exact", head: true })
+            .eq("auction_id", auction.id);
+          
+          return {
+            ...auction,
+            bid_count: count || 0,
+          };
+        })
+      );
+      
+      setAuctions(auctionsWithCounts);
     }
     setAuctionsLoading(false);
   };
@@ -175,15 +188,15 @@ const Index = () => {
                         <AuctionCard
                           key={auction.id}
                           id={auction.id}
-                          listingId={auction.listing_id}
-                          title={auction.listings?.title || "غير محدد"}
-                          currentBid={auction.current_bid || 0}
+                          listingId={auction.listing_id || ""}
+                          title={auction.title}
+                          currentBid={auction.current_bid}
                           startingPrice={auction.starting_price}
                           endTime={auction.end_time}
-                          image={auction.listings?.images?.[0] || "/placeholder.svg"}
-                          category={auction.listings?.categories?.name || "غير محدد"}
+                          image={auction.images?.[0] || "/placeholder.svg"}
+                          category={auction.categories?.name || "غير محدد"}
                           status={auction.status}
-                          totalBids={auction.bids?.[0]?.count || 0}
+                          totalBids={auction.bid_count}
                         />
                       ))}
                   </div>
@@ -213,15 +226,15 @@ const Index = () => {
                         <AuctionCard
                           key={auction.id}
                           id={auction.id}
-                          listingId={auction.listing_id}
-                          title={auction.listings?.title || "غير محدد"}
-                          currentBid={auction.current_bid || 0}
+                          listingId={auction.listing_id || ""}
+                          title={auction.title}
+                          currentBid={auction.current_bid}
                           startingPrice={auction.starting_price}
                           endTime={auction.end_time}
-                          image={auction.listings?.images?.[0] || "/placeholder.svg"}
-                          category={auction.listings?.categories?.name || "غير محدد"}
+                          image={auction.images?.[0] || "/placeholder.svg"}
+                          category={auction.categories?.name || "غير محدد"}
                           status={auction.status}
-                          totalBids={auction.bids?.[0]?.count || 0}
+                          totalBids={auction.bid_count}
                         />
                       ))}
                   </div>
