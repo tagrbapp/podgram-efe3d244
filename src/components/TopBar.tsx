@@ -1,4 +1,5 @@
 import { Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const TopBar = () => {
   return (
@@ -15,9 +16,9 @@ const TopBar = () => {
               <Phone className="h-3 w-3" />
               <span>من 9:00 إلى 21:00</span>
             </div>
-            <button className="hover:text-qultura-blue transition-smooth">
+            <Link to="/dashboard" className="hover:text-qultura-blue transition-smooth">
               بيع منتجك
-            </button>
+            </Link>
           </div>
         </div>
       </div>
