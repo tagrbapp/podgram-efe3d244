@@ -5,6 +5,7 @@ import ListingCard from "@/components/ListingCard";
 import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
+import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { Gavel, TrendingUp } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -164,6 +165,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Podgram - منصة السوق الفاخرة الأولى | مزادات وإعلانات المنتجات الفاخرة"
+        description="اكتشف أفضل منصة لبيع وشراء المنتجات الفاخرة في السعودية. ساعات، حقائب، مجوهرات، سيارات وعقارات. مزادات مباشرة وإعلانات موثوقة."
+        keywords="مزادات فاخرة, ساعات فاخرة, حقائب فاخرة, مجوهرات, سيارات فاخرة, عقارات, بيع منتجات فاخرة, السعودية"
+      />
       <Navbar />
       <main className="overflow-hidden">
         {/* Hero Section */}

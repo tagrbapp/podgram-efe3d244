@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import ListingCard from "@/components/ListingCard";
 import AuctionCard from "@/components/AuctionCard";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -310,6 +311,11 @@ const Catalog = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="الكتالوج - Podgram | تصفح جميع المنتجات الفاخرة"
+        description="تصفح مجموعة واسعة من المنتجات الفاخرة والمزادات. ساعات، حقائب، مجوهرات، سيارات، عقارات وأكثر. اعثر على ما تبحث عنه الآن."
+        keywords="كتالوج, تصفح منتجات, منتجات فاخرة, إعلانات, مزادات, ساعات, حقائب, سيارات, عقارات"
+      />
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
