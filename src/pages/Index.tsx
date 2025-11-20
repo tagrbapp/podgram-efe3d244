@@ -121,11 +121,9 @@ const Index = () => {
 
         <section className="py-12 bg-gray-50">
           <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
-              {/* Left Side - Carousel Section */}
+            {/* Hero Section - Hidden temporarily */}
+            {/* <div className="grid lg:grid-cols-2 gap-8 items-center">
               <HeroCarousel />
-
-              {/* Right Side - Text Section */}
               <div className="text-center lg:text-right px-8">
                 <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
                   It is profitable to buy<br/>
@@ -139,7 +137,7 @@ const Index = () => {
                   اكتشف المزيد
                 </button>
               </div>
-            </div>
+            </div> */}
 
             {/* Announcements Section */}
             <div className="mt-12">
