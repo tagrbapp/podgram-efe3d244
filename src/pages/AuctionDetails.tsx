@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, Tag, TrendingUp, User, Calendar, Gavel } from "lucide-react";
+import { Clock, Tag, TrendingUp, User, Calendar, Gavel, ArrowLeft } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import AuctionTimer from "@/components/AuctionTimer";
@@ -14,6 +14,7 @@ import BidForm from "@/components/BidForm";
 import AuctionBidsList from "@/components/AuctionBidsList";
 import ImageLightbox from "@/components/ImageLightbox";
 import AuctionShareButtons from "@/components/AuctionShareButtons";
+import { useAuctionRealtime } from "@/hooks/useAuctionRealtime";
 
 interface Auction {
   id: string;
@@ -55,11 +56,6 @@ const AuctionDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    fetchAuctionDetails();
-    checkUser();
-  }, [id]);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -106,6 +102,14 @@ const AuctionDetails = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAuctionDetails();
+    checkUser();
+  }, [id]);
+
+  // Use realtime hook for live updates
+  useAuctionRealtime(id || "", fetchAuctionDetails);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -139,13 +143,15 @@ const AuctionDetails = () => {
       <Navbar />
       
       <div className="container mx-auto px-4 py-8" dir="rtl">
-        {/* Back button and Share button */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Enhanced Header with Back button and Share button */}
+        <div className="flex items-center justify-between mb-8 bg-card/50 backdrop-blur-sm rounded-2xl p-4 border border-border/50">
           <Button
             variant="ghost"
             onClick={() => navigate("/auctions")}
+            className="gap-2 hover:bg-primary/10"
           >
-            ← العودة للمزادات
+            <ArrowLeft className="h-4 w-4" />
+            العودة للمزادات
           </Button>
           <AuctionShareButtons 
             auctionId={auction.id} 
@@ -156,91 +162,106 @@ const AuctionDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Right Side */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Images */}
+            {/* Enhanced Images with gradient overlay */}
             {auction.images && auction.images.length > 0 ? (
-              <Card className="p-6">
-                <div className="grid grid-cols-1 gap-4">
-                  <img
-                    src={auction.images[0]}
-                    alt={auction.title}
-                    className="w-full h-96 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => setSelectedImageIndex(0)}
-                  />
+              <Card className="overflow-hidden border-2 border-border/50 shadow-xl">
+                <div className="grid grid-cols-1 gap-4 p-6">
+                  <div className="relative group">
+                    <img
+                      src={auction.images[0]}
+                      alt={auction.title}
+                      className="w-full h-96 object-cover rounded-xl cursor-pointer transition-all duration-300 group-hover:scale-105"
+                      onClick={() => setSelectedImageIndex(0)}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                   {auction.images.length > 1 && (
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-4 gap-3">
                       {auction.images.slice(1).map((image, index) => (
-                        <img
-                          key={index + 1}
-                          src={image}
-                          alt={`${auction.title} ${index + 2}`}
-                          className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => setSelectedImageIndex(index + 1)}
-                        />
+                        <div key={index + 1} className="relative group">
+                          <img
+                            src={image}
+                            alt={`${auction.title} ${index + 2}`}
+                            className="w-full h-24 object-cover rounded-lg cursor-pointer transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
+                            onClick={() => setSelectedImageIndex(index + 1)}
+                          />
+                          <div className="absolute inset-0 bg-primary/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
                       ))}
                     </div>
                   )}
                 </div>
               </Card>
             ) : (
-              <Card className="p-6 text-center bg-muted/50">
-                <p className="text-muted-foreground">لا توجد صور للمزاد</p>
+              <Card className="p-12 text-center bg-gradient-to-br from-muted/30 to-muted/50 border-2 border-dashed">
+                <TrendingUp className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-muted-foreground text-lg">لا توجد صور للمزاد</p>
               </Card>
             )}
 
-            {/* Details */}
-            <Card className="p-6">
+            {/* Enhanced Details Card */}
+            <Card className="p-8 bg-gradient-to-br from-card to-card/50 border-2 border-border/50 shadow-lg">
               <div className="space-y-6">
                 <div>
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center gap-2 mb-4 flex-wrap">
                     {category && (
-                      <Badge variant="secondary" className="text-sm">
+                      <Badge variant="secondary" className="text-sm px-3 py-1">
+                        <Tag className="h-3 w-3 ml-1" />
                         {category.name}
                       </Badge>
                     )}
                     <Badge
                       variant={isActive ? "default" : "secondary"}
-                      className="text-sm"
+                      className={`text-sm px-3 py-1 ${isActive ? 'bg-green-600 hover:bg-green-700 animate-pulse' : ''}`}
                     >
+                      <Gavel className="h-3 w-3 ml-1" />
                       {isActive ? "مزاد نشط" : "مزاد منتهي"}
                     </Badge>
+                    {isActive && (
+                      <Badge variant="outline" className="text-sm px-3 py-1 border-green-500 text-green-600">
+                        مباشر
+                      </Badge>
+                    )}
                   </div>
-                  <h1 className="text-3xl font-bold mb-4">{auction.title}</h1>
+                  <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    {auction.title}
+                  </h1>
                   {auction.description && (
-                    <p className="text-muted-foreground">{auction.description}</p>
+                    <p className="text-muted-foreground text-lg leading-relaxed">{auction.description}</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
                       <Tag className="h-4 w-4" />
                       <span className="text-sm">السعر الابتدائي</span>
                     </div>
-                    <p className="text-xl font-bold">
-                      {auction.starting_price.toLocaleString("ar-SA")} ريال
+                    <p className="text-2xl font-bold text-primary">
+                      {auction.starting_price.toLocaleString("ar-SA")} <span className="text-sm">ريال</span>
                     </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
                       <TrendingUp className="h-4 w-4" />
                       <span className="text-sm">الحد الأدنى للزيادة</span>
                     </div>
-                    <p className="text-xl font-bold">
-                      {auction.bid_increment.toLocaleString("ar-SA")} ريال
+                    <p className="text-2xl font-bold text-accent">
+                      {auction.bid_increment.toLocaleString("ar-SA")} <span className="text-sm">ريال</span>
                     </p>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
                       <Gavel className="h-4 w-4" />
                       <span className="text-sm">عدد المزايدات</span>
                     </div>
-                    <p className="text-xl font-bold">{bids.length}</p>
+                    <p className="text-2xl font-bold text-green-600">{bids.length}</p>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border/50">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-2">
                       <Calendar className="h-4 w-4" />
                       <span className="text-sm">تاريخ النشر</span>
                     </div>
@@ -262,35 +283,38 @@ const AuctionDetails = () => {
             </Card>
           </div>
 
-          {/* Sidebar - Left Side */}
+          {/* Enhanced Sidebar - Left Side */}
           <div className="space-y-6">
-            {/* Timer and Current Bid */}
-            <Card className="p-6 sticky top-4">
+            {/* Enhanced Timer and Current Bid Card */}
+            <Card className="p-6 sticky top-4 bg-gradient-to-br from-card via-card to-primary/5 border-2 border-border/50 shadow-2xl">
               <div className="space-y-6">
                 {isActive && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-sm">الوقت المتبقي</span>
+                  <div className="bg-muted/30 rounded-xl p-4 border border-border/30">
+                    <div className="flex items-center gap-2 mb-3 text-muted-foreground">
+                      <Clock className="h-5 w-5 animate-pulse" />
+                      <span className="text-sm font-medium">الوقت المتبقي</span>
                     </div>
                     <AuctionTimer endTime={auction.end_time} />
                   </div>
                 )}
 
-                <div>
-                  <div className="flex items-center gap-2 mb-2 text-muted-foreground">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm">السعر الحالي</span>
+                <div className="text-center py-4">
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                    <span className="text-sm text-muted-foreground font-medium">السعر الحالي</span>
                   </div>
-                  <p className="text-4xl font-bold text-primary">
-                    {auction.current_bid
-                      ? auction.current_bid.toLocaleString("ar-SA")
-                      : auction.starting_price.toLocaleString("ar-SA")}{" "}
-                    ريال
-                  </p>
+                  <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 rounded-2xl p-6 border border-primary/20">
+                    <p className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      {auction.current_bid
+                        ? auction.current_bid.toLocaleString("ar-SA")
+                        : auction.starting_price.toLocaleString("ar-SA")}
+                    </p>
+                    <p className="text-xl font-bold text-muted-foreground mt-2">ريال</p>
+                  </div>
                   {!auction.current_bid && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      لا توجد مزايدات بعد
+                    <p className="text-sm text-muted-foreground mt-3 flex items-center justify-center gap-2">
+                      <Gavel className="h-4 w-4" />
+                      لا توجد مزايدات بعد - كن الأول!
                     </p>
                   )}
                 </div>
@@ -348,31 +372,34 @@ const AuctionDetails = () => {
               </div>
             </Card>
 
-            {/* Auction Info */}
-            <Card className="p-6">
-              <h3 className="font-bold mb-4">معلومات إضافية</h3>
+            {/* Enhanced Auction Info Card */}
+            <Card className="p-6 bg-gradient-to-br from-card to-muted/20 border-2 border-border/50">
+              <h3 className="font-bold mb-4 flex items-center gap-2 text-lg">
+                <Calendar className="h-5 w-5 text-primary" />
+                معلومات إضافية
+              </h3>
               <div className="space-y-3 text-sm">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <span className="text-muted-foreground">رقم المزاد</span>
-                  <span className="font-medium">{auction.id.slice(0, 8)}</span>
+                  <span className="font-mono font-bold">{auction.id.slice(0, 8)}</span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <span className="text-muted-foreground">تاريخ البدء</span>
                   <span className="font-medium">
                     {format(new Date(auction.created_at), "PP", { locale: ar })}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <span className="text-muted-foreground">تاريخ الانتهاء</span>
                   <span className="font-medium">
                     {format(new Date(auction.end_time), "PP", { locale: ar })}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <span className="text-muted-foreground">الحالة</span>
-                  <span className="font-medium">
+                  <Badge variant={isActive ? "default" : "secondary"} className="font-medium">
                     {isActive ? "نشط" : "منتهي"}
-                  </span>
+                  </Badge>
                 </div>
               </div>
             </Card>
