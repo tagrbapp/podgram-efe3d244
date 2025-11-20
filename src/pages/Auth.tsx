@@ -175,20 +175,20 @@ const Auth = () => {
             <p className="text-muted-foreground">سجل دخولك أو أنشئ حساب جديد للبدء</p>
           </div>
 
-          <Card className="p-8 shadow-elegant border-2">
+          <Card className="p-8 shadow-elegant border-2" dir="rtl">
             <Tabs defaultValue="login" dir="rtl">
               <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
-                <TabsTrigger value="login" className="text-base">تسجيل الدخول</TabsTrigger>
                 <TabsTrigger value="register" className="text-base">حساب جديد</TabsTrigger>
+                <TabsTrigger value="login" className="text-base">تسجيل الدخول</TabsTrigger>
               </TabsList>
 
               {/* تسجيل الدخول */}
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2 justify-end">
-                    <span>البريد الإلكتروني</span>
+                  <Label htmlFor="email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
+                    <span>البريد الإلكتروني</span>
                   </Label>
                   <Input
                     id="email"
@@ -198,14 +198,14 @@ const Auth = () => {
                     required
                     disabled={isLoading}
                     dir="ltr"
-                    className="transition-smooth"
+                    className="transition-smooth text-left"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="flex items-center gap-2 justify-end">
-                    <span>كلمة المرور</span>
+                  <Label htmlFor="password" className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
+                    <span>كلمة المرور</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -216,7 +216,7 @@ const Auth = () => {
                       required
                       disabled={isLoading}
                       dir="ltr"
-                      className="transition-smooth pr-10"
+                      className="transition-smooth pl-10 text-left"
                     />
                     <button
                       type="button"
@@ -230,15 +230,15 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-semibold transition-smooth"
+                  className="w-full h-12 text-base font-semibold transition-smooth flex items-center justify-center gap-2"
                   style={{ 
                     background: 'linear-gradient(135deg, hsl(219, 78%, 56%), hsl(219, 78%, 66%))',
                     color: 'white'
                   }}
                   disabled={isLoading}
                 >
-                  {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-                  <ArrowRight className="mr-2 h-5 w-5" />
+                  <ArrowRight className="h-5 w-5" />
+                  <span>{isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}</span>
                 </Button>
 
                 <div className="text-center pt-4">
@@ -265,9 +265,9 @@ const Auth = () => {
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="flex items-center gap-2 justify-end">
-                    <span>الاسم الكامل</span>
+                  <Label htmlFor="name" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
+                    <span>الاسم الكامل</span>
                   </Label>
                   <Input
                     id="name"
@@ -285,9 +285,9 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="register-email" className="flex items-center gap-2 justify-end">
-                    <span>البريد الإلكتروني</span>
+                  <Label htmlFor="register-email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
+                    <span>البريد الإلكتروني</span>
                   </Label>
                   <Input
                     id="register-email"
@@ -297,14 +297,14 @@ const Auth = () => {
                     required
                     disabled={isLoading}
                     dir="ltr"
-                    className="transition-smooth"
+                    className="transition-smooth text-left"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="register-password" className="flex items-center gap-2 justify-end">
-                    <span>كلمة المرور</span>
+                  <Label htmlFor="register-password" className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
+                    <span>كلمة المرور</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -315,7 +315,7 @@ const Auth = () => {
                       required
                       disabled={isLoading}
                       dir="ltr"
-                      className="transition-smooth pr-10"
+                      className="transition-smooth pl-10 text-left"
                     />
                     <button
                       type="button"
@@ -331,9 +331,9 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password" className="flex items-center gap-2 justify-end">
-                    <span>تأكيد كلمة المرور</span>
+                  <Label htmlFor="confirm-password" className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
+                    <span>تأكيد كلمة المرور</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -344,7 +344,7 @@ const Auth = () => {
                       required
                       disabled={isLoading}
                       dir="ltr"
-                      className="transition-smooth pr-10"
+                      className="transition-smooth pl-10 text-left"
                     />
                     <button
                       type="button"
@@ -358,15 +358,15 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-semibold transition-smooth"
+                  className="w-full h-12 text-base font-semibold transition-smooth flex items-center justify-center gap-2"
                   style={{ 
                     background: 'linear-gradient(135deg, hsl(159, 58%, 57%), hsl(159, 58%, 67%))',
                     color: 'white'
                   }}
                   disabled={isLoading}
                 >
-                  {isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
-                  <ArrowRight className="mr-2 h-5 w-5" />
+                  <ArrowRight className="h-5 w-5" />
+                  <span>{isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}</span>
                 </Button>
 
                 <div className="text-center pt-6">
