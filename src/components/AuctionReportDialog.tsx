@@ -88,9 +88,9 @@ export const AuctionReportDialog = ({ auctionId, sellerId }: AuctionReportDialog
             <Label>سبب البلاغ</Label>
             <RadioGroup value={reason} onValueChange={setReason}>
               {reasons.map((r) => (
-                <div key={r} className="flex items-center space-x-2 space-x-reverse">
+                <div key={r} className="flex items-center gap-2">
                   <RadioGroupItem value={r} id={r} />
-                  <Label htmlFor={r} className="cursor-pointer">
+                  <Label htmlFor={r} className="cursor-pointer flex-1 text-right">
                     {r}
                   </Label>
                 </div>
@@ -110,14 +110,7 @@ export const AuctionReportDialog = ({ auctionId, sellerId }: AuctionReportDialog
           </div>
         </div>
 
-        <div className="flex gap-3 justify-end">
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isSubmitting}
-          >
-            إلغاء
-          </Button>
+        <div className="flex gap-3 justify-start">
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
@@ -125,6 +118,13 @@ export const AuctionReportDialog = ({ auctionId, sellerId }: AuctionReportDialog
           >
             <Flag className="h-4 w-4" />
             {isSubmitting ? "جاري الإرسال..." : "إرسال البلاغ"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isSubmitting}
+          >
+            إلغاء
           </Button>
         </div>
       </DialogContent>
