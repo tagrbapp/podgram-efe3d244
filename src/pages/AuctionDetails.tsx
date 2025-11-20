@@ -17,6 +17,7 @@ import AuctionShareButtons from "@/components/AuctionShareButtons";
 import { useAuctionRealtime } from "@/hooks/useAuctionRealtime";
 import AuctionAlertSettings from "@/components/AuctionAlertSettings";
 import SimilarAuctions from "@/components/SimilarAuctions";
+import AuctionSellerSidebar from "@/components/AuctionSellerSidebar";
 
 interface Auction {
   id: string;
@@ -293,6 +294,8 @@ const AuctionDetails = () => {
 
           {/* Enhanced Sidebar - Left Side */}
           <div className="space-y-6">
+            {/* Seller Information */}
+            <AuctionSellerSidebar sellerId={auction.user_id} />
             {/* Enhanced Timer and Current Bid Card */}
             <Card className="p-6 sticky top-4 bg-gradient-to-br from-card via-card to-primary/5 border-2 border-border/50 shadow-2xl">
               <div className="space-y-6">
