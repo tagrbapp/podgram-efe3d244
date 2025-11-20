@@ -74,12 +74,7 @@ const DashboardAuctions = () => {
       const { data: auctionsData } = await supabase
         .from('auctions')
         .select('*')
-        .in('listing_id', (
-          await supabase
-            .from('listings')
-            .select('id')
-            .eq('user_id', user.id)
-        ).data?.map(l => l.id) || [])
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       // Get bid counts for each auction
@@ -126,7 +121,10 @@ const DashboardAuctions = () => {
     setIsCreating(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase.from('auctions').insert({
+        user_id: user?.id,
         category_id: selectedCategory,
         title: auctionTitle,
         description: auctionDescription || null,

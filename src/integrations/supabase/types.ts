@@ -200,6 +200,7 @@ export type Database = {
           status: string
           title: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           bid_increment?: number
@@ -220,6 +221,7 @@ export type Database = {
           status?: string
           title?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           bid_increment?: number
@@ -240,6 +242,7 @@ export type Database = {
           status?: string
           title?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
