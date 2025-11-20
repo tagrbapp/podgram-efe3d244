@@ -15,6 +15,8 @@ import AuctionBidsList from "@/components/AuctionBidsList";
 import ImageLightbox from "@/components/ImageLightbox";
 import AuctionShareButtons from "@/components/AuctionShareButtons";
 import { useAuctionRealtime } from "@/hooks/useAuctionRealtime";
+import AuctionAlertSettings from "@/components/AuctionAlertSettings";
+import SimilarAuctions from "@/components/SimilarAuctions";
 
 interface Auction {
   id: string;
@@ -281,6 +283,12 @@ const AuctionDetails = () => {
                 highestBidderId={auction.highest_bidder_id || undefined}
               />
             </Card>
+
+            {/* Similar Auctions */}
+            <SimilarAuctions
+              categoryId={auction.category_id}
+              currentAuctionId={auction.id}
+            />
           </div>
 
           {/* Enhanced Sidebar - Left Side */}
@@ -403,6 +411,14 @@ const AuctionDetails = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Alert Settings */}
+            {isActive && (
+              <AuctionAlertSettings
+                auctionId={auction.id}
+                currentUserId={currentUser?.id}
+              />
+            )}
           </div>
         </div>
       </div>
