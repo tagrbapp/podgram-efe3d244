@@ -37,6 +37,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import DashboardUserApprovals from "./pages/DashboardUserApprovals";
+import DashboardRoles from "./pages/DashboardRoles";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
           <Route path="/dashboard/announcements" element={<DashboardAnnouncements />} />
           <Route path="/dashboard/hero-carousel" element={<DashboardHeroCarousel />} />
           <Route path="/dashboard/homepage" element={<DashboardHomepage />} />
+          <Route path="/dashboard/roles" element={<DashboardRoles />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
