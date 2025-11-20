@@ -677,6 +677,47 @@ export type Database = {
           },
         ]
       }
+      homepage_section_history: {
+        Row: {
+          background_color: string | null
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          is_visible: boolean | null
+          items_limit: number | null
+          section_id: string
+          settings: Json | null
+        }
+        Insert: {
+          background_color?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_visible?: boolean | null
+          items_limit?: number | null
+          section_id: string
+          settings?: Json | null
+        }
+        Update: {
+          background_color?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_visible?: boolean | null
+          items_limit?: number | null
+          section_id?: string
+          settings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homepage_section_history_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "homepage_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homepage_sections: {
         Row: {
           background_color: string | null
