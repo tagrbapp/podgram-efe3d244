@@ -1,9 +1,58 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Linkedin, Youtube, Mail, Phone, MapPin } from "lucide-react";
 import podgramLogo from "@/assets/podgram-logo.png";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface FooterSettings {
+  brand_name: string;
+  brand_description: string;
+  facebook_url: string;
+  instagram_url: string;
+  twitter_url: string;
+  linkedin_url: string;
+  youtube_url: string;
+  phone: string;
+  email: string;
+  address: string;
+  copyright_text: string;
+}
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [settings, setSettings] = useState<FooterSettings | null>(null);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("footer_settings")
+        .select("*")
+        .eq("is_active", true)
+        .single();
+
+      if (error) throw error;
+      if (data) setSettings(data);
+    } catch (error) {
+      console.error("Error fetching footer settings:", error);
+    }
+  };
+
+  // Use fetched settings or fallback to defaults
+  const brandName = settings?.brand_name || "Podgram";
+  const brandDescription = settings?.brand_description || "المنصة الأولى للمنتجات الفاخرة في المنطقة. نجمع بين البائعين والمشترين في سوق آمن وموثوق.";
+  const facebookUrl = settings?.facebook_url || "https://facebook.com";
+  const instagramUrl = settings?.instagram_url || "https://instagram.com";
+  const twitterUrl = settings?.twitter_url || "https://twitter.com";
+  const linkedinUrl = settings?.linkedin_url || "https://linkedin.com";
+  const youtubeUrl = settings?.youtube_url || "https://youtube.com";
+  const phone = settings?.phone || "+966 50 123 4567";
+  const email = settings?.email || "info@podgram.com";
+  const address = settings?.address || "الرياض، المملكة العربية السعودية";
+  const copyrightText = settings?.copyright_text || "Podgram. جميع الحقوق محفوظة.";
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -13,15 +62,15 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src={podgramLogo} alt="Podgram" className="h-12 w-12 object-contain" />
-              <span className="text-2xl font-bold text-white">Podgram</span>
+              <img src={podgramLogo} alt={brandName} className="h-12 w-12 object-contain" />
+              <span className="text-2xl font-bold text-white">{brandName}</span>
             </div>
             <p className="text-sm leading-relaxed">
-              المنصة الأولى للمنتجات الفاخرة في المنطقة. نجمع بين البائعين والمشترين في سوق آمن وموثوق.
+              {brandDescription}
             </p>
             <div className="flex items-center gap-3 pt-4">
               <a
-                href="https://facebook.com"
+                href={facebookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-10 w-10 rounded-full bg-gray-800 hover:bg-qultura-blue flex items-center justify-center transition-all"
@@ -29,7 +78,7 @@ const Footer = () => {
                 <Facebook className="h-5 w-5" />
               </a>
               <a
-                href="https://instagram.com"
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-10 w-10 rounded-full bg-gray-800 hover:bg-qultura-blue flex items-center justify-center transition-all"
@@ -37,7 +86,7 @@ const Footer = () => {
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="https://twitter.com"
+                href={twitterUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-10 w-10 rounded-full bg-gray-800 hover:bg-qultura-blue flex items-center justify-center transition-all"
@@ -45,7 +94,7 @@ const Footer = () => {
                 <Twitter className="h-5 w-5" />
               </a>
               <a
-                href="https://linkedin.com"
+                href={linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-10 w-10 rounded-full bg-gray-800 hover:bg-qultura-blue flex items-center justify-center transition-all"
@@ -53,7 +102,7 @@ const Footer = () => {
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
-                href="https://youtube.com"
+                href={youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-10 w-10 rounded-full bg-gray-800 hover:bg-qultura-blue flex items-center justify-center transition-all"
@@ -140,8 +189,8 @@ const Footer = () => {
                 <Phone className="h-5 w-5 text-qultura-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-white">الهاتف</p>
-                  <a href="tel:+966501234567" className="text-sm hover:text-qultura-blue transition-smooth">
-                    +966 50 123 4567
+                  <a href={`tel:${phone.replace(/\s/g, '')}`} className="text-sm hover:text-qultura-blue transition-smooth">
+                    {phone}
                   </a>
                 </div>
               </li>
@@ -149,8 +198,8 @@ const Footer = () => {
                 <Mail className="h-5 w-5 text-qultura-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-white">البريد الإلكتروني</p>
-                  <a href="mailto:info@podgram.com" className="text-sm hover:text-qultura-blue transition-smooth">
-                    info@podgram.com
+                  <a href={`mailto:${email}`} className="text-sm hover:text-qultura-blue transition-smooth">
+                    {email}
                   </a>
                 </div>
               </li>
@@ -158,7 +207,7 @@ const Footer = () => {
                 <MapPin className="h-5 w-5 text-qultura-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-white">العنوان</p>
-                  <p className="text-sm">الرياض، المملكة العربية السعودية</p>
+                  <p className="text-sm">{address}</p>
                 </div>
               </li>
             </ul>
@@ -171,7 +220,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-gray-400">
-              © {currentYear} Podgram. جميع الحقوق محفوظة.
+              © {currentYear} {copyrightText}
             </p>
             <div className="flex items-center gap-6 text-sm">
               <Link to="/privacy" className="hover:text-qultura-blue transition-smooth">

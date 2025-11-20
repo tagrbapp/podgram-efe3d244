@@ -1,4 +1,4 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp, ChevronDown } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,7 @@ const adminItems = [
   { title: "إدارة الفئات", url: "/dashboard/categories", icon: FolderTree },
   { title: "إدارة الصفحة الرئيسية", url: "/dashboard/homepage", icon: Home },
   { title: "إدارة الشريط العلوي", url: "/dashboard/top-bar", icon: ChevronUp },
+  { title: "إدارة الفوتر", url: "/dashboard/footer", icon: ChevronDown },
   { title: "إدارة الإعلانات", url: "/dashboard/announcements", icon: Megaphone },
   { title: "إدارة الـ Hero Carousel", url: "/dashboard/hero-carousel", icon: Image },
 ];
