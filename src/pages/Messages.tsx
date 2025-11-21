@@ -12,9 +12,30 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
-import { MessageCircle, Send, User, Search, MoreVertical, Image as ImageIcon, Paperclip, Smile, Check, CheckCheck, Pin, Archive, ArchiveRestore } from "lucide-react";
+import { MessageCircle, Send, User, Search, MoreVertical, Image as ImageIcon, Paperclip, Smile, Check, CheckCheck, Pin, Archive, ArchiveRestore, Trash2, Flag } from "lucide-react";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Conversation {
   id: string;
@@ -70,6 +91,12 @@ const Messages = () => {
   const [showArchived, setShowArchived] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [conversationToReport, setConversationToReport] = useState<Conversation | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -433,6 +460,64 @@ const Messages = () => {
     return user.id === conv.buyer_id ? conv.is_archived_by_buyer : conv.is_archived_by_seller;
   };
 
+  const handleDeleteConversation = async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("conversations")
+        .delete()
+        .eq("id", conversationId);
+
+      if (error) throw error;
+
+      toast.success("تم حذف المحادثة بنجاح");
+
+      if (user) {
+        loadConversations(user.id);
+      }
+      
+      if (selectedConversation?.id === conversationId) {
+        setSelectedConversation(null);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "حدث خطأ أثناء حذف المحادثة");
+    }
+  };
+
+  const handleReportConversation = async () => {
+    if (!conversationToReport || !reportReason) {
+      toast.error("يرجى اختيار سبب البلاغ");
+      return;
+    }
+
+    try {
+      const reportedUserId = user?.id === conversationToReport.buyer_id 
+        ? conversationToReport.seller_id 
+        : conversationToReport.buyer_id;
+
+      const { error } = await supabase
+        .from("reports")
+        .insert({
+          reporter_id: user?.id,
+          reported_user_id: reportedUserId,
+          listing_id: conversationToReport.listing_id,
+          reason: reportReason,
+          description: reportDescription || null,
+          status: "pending",
+        });
+
+      if (error) throw error;
+
+      toast.success("تم إرسال البلاغ بنجاح");
+
+      setReportDialogOpen(false);
+      setConversationToReport(null);
+      setReportReason("");
+      setReportDescription("");
+    } catch (error: any) {
+      toast.error(error.message || "حدث خطأ أثناء إرسال البلاغ");
+    }
+  };
+
   const filteredConversations = conversations
     .filter(conv => {
       // Filter by archive status
@@ -649,13 +734,37 @@ const Messages = () => {
                                   e.stopPropagation();
                                   toggleArchive(conv.id);
                                 }}
-                                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur hover:bg-destructive/10"
+                                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur hover:bg-accent/50"
                               >
                                 {archived ? (
                                   <ArchiveRestore className="h-4 w-4 text-muted-foreground" />
                                 ) : (
                                   <Archive className="h-4 w-4 text-muted-foreground" />
                                 )}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConversationToReport(conv);
+                                  setReportDialogOpen(true);
+                                }}
+                                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur hover:bg-orange-500/10"
+                              >
+                                <Flag className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConversationToDelete(conv.id);
+                                  setDeleteDialogOpen(true);
+                                }}
+                                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                             </div>
                           </div>
@@ -845,6 +954,118 @@ const Messages = () => {
           <AppSidebar />
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف المحادثة</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكد من حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذف جميع الرسائل نهائياً.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (conversationToDelete) {
+                  handleDeleteConversation(conversationToDelete);
+                  setDeleteDialogOpen(false);
+                  setConversationToDelete(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              حذف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>الإبلاغ عن المحادثة</DialogTitle>
+            <DialogDescription>
+              يرجى اختيار سبب البلاغ وإضافة تفاصيل إضافية إن وجدت. سيتم مراجعة البلاغ من قبل الإدارة.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <Label>سبب البلاغ *</Label>
+              <RadioGroup value={reportReason} onValueChange={setReportReason}>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="محتوى مخالف" id="inappropriate" />
+                  <Label htmlFor="inappropriate" className="cursor-pointer font-normal">
+                    محتوى مخالف أو غير لائق
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="معلومات مضللة" id="misleading" />
+                  <Label htmlFor="misleading" className="cursor-pointer font-normal">
+                    معلومات مضللة أو خادعة
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="احتيال" id="fraud" />
+                  <Label htmlFor="fraud" className="cursor-pointer font-normal">
+                    احتيال أو نصب
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="تحرش أو إساءة" id="harassment" />
+                  <Label htmlFor="harassment" className="cursor-pointer font-normal">
+                    تحرش أو إساءة لفظية
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="سبام أو إزعاج" id="spam" />
+                  <Label htmlFor="spam" className="cursor-pointer font-normal">
+                    سبام أو إزعاج متكرر
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="سبب آخر" id="other" />
+                  <Label htmlFor="other" className="cursor-pointer font-normal">
+                    سبب آخر
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">تفاصيل إضافية (اختياري)</Label>
+              <Textarea
+                id="description"
+                placeholder="أضف تفاصيل إضافية عن البلاغ لمساعدتنا في المراجعة..."
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReportDialogOpen(false);
+                setConversationToReport(null);
+                setReportReason("");
+                setReportDescription("");
+              }}
+            >
+              إلغاء
+            </Button>
+            <Button 
+              onClick={handleReportConversation}
+              disabled={!reportReason}
+            >
+              إرسال البلاغ
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };
