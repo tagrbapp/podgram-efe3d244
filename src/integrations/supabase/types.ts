@@ -548,6 +548,10 @@ export type Database = {
           buyer_id: string
           created_at: string
           id: string
+          is_archived_by_buyer: boolean | null
+          is_archived_by_seller: boolean | null
+          is_pinned_by_buyer: boolean | null
+          is_pinned_by_seller: boolean | null
           listing_id: string
           seller_id: string
           updated_at: string
@@ -556,6 +560,10 @@ export type Database = {
           buyer_id: string
           created_at?: string
           id?: string
+          is_archived_by_buyer?: boolean | null
+          is_archived_by_seller?: boolean | null
+          is_pinned_by_buyer?: boolean | null
+          is_pinned_by_seller?: boolean | null
           listing_id: string
           seller_id: string
           updated_at?: string
@@ -564,6 +572,10 @@ export type Database = {
           buyer_id?: string
           created_at?: string
           id?: string
+          is_archived_by_buyer?: boolean | null
+          is_archived_by_seller?: boolean | null
+          is_pinned_by_buyer?: boolean | null
+          is_pinned_by_seller?: boolean | null
           listing_id?: string
           seller_id?: string
           updated_at?: string
