@@ -36,22 +36,25 @@ import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
 import DashboardHomepage from "./pages/DashboardHomepage";
 import DashboardTopBar from "./pages/DashboardTopBar";
 import DashboardFooter from "./pages/DashboardFooter";
+import DashboardTheme from "./pages/DashboardTheme";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import DashboardUserApprovals from "./pages/DashboardUserApprovals";
 import DashboardRoles from "./pages/DashboardRoles";
 import DashboardCategories from "./pages/DashboardCategories";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -82,6 +85,7 @@ const App = () => (
           <Route path="/dashboard/homepage" element={<DashboardHomepage />} />
           <Route path="/dashboard/top-bar" element={<DashboardTopBar />} />
           <Route path="/dashboard/footer" element={<DashboardFooter />} />
+          <Route path="/dashboard/theme" element={<DashboardTheme />} />
           <Route path="/dashboard/roles" element={<DashboardRoles />} />
           <Route path="/dashboard/categories" element={<DashboardCategories />} />
           <Route path="/messages" element={<Messages />} />
@@ -92,9 +96,10 @@ const App = () => (
           <Route path="/listing/:id" element={<ListingDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
