@@ -43,6 +43,8 @@ import VerifyEmail from "./pages/VerifyEmail";
 import DashboardUserApprovals from "./pages/DashboardUserApprovals";
 import DashboardRoles from "./pages/DashboardRoles";
 import DashboardCategories from "./pages/DashboardCategories";
+import DashboardPointsCalculation from "./pages/DashboardPointsCalculation";
+import DashboardLeaderboard from "./pages/DashboardLeaderboard";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -88,6 +90,8 @@ const App = () => (
           <Route path="/dashboard/theme" element={<DashboardTheme />} />
           <Route path="/dashboard/roles" element={<DashboardRoles />} />
           <Route path="/dashboard/categories" element={<DashboardCategories />} />
+          <Route path="/dashboard/points-calculation" element={<DashboardPointsCalculation />} />
+          <Route path="/dashboard/leaderboard" element={<DashboardLeaderboard />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
