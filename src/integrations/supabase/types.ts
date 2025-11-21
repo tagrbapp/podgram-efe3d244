@@ -1040,6 +1040,8 @@ export type Database = {
           full_name: string
           id: string
           phone: string | null
+          referral_code: string | null
+          referred_by: string | null
           updated_at: string
         }
         Insert: {
@@ -1051,6 +1053,8 @@ export type Database = {
           full_name: string
           id: string
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
         }
         Update: {
@@ -1062,9 +1066,19 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
