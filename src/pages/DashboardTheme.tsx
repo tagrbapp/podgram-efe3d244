@@ -7,10 +7,106 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Loader2, Palette, RefreshCw } from "lucide-react";
+import { Loader2, Palette, RefreshCw, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+
+// Theme Presets
+const themePresets = [
+  {
+    name: "Podgram الافتراضي",
+    description: "الثيم الأصلي للمنصة",
+    primary: { h: 162, s: 60, l: 45 },
+    secondary: { h: 162, s: 50, l: 35 },
+    accent: { h: 162, s: 55, l: 50 },
+    background: { h: 0, s: 0, l: 100 },
+    card: { h: 0, s: 0, l: 100 },
+    foreground: { h: 0, s: 0, l: 10 },
+    muted: { h: 0, s: 0, l: 96 },
+    border: { h: 0, s: 0, l: 90 },
+    destructive: { h: 0, s: 84, l: 60 },
+  },
+  {
+    name: "المحيط الأزرق",
+    description: "ثيم أزرق هادئ ومريح للعين",
+    primary: { h: 210, s: 70, l: 50 },
+    secondary: { h: 200, s: 65, l: 45 },
+    accent: { h: 195, s: 60, l: 55 },
+    background: { h: 210, s: 15, l: 98 },
+    card: { h: 210, s: 10, l: 100 },
+    foreground: { h: 215, s: 15, l: 15 },
+    muted: { h: 210, s: 10, l: 95 },
+    border: { h: 210, s: 15, l: 88 },
+    destructive: { h: 0, s: 84, l: 60 },
+  },
+  {
+    name: "غروب برتقالي",
+    description: "ثيم دافئ بألوان الغروب",
+    primary: { h: 25, s: 85, l: 55 },
+    secondary: { h: 15, s: 75, l: 50 },
+    accent: { h: 35, s: 80, l: 60 },
+    background: { h: 30, s: 10, l: 98 },
+    card: { h: 30, s: 8, l: 100 },
+    foreground: { h: 20, s: 10, l: 12 },
+    muted: { h: 30, s: 8, l: 95 },
+    border: { h: 30, s: 10, l: 88 },
+    destructive: { h: 0, s: 84, l: 60 },
+  },
+  {
+    name: "البنفسجي الملكي",
+    description: "ثيم فاخر بألوان بنفسجية",
+    primary: { h: 270, s: 65, l: 50 },
+    secondary: { h: 280, s: 60, l: 45 },
+    accent: { h: 260, s: 70, l: 55 },
+    background: { h: 270, s: 8, l: 98 },
+    card: { h: 270, s: 6, l: 100 },
+    foreground: { h: 270, s: 10, l: 12 },
+    muted: { h: 270, s: 6, l: 95 },
+    border: { h: 270, s: 8, l: 88 },
+    destructive: { h: 0, s: 84, l: 60 },
+  },
+  {
+    name: "غابات خضراء",
+    description: "ثيم طبيعي بألوان الطبيعة",
+    primary: { h: 140, s: 55, l: 45 },
+    secondary: { h: 150, s: 50, l: 40 },
+    accent: { h: 130, s: 60, l: 50 },
+    background: { h: 140, s: 8, l: 98 },
+    card: { h: 140, s: 6, l: 100 },
+    foreground: { h: 140, s: 10, l: 12 },
+    muted: { h: 140, s: 6, l: 95 },
+    border: { h: 140, s: 8, l: 88 },
+    destructive: { h: 0, s: 84, l: 60 },
+  },
+  {
+    name: "الذهبي الوردي",
+    description: "ثيم أنيق بلمسة ذهبية وردية",
+    primary: { h: 340, s: 55, l: 55 },
+    secondary: { h: 350, s: 50, l: 50 },
+    accent: { h: 330, s: 60, l: 60 },
+    background: { h: 340, s: 10, l: 98 },
+    card: { h: 340, s: 8, l: 100 },
+    foreground: { h: 340, s: 12, l: 12 },
+    muted: { h: 340, s: 8, l: 95 },
+    border: { h: 340, s: 10, l: 88 },
+    destructive: { h: 0, s: 84, l: 60 },
+  },
+  {
+    name: "منتصف الليل الداكن",
+    description: "ثيم داكن راقي للعمل الليلي",
+    primary: { h: 215, s: 60, l: 55 },
+    secondary: { h: 220, s: 50, l: 45 },
+    accent: { h: 210, s: 65, l: 60 },
+    background: { h: 220, s: 15, l: 12 },
+    card: { h: 220, s: 12, l: 16 },
+    foreground: { h: 210, s: 8, l: 92 },
+    muted: { h: 220, s: 10, l: 20 },
+    border: { h: 220, s: 12, l: 25 },
+    destructive: { h: 0, s: 84, l: 60 },
+  },
+];
 
 interface ThemeSettings {
   id: string;
@@ -149,6 +245,41 @@ const DashboardTheme = () => {
     toast.info("تم استعادة الإعدادات الأصلية");
   };
 
+  const applyPreset = (preset: typeof themePresets[0]) => {
+    if (!settings) return;
+    
+    setSettings({
+      ...settings,
+      theme_name: preset.name,
+      primary_hue: preset.primary.h,
+      primary_saturation: preset.primary.s,
+      primary_lightness: preset.primary.l,
+      secondary_hue: preset.secondary.h,
+      secondary_saturation: preset.secondary.s,
+      secondary_lightness: preset.secondary.l,
+      accent_hue: preset.accent.h,
+      accent_saturation: preset.accent.s,
+      accent_lightness: preset.accent.l,
+      background_hue: preset.background.h,
+      background_saturation: preset.background.s,
+      background_lightness: preset.background.l,
+      card_hue: preset.card.h,
+      card_saturation: preset.card.s,
+      card_lightness: preset.card.l,
+      foreground_hue: preset.foreground.h,
+      foreground_saturation: preset.foreground.s,
+      foreground_lightness: preset.foreground.l,
+      muted_hue: preset.muted.h,
+      muted_saturation: preset.muted.s,
+      muted_lightness: preset.muted.l,
+      border_hue: preset.border.h,
+      border_saturation: preset.border.s,
+      border_lightness: preset.border.l,
+    });
+    
+    toast.success(`تم تطبيق ثيم "${preset.name}"`);
+  };
+
   const ColorControl = ({ 
     label, 
     hue, 
@@ -235,10 +366,87 @@ const DashboardTheme = () => {
           </p>
         </div>
 
+        {/* Theme Presets */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              قوالب جاهزة
+            </CardTitle>
+            <CardDescription>
+              اختر أحد القوالب الجاهزة لتطبيقه مباشرة على موقعك
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {themePresets.map((preset, index) => (
+                <Card 
+                  key={index}
+                  className="cursor-pointer transition-all hover:shadow-lg hover:scale-105 border-2 hover:border-primary"
+                  onClick={() => applyPreset(preset)}
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center justify-between">
+                      {preset.name}
+                      {settings?.theme_name === preset.name && (
+                        <Badge variant="default" className="text-xs">مُطبق</Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      {preset.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div 
+                        className="h-12 rounded border"
+                        style={{ 
+                          backgroundColor: `hsl(${preset.primary.h}, ${preset.primary.s}%, ${preset.primary.l}%)` 
+                        }}
+                        title="Primary"
+                      />
+                      <div 
+                        className="h-12 rounded border"
+                        style={{ 
+                          backgroundColor: `hsl(${preset.secondary.h}, ${preset.secondary.s}%, ${preset.secondary.l}%)` 
+                        }}
+                        title="Secondary"
+                      />
+                      <div 
+                        className="h-12 rounded border"
+                        style={{ 
+                          backgroundColor: `hsl(${preset.accent.h}, ${preset.accent.s}%, ${preset.accent.l}%)` 
+                        }}
+                        title="Accent"
+                      />
+                    </div>
+                    <div className="mt-2 text-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          applyPreset(preset);
+                        }}
+                      >
+                        تطبيق
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Theme Name */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>اسم الثيم</CardTitle>
+            <CardTitle>اسم الثيم المخصص</CardTitle>
+            <CardDescription>
+              يمكنك تخصيص الألوان يدوياً أدناه أو استخدام أحد القوالب الجاهزة
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Input
