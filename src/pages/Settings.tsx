@@ -197,7 +197,7 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-lg">جاري التحميل...</p>
       </div>
     );

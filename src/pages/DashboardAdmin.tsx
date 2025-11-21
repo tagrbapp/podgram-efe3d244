@@ -211,9 +211,9 @@ const DashboardAdmin = () => {
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background" dir="rtl">
           <div className="flex-1 order-2">
-            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
               <SidebarTrigger />
-              <h1 className="text-lg font-semibold">جاري التحميل...</h1>
+              <h1 className="text-2xl font-bold mr-4">لوحة الإدارة</h1>
             </header>
             <main className="p-6">
               <div className="grid gap-4">
@@ -223,7 +223,9 @@ const DashboardAdmin = () => {
               </div>
             </main>
           </div>
-          <AppSidebar />
+          <div className="order-1">
+            <AppSidebar />
+          </div>
         </div>
       </SidebarProvider>
     );
@@ -233,9 +235,9 @@ const DashboardAdmin = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background" dir="rtl">
         <div className="flex-1 order-2">
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+          <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
             <SidebarTrigger />
-            <h1 className="text-xl font-semibold">لوحة الإدارة</h1>
+            <h1 className="text-2xl font-bold mr-4">لوحة الإدارة</h1>
           </header>
           <main className="p-6 space-y-6">
       <AdminStats {...stats} />
