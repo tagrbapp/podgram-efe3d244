@@ -56,10 +56,16 @@ const BidForm = ({
 
       if (error) throw error;
 
-      const result = data as { success: boolean; error?: string };
+      const result = data as { success: boolean; error?: string; extended?: boolean; new_end_time?: string };
       
       if (result.success) {
-        toast.success("تم تقديم عرضك بنجاح! 🎉");
+        if (result.extended) {
+          toast.success("تم تقديم عرضك بنجاح! 🎉", {
+            description: "تم تمديد المزاد بـ 15 دقيقة إضافية نظراً للمزايدة في الوقت الأخير"
+          });
+        } else {
+          toast.success("تم تقديم عرضك بنجاح! 🎉");
+        }
         onBidPlaced();
       } else {
         toast.error(result.error || "فشل تقديم العرض");
