@@ -2,6 +2,25 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// تشغيل صوت تنبيه عند التمديد
+const playNotificationSound = () => {
+  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  oscillator.frequency.value = 800;
+  oscillator.type = 'sine';
+  
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.5);
+};
+
 interface Notification {
   id: string;
   title: string;
@@ -68,17 +87,34 @@ export const useRealtimeNotifications = (userId: string | null) => {
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
 
-          // Show toast notification
-          toast(newNotification.title, {
-            description: newNotification.message,
-            duration: 5000,
-            action: newNotification.listing_id
-              ? {
-                  label: "عرض",
-                  onClick: () => window.location.href = `/listing/${newNotification.listing_id}`,
-                }
-              : undefined,
-          });
+          // تشغيل صوت وعرض تنبيه خاص عند تمديد المزاد
+          if (newNotification.type === 'auction_extended') {
+            playNotificationSound();
+            
+            toast.warning(newNotification.title, {
+              description: newNotification.message,
+              duration: 8000,
+              className: 'bg-gradient-to-r from-amber-500 to-orange-600 text-white border-2 border-amber-300',
+              action: newNotification.listing_id
+                ? {
+                    label: "عرض المزاد",
+                    onClick: () => window.location.href = `/auction/${newNotification.listing_id}`,
+                  }
+                : undefined,
+            });
+          } else {
+            // Show normal toast notification
+            toast(newNotification.title, {
+              description: newNotification.message,
+              duration: 5000,
+              action: newNotification.listing_id
+                ? {
+                    label: "عرض",
+                    onClick: () => window.location.href = `/listing/${newNotification.listing_id}`,
+                  }
+                : undefined,
+            });
+          }
         }
       )
       .on(
