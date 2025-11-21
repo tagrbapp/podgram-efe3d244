@@ -62,7 +62,9 @@ const Messages = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -107,11 +109,11 @@ const Messages = () => {
   }, [selectedConversation]);
 
   useEffect(() => {
-    if (!selectedConversation) return;
+    if (!selectedConversation || !user) return;
 
-    // Subscribe to realtime messages
+    // Subscribe to realtime messages and typing status
     const messagesChannel = supabase
-      .channel(`messages:${selectedConversation.id}`)
+      .channel(`conversation:${selectedConversation.id}`)
       .on(
         'postgres_changes',
         {
@@ -128,14 +130,43 @@ const Messages = () => {
           if (newMsg.sender_id !== user?.id) {
             markMessagesAsRead(selectedConversation.id);
           }
+          
+          // Clear typing indicator when message is sent
+          setIsOtherUserTyping(false);
         }
       )
-      .subscribe();
+      .on('presence', { event: 'sync' }, () => {
+        const state = messagesChannel.presenceState();
+        // Check if other user is typing
+        const otherUserId = user.id === selectedConversation.buyer_id 
+          ? selectedConversation.seller_id 
+          : selectedConversation.buyer_id;
+        
+        const otherUserPresence = state[otherUserId] as any;
+        
+        if (otherUserPresence && otherUserPresence.length > 0) {
+          const isTyping = otherUserPresence[0]?.typing === true;
+          setIsOtherUserTyping(isTyping);
+        } else {
+          setIsOtherUserTyping(false);
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          // Track initial presence
+          await messagesChannel.track({
+            user_id: user.id,
+            typing: false,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
 
     setChannel(messagesChannel);
 
     return () => {
       messagesChannel.unsubscribe();
+      setIsOtherUserTyping(false);
     };
   }, [selectedConversation, user]);
 
@@ -248,8 +279,46 @@ const Messages = () => {
     );
   };
 
+  const handleTyping = async () => {
+    if (!channel || !user) return;
+
+    // Send typing indicator
+    await channel.track({
+      user_id: user.id,
+      typing: true,
+      online_at: new Date().toISOString(),
+    });
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Stop typing indicator after 3 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(async () => {
+      await channel.track({
+        user_id: user.id,
+        typing: false,
+        online_at: new Date().toISOString(),
+      });
+    }, 3000);
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || !user) return;
+
+    // Stop typing indicator immediately
+    if (channel) {
+      await channel.track({
+        user_id: user.id,
+        typing: false,
+        online_at: new Date().toISOString(),
+      });
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
 
     const { error } = await supabase
       .from("messages")
@@ -519,6 +588,26 @@ const Messages = () => {
                             </div>
                           );
                         })}
+                        
+                        {/* Typing Indicator */}
+                        {isOtherUserTyping && (
+                          <div className="flex justify-start items-end gap-2 animate-fade-in">
+                            <Avatar className="h-8 w-8 shadow-md">
+                              <AvatarImage src={getOtherUserProfile(selectedConversation).avatar_url || undefined} />
+                              <AvatarFallback className="text-xs bg-gradient-to-br from-muted to-muted/70">
+                                {getOtherUserProfile(selectedConversation).full_name[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="rounded-2xl rounded-bl-md px-4 py-3 bg-card border border-border/50 shadow-lg">
+                              <div className="flex gap-1.5">
+                                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
                         <div ref={messagesEndRef} />
                       </div>
                     </ScrollArea>
@@ -537,7 +626,10 @@ const Messages = () => {
                         <div className="flex-1 relative">
                           <Input
                             value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
+                            onChange={(e) => {
+                              setNewMessage(e.target.value);
+                              handleTyping();
+                            }}
                             onKeyPress={(e) => {
                               if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
