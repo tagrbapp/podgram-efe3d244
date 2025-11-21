@@ -8,8 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Eye, EyeOff, GripVertical, RefreshCw, LayoutGrid, Megaphone, Gavel, Package, Settings2, History, RotateCcw } from "lucide-react";
+import { Eye, EyeOff, GripVertical, RefreshCw, LayoutGrid, Megaphone, Gavel, Package, Settings2, History, RotateCcw, Home } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 interface HomepageSection {
   id: string;
@@ -194,20 +196,38 @@ export default function DashboardHomepage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">جاري التحميل...</p>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2">
+            <div className="p-8 flex items-center justify-center">
+              <div className="text-center">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-muted-foreground">جاري تحميل الأقسام...</p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="p-8">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <Home className="w-6 h-6 text-primary" />
+              <h1 className="text-2xl font-bold">إدارة الصفحة الرئيسية</h1>
+            </div>
+          </header>
+          <main className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">إدارة الصفحة الرئيسية</h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground">
             تحكم في إظهار وإخفاء أقسام الصفحة الرئيسية
           </p>
         </div>
@@ -514,6 +534,9 @@ export default function DashboardHomepage() {
           <p>• يمكنك التراجع عن التغييرات في أي وقت</p>
         </CardContent>
       </Card>
-    </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }

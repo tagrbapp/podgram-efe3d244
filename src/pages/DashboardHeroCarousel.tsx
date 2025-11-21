@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Upload, Image as ImageIcon, Eye, ExternalLink, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BrandLogos from "@/components/BrandLogos";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 interface CarouselSlide {
   id: string;
@@ -209,13 +211,32 @@ export default function DashboardHeroCarousel() {
   };
 
   if (isLoading) {
-    return <div className="p-8">جاري التحميل...</div>;
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2">
+            <div className="p-8">جاري التحميل...</div>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
   }
 
   return (
-    <div className="p-8">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <ImageIcon className="w-6 h-6 text-primary" />
+              <h1 className="text-2xl font-bold">إدارة شرائح الـ Hero</h1>
+            </div>
+          </header>
+          <main className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">إدارة شرائح الـ Hero</h1>
         <div className="flex gap-2">
           <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
             <DialogTrigger asChild>
@@ -487,6 +508,9 @@ export default function DashboardHeroCarousel() {
           </Card>
         ))}
       </div>
-    </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }
