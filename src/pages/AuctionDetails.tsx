@@ -23,6 +23,7 @@ import { BidderReviewForm } from "@/components/BidderReviewForm";
 import { AuctionReportDialog } from "@/components/AuctionReportDialog";
 import SEO from "@/components/SEO";
 import AuctionSchema from "@/components/AuctionSchema";
+import AuctionExtendedAlert from "@/components/AuctionExtendedAlert";
 
 interface Auction {
   id: string;
@@ -66,6 +67,7 @@ const AuctionDetails = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [userHasBid, setUserHasBid] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showExtendedAlert, setShowExtendedAlert] = useState(false);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -124,6 +126,35 @@ const AuctionDetails = () => {
     fetchAuctionDetails();
     checkUser();
   }, [id]);
+
+  // الاستماع لإشعارات تمديد المزاد
+  useEffect(() => {
+    if (!currentUser || !id) return;
+
+    const channel = supabase
+      .channel(`auction-extended-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${currentUser.id}`,
+        },
+        (payload: any) => {
+          const notification = payload.new;
+          if (notification.type === 'auction_extended') {
+            setShowExtendedAlert(true);
+            fetchAuctionDetails(); // تحديث البيانات
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, currentUser]);
 
   // Use realtime hook for live updates
   useAuctionRealtime(id || "", fetchAuctionDetails);
@@ -520,6 +551,12 @@ const AuctionDetails = () => {
           onClose={() => setSelectedImageIndex(null)}
         />
       )}
+
+      {/* Auction Extended Alert */}
+      <AuctionExtendedAlert
+        show={showExtendedAlert}
+        onClose={() => setShowExtendedAlert(false)}
+      />
     </div>
   );
 };
