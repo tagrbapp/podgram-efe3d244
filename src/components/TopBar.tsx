@@ -52,31 +52,31 @@ const TopBar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-10 text-xs">
-          <div className="flex items-center gap-6">
-            <span className="font-medium">{settings.title}</span>
-            <span className="hidden md:inline flex items-center gap-1.5">
-              <Truck className="h-3 w-3" />
+          <div className="flex items-center gap-4 md:gap-6">
+            <span className="font-medium whitespace-nowrap">{settings.title}</span>
+            <span className="hidden lg:flex items-center gap-1.5 whitespace-nowrap">
+              <Truck className="h-3.5 w-3.5" />
               {settings.delivery_text}
             </span>
           </div>
           
-          <div className="flex items-center gap-4 md:gap-6">
+          <div className="flex items-center gap-3 md:gap-5">
             {settings.phone_number && (
               <a 
                 href={`tel:${settings.phone_number}`}
-                className="hidden sm:flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                className="hidden md:flex items-center gap-1.5 hover:opacity-80 transition-opacity whitespace-nowrap"
               >
-                <Phone className="h-3 w-3" />
+                <Phone className="h-3.5 w-3.5" />
                 <span>{settings.phone_number}</span>
               </a>
             )}
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3 w-3" />
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
+              <Clock className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">{settings.working_hours}</span>
             </div>
             <Link 
               to={settings.cta_link} 
-              className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all font-medium"
+              className="px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all font-medium whitespace-nowrap"
             >
               {settings.cta_text}
             </Link>
