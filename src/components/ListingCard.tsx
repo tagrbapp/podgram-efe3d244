@@ -169,13 +169,13 @@ const ListingCard = ({ id, title, price, location, time, image, category }: List
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground font-medium">السعر الابتدائي</p>
               <p className="text-lg font-bold text-primary">
-                {(price * 0.95).toLocaleString("en-US")} ₽
+                {(price * 0.95).toLocaleString("en-US")} ريال
               </p>
             </div>
             <div className="space-y-1 text-left">
               <p className="text-xs text-muted-foreground font-medium">السعر الحالي</p>
               <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-secondary to-accent">
-                {price.toLocaleString("en-US")} ₽
+                {price.toLocaleString("en-US")} ريال
               </p>
             </div>
           </div>

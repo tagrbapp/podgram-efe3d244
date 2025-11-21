@@ -174,13 +174,13 @@ const AuctionCard = ({
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground font-medium">السعر الابتدائي</p>
               <p className="text-base font-bold text-foreground">
-                {startingPrice.toLocaleString("en-US")} ₽
+                {startingPrice.toLocaleString("en-US")} ريال
               </p>
             </div>
             <div className="space-y-1 text-left">
               <p className="text-xs text-muted-foreground font-medium">العرض الحالي</p>
               <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                {(currentBid || startingPrice).toLocaleString("en-US")} ₽
+                {(currentBid || startingPrice).toLocaleString("en-US")} ريال
               </p>
             </div>
           </div>
