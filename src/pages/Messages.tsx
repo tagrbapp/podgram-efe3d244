@@ -290,11 +290,11 @@ const Messages = () => {
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
     
     if (diffInHours < 24) {
-      return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } else if (diffInHours < 48) {
       return 'أمس';
     } else {
-      return date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
   };
 
@@ -304,7 +304,10 @@ const Messages = () => {
         <div className="min-h-screen flex w-full bg-background" dir="rtl">
           <div className="flex-1 order-2">
             <div className="min-h-screen flex items-center justify-center">
-              <p className="text-lg">جاري التحميل...</p>
+              <div className="animate-fade-in text-center">
+                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-lg text-foreground font-medium">جاري تحميل المحادثات...</p>
+              </div>
             </div>
           </div>
           <div className="order-1">
@@ -319,89 +322,100 @@ const Messages = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background" dir="rtl">
         <div className="flex-1 order-2">
-          <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
-            <div className="flex items-center gap-4">
+          <header className="h-20 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6 shadow-sm">
+            <div className="flex items-center gap-4 animate-fade-in">
               <SidebarTrigger />
-              <div className="flex items-center gap-2">
-                <MessageCircle className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                  <MessageCircle className="h-6 w-6 text-primary-foreground" />
+                </div>
                 <div>
-                  <h1 className="text-2xl font-bold">الرسائل</h1>
+                  <h1 className="text-2xl font-bold text-foreground">الرسائل</h1>
                   <p className="text-sm text-muted-foreground">تواصل مع المشترين والبائعين</p>
                 </div>
               </div>
             </div>
           </header>
 
-          <main className="p-6">
-            <div className="grid md:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
+          <main className="p-4 md:p-6 animate-fade-in">
+            <div className="grid lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-8rem)] md:h-[calc(100vh-10rem)]">
               {/* Conversations List */}
-              <Card className="md:col-span-4 border-0 shadow-lg">
-                <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+              <Card className="lg:col-span-4 border-0 shadow-xl rounded-2xl overflow-hidden bg-card/95 backdrop-blur">
+                <div className="p-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
                   <div className="relative">
-                    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="ابحث في المحادثات..."
-                      className="pr-10 bg-background/50 border-primary/20 focus:border-primary"
+                      className="pr-11 h-11 rounded-full bg-background/80 border-primary/20 focus:border-primary shadow-sm transition-all"
                     />
                   </div>
                 </div>
                 <ScrollArea className="h-[calc(100%-5rem)]">
                   {filteredConversations.length === 0 ? (
-                    <div className="p-12 text-center">
-                      <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                        <MessageCircle className="h-10 w-10 text-muted-foreground/50" />
+                    <div className="p-12 text-center animate-fade-in">
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-6 shadow-inner">
+                        <MessageCircle className="h-12 w-12 text-primary/70" />
                       </div>
-                      <p className="text-muted-foreground font-medium">
+                      <p className="text-foreground font-semibold text-lg mb-2">
                         {searchQuery ? "لا توجد نتائج" : "لا توجد محادثات"}
                       </p>
-                      <p className="text-sm text-muted-foreground/70 mt-1">
+                      <p className="text-sm text-muted-foreground">
                         {searchQuery ? "جرب البحث بكلمات أخرى" : "ابدأ محادثة من صفحة الإعلان"}
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-border/50">
-                      {filteredConversations.map((conv) => {
+                    <div className="divide-y divide-border/30">
+                      {filteredConversations.map((conv, index) => {
                         const otherUser = getOtherUserProfile(conv);
                         const isSelected = selectedConversation?.id === conv.id;
                         return (
                           <button
                             key={conv.id}
                             onClick={() => setSelectedConversation(conv)}
-                            className={`w-full p-4 text-right hover:bg-accent/50 transition-all duration-200 ${
-                              isSelected ? "bg-primary/10 border-r-4 border-primary" : ""
+                            style={{ animationDelay: `${index * 50}ms` }}
+                            className={`w-full p-4 text-right transition-all duration-300 animate-fade-in group relative ${
+                              isSelected 
+                                ? "bg-gradient-to-l from-primary/15 to-primary/5 border-r-4 border-primary shadow-sm" 
+                                : "hover:bg-accent/30"
                             }`}
                           >
                             <div className="flex items-start gap-3">
                               <div className="relative">
-                                <Avatar className="h-12 w-12 border-2 border-background shadow-md">
+                                <Avatar className="h-13 w-13 border-2 border-border shadow-lg transition-transform group-hover:scale-105">
                                   <AvatarImage src={otherUser.avatar_url || undefined} />
-                                  <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold">
+                                  <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold text-lg">
                                     {otherUser.full_name[0]}
                                   </AvatarFallback>
                                 </Avatar>
                                 {conv.unread_count! > 0 && (
-                                  <div className="absolute -top-1 -left-1 w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
-                                    <span className="text-[10px] text-white font-bold">{conv.unread_count}</span>
+                                  <div className="absolute -top-1 -left-1 w-6 h-6 bg-destructive rounded-full flex items-center justify-center shadow-md animate-pulse">
+                                    <span className="text-[11px] text-destructive-foreground font-bold">
+                                      {conv.unread_count!.toLocaleString('en-US')}
+                                    </span>
                                   </div>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
-                                  <p className="font-semibold truncate text-foreground">{otherUser.full_name}</p>
+                                  <p className="font-semibold truncate text-foreground text-base">{otherUser.full_name}</p>
                                   {conv.last_message && (
-                                    <span className="text-xs text-muted-foreground mr-2 flex-shrink-0">
+                                    <span className="text-xs text-muted-foreground mr-2 flex-shrink-0 font-medium">
                                       {formatMessageTime(conv.last_message.created_at)}
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-xs text-muted-foreground/80 truncate mb-1 flex items-center gap-1">
-                                  <span className="text-primary">•</span>
+                                <p className="text-xs text-primary/80 truncate mb-1.5 flex items-center gap-1.5 font-medium">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
                                   {conv.listings.title}
                                 </p>
                                 {conv.last_message && (
-                                  <p className={`text-sm truncate ${conv.unread_count! > 0 ? "font-medium text-foreground" : "text-muted-foreground"}`}>
+                                  <p className={`text-sm truncate leading-snug ${
+                                    conv.unread_count! > 0 
+                                      ? "font-semibold text-foreground" 
+                                      : "text-muted-foreground"
+                                  }`}>
                                     {conv.last_message.content}
                                   </p>
                                 )}
@@ -416,37 +430,37 @@ const Messages = () => {
               </Card>
 
               {/* Messages Area */}
-              <Card className="md:col-span-8 flex flex-col border-0 shadow-lg overflow-hidden">
+              <Card className="lg:col-span-8 flex flex-col border-0 shadow-xl rounded-2xl overflow-hidden bg-card/95 backdrop-blur">
                 {selectedConversation ? (
                   <>
                     {/* Chat Header */}
-                    <div className="p-4 border-b bg-gradient-to-r from-card to-card/80 backdrop-blur-sm flex items-center justify-between">
+                    <div className="p-4 border-b bg-gradient-to-r from-card via-card/90 to-card/80 backdrop-blur-sm flex items-center justify-between shadow-sm animate-fade-in">
                       <Link 
                         to={`/profile/${user?.id === selectedConversation.buyer_id ? selectedConversation.seller_id : selectedConversation.buyer_id}`}
-                        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                        className="flex items-center gap-3 hover:opacity-80 transition-all group"
                       >
-                        <Avatar className="h-11 w-11 border-2 border-primary/20 shadow-md">
+                        <Avatar className="h-12 w-12 border-2 border-primary/30 shadow-lg transition-transform group-hover:scale-105">
                           <AvatarImage src={getOtherUserProfile(selectedConversation).avatar_url || undefined} />
-                          <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold">
+                          <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold text-lg">
                             {getOtherUserProfile(selectedConversation).full_name[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold text-foreground">{getOtherUserProfile(selectedConversation).full_name}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <span className="text-primary">•</span>
+                          <p className="font-bold text-foreground text-base">{getOtherUserProfile(selectedConversation).full_name}</p>
+                          <p className="text-xs text-primary/80 flex items-center gap-1.5 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
                             {selectedConversation.listings.title}
                           </p>
                         </div>
                       </Link>
-                      <Button variant="ghost" size="icon" className="rounded-full">
+                      <Button variant="ghost" size="icon" className="rounded-full hover:bg-accent transition-all">
                         <MoreVertical className="h-5 w-5" />
                       </Button>
                     </div>
 
                     {/* Messages */}
-                    <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-muted/20 to-background">
-                      <div className="space-y-4">
+                    <ScrollArea className="flex-1 p-4 md:p-6 bg-gradient-to-b from-muted/10 via-background to-background">
+                      <div className="space-y-3">
                         {messages.map((msg, index) => {
                           const isSentByMe = msg.sender_id === user?.id;
                           const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
@@ -454,46 +468,49 @@ const Messages = () => {
                           return (
                             <div
                               key={msg.id}
-                              className={`flex ${isSentByMe ? "justify-end" : "justify-start"} items-end gap-2`}
+                              style={{ animationDelay: `${index * 30}ms` }}
+                              className={`flex ${isSentByMe ? "justify-end" : "justify-start"} items-end gap-2 animate-fade-in`}
                             >
                               {!isSentByMe && (
-                                <Avatar className={`h-7 w-7 ${showAvatar ? "" : "invisible"}`}>
+                                <Avatar className={`h-8 w-8 shadow-md transition-all ${showAvatar ? "" : "invisible"}`}>
                                   <AvatarImage src={getOtherUserProfile(selectedConversation).avatar_url || undefined} />
-                                  <AvatarFallback className="text-xs">
+                                  <AvatarFallback className="text-xs bg-gradient-to-br from-muted to-muted/70">
                                     {getOtherUserProfile(selectedConversation).full_name[0]}
                                   </AvatarFallback>
                                 </Avatar>
                               )}
                               
-                              <div className={`flex flex-col ${isSentByMe ? "items-end" : "items-start"} max-w-[70%]`}>
+                              <div className={`flex flex-col ${isSentByMe ? "items-end" : "items-start"} max-w-[75%] md:max-w-[70%]`}>
                                 <div
-                                  className={`rounded-2xl px-4 py-2 shadow-md ${
+                                  className={`rounded-2xl px-4 py-3 shadow-lg transition-all hover:shadow-xl ${
                                     isSentByMe
-                                      ? "bg-gradient-primary text-primary-foreground rounded-br-sm"
-                                      : "bg-card border border-border rounded-bl-sm"
+                                      ? "bg-gradient-primary text-primary-foreground rounded-br-md"
+                                      : "bg-card border border-border/50 rounded-bl-md hover:border-border"
                                   }`}
                                 >
                                   <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                                 </div>
-                                <div className="flex items-center gap-1 mt-1 px-1">
-                                  <span className={`text-[11px] ${isSentByMe ? "text-muted-foreground" : "text-muted-foreground/70"}`}>
-                                    {new Date(msg.created_at).toLocaleTimeString('ar-SA', { 
+                                <div className="flex items-center gap-1.5 mt-1.5 px-1">
+                                  <span className={`text-[11px] font-medium ${
+                                    isSentByMe ? "text-muted-foreground" : "text-muted-foreground/70"
+                                  }`}>
+                                    {new Date(msg.created_at).toLocaleTimeString('en-US', { 
                                       hour: '2-digit', 
                                       minute: '2-digit' 
                                     })}
                                   </span>
                                   {isSentByMe && (
                                     msg.is_read ? (
-                                      <CheckCheck className="h-3 w-3 text-primary" />
+                                      <CheckCheck className="h-3.5 w-3.5 text-primary" />
                                     ) : (
-                                      <Check className="h-3 w-3 text-muted-foreground" />
+                                      <Check className="h-3.5 w-3.5 text-muted-foreground" />
                                     )
                                   )}
                                 </div>
                               </div>
 
                               {isSentByMe && (
-                                <Avatar className={`h-7 w-7 ${showAvatar ? "" : "invisible"}`}>
+                                <Avatar className={`h-8 w-8 shadow-md transition-all ${showAvatar ? "" : "invisible"}`}>
                                   <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xs font-bold">
                                     أنا
                                   </AvatarFallback>
@@ -507,13 +524,13 @@ const Messages = () => {
                     </ScrollArea>
 
                     {/* Message Input */}
-                    <div className="p-4 border-t bg-card/50 backdrop-blur-sm">
+                    <div className="p-4 border-t bg-gradient-to-r from-card/80 via-card/90 to-card/80 backdrop-blur-sm shadow-lg">
                       <div className="flex gap-2 items-end">
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+                        <div className="hidden sm:flex gap-1">
+                          <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 hover:bg-accent transition-all">
                             <ImageIcon className="h-4 w-4 text-muted-foreground" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+                          <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 hover:bg-accent transition-all">
                             <Paperclip className="h-4 w-4 text-muted-foreground" />
                           </Button>
                         </div>
@@ -528,12 +545,12 @@ const Messages = () => {
                               }
                             }}
                             placeholder="اكتب رسالتك هنا..."
-                            className="pr-12 pl-4 py-6 rounded-full bg-background border-primary/20 focus:border-primary resize-none"
+                            className="pr-12 pl-4 py-6 rounded-full bg-background/80 border-primary/20 focus:border-primary shadow-sm transition-all focus:shadow-md resize-none"
                           />
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full h-8 w-8"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full h-9 w-9 hover:bg-accent transition-all"
                           >
                             <Smile className="h-4 w-4 text-muted-foreground" />
                           </Button>
@@ -541,7 +558,7 @@ const Messages = () => {
                         <Button 
                           onClick={sendMessage} 
                           disabled={!newMessage.trim()}
-                          className="rounded-full h-12 w-12 bg-gradient-primary hover:opacity-90 shadow-lg"
+                          className="rounded-full h-12 w-12 bg-gradient-primary hover:opacity-90 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Send className="h-5 w-5" />
                         </Button>
@@ -549,13 +566,13 @@ const Messages = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/20 to-background">
-                    <div className="text-center max-w-sm">
-                      <div className="w-24 h-24 rounded-full bg-gradient-primary/10 flex items-center justify-center mx-auto mb-6">
-                        <MessageCircle className="h-12 w-12 text-primary" />
+                  <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/10 via-background to-muted/5 animate-fade-in">
+                    <div className="text-center max-w-md px-6">
+                      <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-8 shadow-xl animate-scale-in">
+                        <MessageCircle className="h-16 w-16 text-primary" />
                       </div>
-                      <h3 className="text-2xl font-bold mb-2">مرحباً بك في الرسائل</h3>
-                      <p className="text-muted-foreground">اختر محادثة من القائمة للبدء في المراسلة</p>
+                      <h3 className="text-3xl font-bold mb-3 text-foreground">مرحباً بك في الرسائل</h3>
+                      <p className="text-muted-foreground text-lg">اختر محادثة من القائمة للبدء في المراسلة</p>
                     </div>
                   </div>
                 )}
