@@ -957,15 +957,14 @@ const Messages = () => {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader className="text-right">
             <AlertDialogTitle>حذف المحادثة</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-right">
               هل أنت متأكد من حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذف جميع الرسائل نهائياً.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+          <AlertDialogFooter className="flex-row-reverse gap-2">
             <AlertDialogAction
               onClick={() => {
                 if (conversationToDelete) {
@@ -978,54 +977,55 @@ const Messages = () => {
             >
               حذف
             </AlertDialogAction>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       {/* Report Dialog */}
       <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent dir="rtl">
+          <DialogHeader className="text-right">
             <DialogTitle>الإبلاغ عن المحادثة</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-right">
               يرجى اختيار سبب البلاغ وإضافة تفاصيل إضافية إن وجدت. سيتم مراجعة البلاغ من قبل الإدارة.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-3">
-              <Label>سبب البلاغ *</Label>
-              <RadioGroup value={reportReason} onValueChange={setReportReason}>
-                <div className="flex items-center space-x-2 space-x-reverse">
+              <Label className="text-right block">سبب البلاغ *</Label>
+              <RadioGroup value={reportReason} onValueChange={setReportReason} className="space-y-3">
+                <div className="flex items-center space-x-reverse space-x-2">
                   <RadioGroupItem value="محتوى مخالف" id="inappropriate" />
                   <Label htmlFor="inappropriate" className="cursor-pointer font-normal">
                     محتوى مخالف أو غير لائق
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse">
+                <div className="flex items-center space-x-reverse space-x-2">
                   <RadioGroupItem value="معلومات مضللة" id="misleading" />
                   <Label htmlFor="misleading" className="cursor-pointer font-normal">
                     معلومات مضللة أو خادعة
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse">
+                <div className="flex items-center space-x-reverse space-x-2">
                   <RadioGroupItem value="احتيال" id="fraud" />
                   <Label htmlFor="fraud" className="cursor-pointer font-normal">
                     احتيال أو نصب
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse">
+                <div className="flex items-center space-x-reverse space-x-2">
                   <RadioGroupItem value="تحرش أو إساءة" id="harassment" />
                   <Label htmlFor="harassment" className="cursor-pointer font-normal">
                     تحرش أو إساءة لفظية
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse">
+                <div className="flex items-center space-x-reverse space-x-2">
                   <RadioGroupItem value="سبام أو إزعاج" id="spam" />
                   <Label htmlFor="spam" className="cursor-pointer font-normal">
                     سبام أو إزعاج متكرر
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2 space-x-reverse">
+                <div className="flex items-center space-x-reverse space-x-2">
                   <RadioGroupItem value="سبب آخر" id="other" />
                   <Label htmlFor="other" className="cursor-pointer font-normal">
                     سبب آخر
@@ -1034,18 +1034,24 @@ const Messages = () => {
               </RadioGroup>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">تفاصيل إضافية (اختياري)</Label>
+              <Label htmlFor="description" className="text-right block">تفاصيل إضافية (اختياري)</Label>
               <Textarea
                 id="description"
                 placeholder="أضف تفاصيل إضافية عن البلاغ لمساعدتنا في المراجعة..."
                 value={reportDescription}
                 onChange={(e) => setReportDescription(e.target.value)}
                 rows={4}
-                className="resize-none"
+                className="resize-none text-right"
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-row-reverse gap-2">
+            <Button 
+              onClick={handleReportConversation}
+              disabled={!reportReason}
+            >
+              إرسال البلاغ
+            </Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -1056,12 +1062,6 @@ const Messages = () => {
               }}
             >
               إلغاء
-            </Button>
-            <Button 
-              onClick={handleReportConversation}
-              disabled={!reportReason}
-            >
-              إرسال البلاغ
             </Button>
           </DialogFooter>
         </DialogContent>
