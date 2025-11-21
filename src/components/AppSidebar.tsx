@@ -140,7 +140,7 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
-                      activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
+                      activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                       {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">{item.title}</span>}
@@ -153,7 +153,7 @@ export function AppSidebar() {
                   <NavLink
                     to="/dashboard/analytics/advanced"
                     className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
-                    activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
+                    activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                   >
                     <BarChart className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">التحليلات المتقدمة</span>}
@@ -165,7 +165,7 @@ export function AppSidebar() {
                   <NavLink
                     to="/dashboard/gamification"
                     className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
-                    activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
+                    activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                   >
                     <Trophy className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">النقاط والشارات</span>}
@@ -189,7 +189,7 @@ export function AppSidebar() {
                     <NavLink
                       to="/dashboard/admin"
                       className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
-                      activeClassName="bg-destructive/10 text-destructive font-semibold border-r-4 border-destructive"
+                      activeClassName="bg-destructive/15 text-destructive font-bold border-r-4 border-destructive shadow-sm"
                     >
                       <Shield className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                       {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">لوحة الإدارة</span>}
@@ -199,11 +199,11 @@ export function AppSidebar() {
                 {adminItems.map((item, index) => (
                   <SidebarMenuItem key={item.title} style={{ animationDelay: `${(index + 1) * 30}ms` }} className="animate-fade-in">
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                      <NavLink
-                        to={item.url}
-                        className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
-                        activeClassName="bg-destructive/10 text-destructive font-semibold border-r-4 border-destructive"
-                      >
+                        <NavLink
+                         to={item.url}
+                         className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                         activeClassName="bg-destructive/15 text-destructive font-bold border-r-4 border-destructive shadow-sm"
+                       >
                         <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                         {state !== "collapsed" && (
                           <div className="flex items-center justify-between flex-1 transition-opacity duration-300">
@@ -238,7 +238,7 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
-                      activeClassName="bg-primary/10 text-primary font-semibold border-r-4 border-primary"
+                      activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                       {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">{item.title}</span>}
