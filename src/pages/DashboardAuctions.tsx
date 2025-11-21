@@ -198,8 +198,19 @@ const DashboardAuctions = () => {
     }
 
     const endDate = new Date(endTime);
-    if (endDate <= new Date()) {
+    const now = new Date();
+    
+    if (endDate <= now) {
       toast.error("تاريخ النهاية يجب أن يكون في المستقبل");
+      return;
+    }
+
+    // Check if auction duration exceeds 5 days
+    const maxDuration = 5 * 24 * 60 * 60 * 1000; // 5 days in milliseconds
+    const duration = endDate.getTime() - now.getTime();
+    
+    if (duration > maxDuration) {
+      toast.error("مدة المزاد يجب أن لا تتجاوز 5 أيام");
       return;
     }
 
