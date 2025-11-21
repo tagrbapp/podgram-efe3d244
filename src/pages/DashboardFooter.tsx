@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
+import { Loader2, MessageSquare } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import Footer from "@/components/Footer";
-import { Loader2 } from "lucide-react";
 
 interface FooterSettings {
   id: string;
@@ -123,19 +124,33 @@ const DashboardFooter = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2">
+            <div className="flex items-center justify-center h-screen">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <MessageSquare className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold">إدارة محتوى الفوتر</h1>
+            </div>
+          </header>
+          <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">إدارة محتوى الفوتر</h1>
           <p className="text-muted-foreground">
             قم بتعديل محتوى الفوتر وروابط التواصل الاجتماعي ومعلومات الاتصال
           </p>
@@ -308,10 +323,10 @@ const DashboardFooter = () => {
             </Button>
           </div>
         </div>
+          </main>
+        </div>
       </div>
-
-      <Footer />
-    </div>
+    </SidebarProvider>
   );
 };
 
