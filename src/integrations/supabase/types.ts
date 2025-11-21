@@ -734,6 +734,7 @@ export type Database = {
       footer_settings: {
         Row: {
           address: string | null
+          bottom_links: Json | null
           brand_description: string
           brand_name: string
           copyright_text: string | null
@@ -744,6 +745,8 @@ export type Database = {
           is_active: boolean
           linkedin_url: string | null
           phone: string | null
+          quick_links: Json | null
+          support_links: Json | null
           twitter_url: string | null
           updated_at: string | null
           updated_by: string | null
@@ -751,6 +754,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          bottom_links?: Json | null
           brand_description?: string
           brand_name?: string
           copyright_text?: string | null
@@ -761,6 +765,8 @@ export type Database = {
           is_active?: boolean
           linkedin_url?: string | null
           phone?: string | null
+          quick_links?: Json | null
+          support_links?: Json | null
           twitter_url?: string | null
           updated_at?: string | null
           updated_by?: string | null
@@ -768,6 +774,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          bottom_links?: Json | null
           brand_description?: string
           brand_name?: string
           copyright_text?: string | null
@@ -778,6 +785,8 @@ export type Database = {
           is_active?: boolean
           linkedin_url?: string | null
           phone?: string | null
+          quick_links?: Json | null
+          support_links?: Json | null
           twitter_url?: string | null
           updated_at?: string | null
           updated_by?: string | null
