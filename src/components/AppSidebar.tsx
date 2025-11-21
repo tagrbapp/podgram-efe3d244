@@ -21,15 +21,15 @@ import { Badge } from "@/components/ui/badge";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 
 const mainItems = [
-  { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
-  { title: "إعلاناتي", url: "/dashboard/listings", icon: Package },
-  { title: "المزادات", url: "/dashboard/auctions", icon: Gavel },
-  { title: "إحصائيات المزادات", url: "/dashboard/auction-analytics", icon: BarChart },
-  { title: "ملفي كمزايد", url: "/dashboard/bidder-profile", icon: Trophy },
-  { title: "الرسائل", url: "/messages", icon: MessageCircle },
-  { title: "المفضلة", url: "/favorites", icon: Heart },
-  { title: "الإحصائيات", url: "/dashboard/analytics", icon: TrendingUp },
-  { title: "التقارير", url: "/dashboard/reports", icon: FileText },
+  { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard, showBadge: false },
+  { title: "إعلاناتي", url: "/dashboard/listings", icon: Package, showBadge: false },
+  { title: "المزادات", url: "/dashboard/auctions", icon: Gavel, showBadge: false },
+  { title: "إحصائيات المزادات", url: "/dashboard/auction-analytics", icon: BarChart, showBadge: false },
+  { title: "ملفي كمزايد", url: "/dashboard/bidder-profile", icon: Trophy, showBadge: false },
+  { title: "الرسائل", url: "/messages", icon: MessageCircle, showBadge: true, badgeKey: "messages" },
+  { title: "المفضلة", url: "/favorites", icon: Heart, showBadge: false },
+  { title: "الإحصائيات", url: "/dashboard/analytics", icon: TrendingUp, showBadge: false },
+  { title: "التقارير", url: "/dashboard/reports", icon: FileText, showBadge: false },
 ];
 
 const settingsItems = [
@@ -38,20 +38,20 @@ const settingsItems = [
 ];
 
 const adminItems = [
-  { title: "إدارة الأعضاء", url: "/dashboard/user-approvals", icon: UserCheck },
-  { title: "إدارة الأدوار والصلاحيات", url: "/dashboard/roles", icon: Users },
-  { title: "إدارة البلاغات", url: "/dashboard/reports/admin", icon: Shield },
-  { title: "إدارة الفئات", url: "/dashboard/categories", icon: FolderTree },
-  { title: "احتساب النقاط", url: "/dashboard/points-calculation", icon: Calculator },
-  { title: "لوحة المتصدرين", url: "/dashboard/leaderboard", icon: Award },
-  { title: "إدارة المكافآت", url: "/dashboard/achievements", icon: Trophy },
-  { title: "تقارير الإنجازات", url: "/dashboard/achievements-reports", icon: BarChart3 },
-  { title: "إدارة الصفحة الرئيسية", url: "/dashboard/homepage", icon: Home },
-  { title: "إدارة الشريط العلوي", url: "/dashboard/top-bar", icon: ChevronUp },
-  { title: "إدارة الفوتر", url: "/dashboard/footer", icon: ChevronDown },
-  { title: "إدارة ألوان الموقع", url: "/dashboard/theme", icon: Palette },
-  { title: "إدارة الإعلانات", url: "/dashboard/announcements", icon: Megaphone },
-  { title: "إدارة الـ Hero Carousel", url: "/dashboard/hero-carousel", icon: Image },
+  { title: "إدارة الأعضاء", url: "/dashboard/user-approvals", icon: UserCheck, showBadge: true, badgeKey: "users" },
+  { title: "إدارة الأدوار والصلاحيات", url: "/dashboard/roles", icon: Users, showBadge: false },
+  { title: "إدارة البلاغات", url: "/dashboard/reports/admin", icon: Shield, showBadge: true, badgeKey: "reports" },
+  { title: "إدارة الفئات", url: "/dashboard/categories", icon: FolderTree, showBadge: false },
+  { title: "احتساب النقاط", url: "/dashboard/points-calculation", icon: Calculator, showBadge: false },
+  { title: "لوحة المتصدرين", url: "/dashboard/leaderboard", icon: Award, showBadge: false },
+  { title: "إدارة المكافآت", url: "/dashboard/achievements", icon: Trophy, showBadge: false },
+  { title: "تقارير الإنجازات", url: "/dashboard/achievements-reports", icon: BarChart3, showBadge: false },
+  { title: "إدارة الصفحة الرئيسية", url: "/dashboard/homepage", icon: Home, showBadge: false },
+  { title: "إدارة الشريط العلوي", url: "/dashboard/top-bar", icon: ChevronUp, showBadge: false },
+  { title: "إدارة الفوتر", url: "/dashboard/footer", icon: ChevronDown, showBadge: false },
+  { title: "إدارة ألوان الموقع", url: "/dashboard/theme", icon: Palette, showBadge: false },
+  { title: "إدارة الإعلانات", url: "/dashboard/announcements", icon: Megaphone, showBadge: false },
+  { title: "إدارة الـ Hero Carousel", url: "/dashboard/hero-carousel", icon: Image, showBadge: false },
 ];
 
 export function AppSidebar() {
@@ -61,12 +61,15 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingReportsCount, setPendingReportsCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [pendingUsersCount, setPendingUsersCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const isActive = (path: string) => currentPath === path;
 
   useEffect(() => {
     checkAdminStatus();
+    fetchUnreadMessagesCount();
   }, []);
 
   const checkAdminStatus = async () => {
@@ -84,17 +87,56 @@ export function AppSidebar() {
     if (roles && roles.length > 0) {
       setIsAdmin(true);
       fetchPendingReportsCount();
+      fetchPendingUsersCount();
     }
   };
 
   const fetchPendingReportsCount = async () => {
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from("reports")
-      .select("id", { count: "exact", head: true })
+      .select("*", { count: "exact", head: true })
       .eq("status", "pending");
 
-    if (!error && data) {
-      setPendingReportsCount(data.length || 0);
+    if (!error && count !== null) {
+      setPendingReportsCount(count);
+    }
+  };
+
+  const fetchUnreadMessagesCount = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // جلب المحادثات الخاصة بالمستخدم
+    const { data: conversations } = await supabase
+      .from("conversations")
+      .select("id")
+      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
+
+    if (conversations && conversations.length > 0) {
+      const conversationIds = conversations.map(c => c.id);
+      
+      // حساب عدد الرسائل غير المقروءة التي لم يرسلها المستخدم
+      const { count } = await supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .in("conversation_id", conversationIds)
+        .eq("is_read", false)
+        .neq("sender_id", user.id);
+
+      if (count !== null) {
+        setUnreadMessagesCount(count);
+      }
+    }
+  };
+
+  const fetchPendingUsersCount = async () => {
+    const { count, error } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("approval_status", "pending");
+
+    if (!error && count !== null) {
+      setPendingUsersCount(count);
     }
   };
 
@@ -146,7 +188,16 @@ export function AppSidebar() {
                         <span className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-lg shadow-primary/50" />
                       )}
                       <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
-                      {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">{item.title}</span>}
+                      {state !== "collapsed" && (
+                        <div className="flex items-center justify-between flex-1 transition-opacity duration-300">
+                          <span className="text-sm">{item.title}</span>
+                          {item.showBadge && item.badgeKey === "messages" && unreadMessagesCount > 0 && (
+                            <Badge variant="destructive" className="ml-auto animate-scale-in transition-transform duration-200 hover:scale-110">
+                              {unreadMessagesCount}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -223,7 +274,12 @@ export function AppSidebar() {
                          {state !== "collapsed" && (
                            <div className="flex items-center justify-between flex-1 transition-opacity duration-300">
                              <span className="text-sm">{item.title}</span>
-                             {pendingReportsCount > 0 && (
+                             {item.showBadge && item.badgeKey === "users" && pendingUsersCount > 0 && (
+                               <Badge variant="destructive" className="ml-auto animate-scale-in transition-transform duration-200 hover:scale-110">
+                                 {pendingUsersCount}
+                               </Badge>
+                             )}
+                             {item.showBadge && item.badgeKey === "reports" && pendingReportsCount > 0 && (
                                <Badge variant="destructive" className="ml-auto animate-scale-in transition-transform duration-200 hover:scale-110">
                                  {pendingReportsCount}
                                </Badge>
