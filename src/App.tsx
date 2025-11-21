@@ -45,6 +45,7 @@ import DashboardRoles from "./pages/DashboardRoles";
 import DashboardCategories from "./pages/DashboardCategories";
 import DashboardPointsCalculation from "./pages/DashboardPointsCalculation";
 import DashboardLeaderboard from "./pages/DashboardLeaderboard";
+import DashboardAchievements from "./pages/DashboardAchievements";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -92,6 +93,7 @@ const App = () => (
           <Route path="/dashboard/categories" element={<DashboardCategories />} />
           <Route path="/dashboard/points-calculation" element={<DashboardPointsCalculation />} />
           <Route path="/dashboard/leaderboard" element={<DashboardLeaderboard />} />
+          <Route path="/dashboard/achievements" element={<DashboardAchievements />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />

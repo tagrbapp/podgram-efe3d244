@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          achievement_type: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          is_repeatable: boolean
+          name: string
+          requirement_value: number
+          reward_points: number
+          updated_at: string
+        }
+        Insert: {
+          achievement_type: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_repeatable?: boolean
+          name: string
+          requirement_value?: number
+          reward_points?: number
+          updated_at?: string
+        }
+        Update: {
+          achievement_type?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_repeatable?: boolean
+          name?: string
+          requirement_value?: number
+          reward_points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_actions: {
         Row: {
           action_type: string
@@ -1313,6 +1355,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          earned_at: string
+          id: string
+          times_earned: number
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          earned_at?: string
+          id?: string
+          times_earned?: number
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string
+          id?: string
+          times_earned?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -1444,6 +1518,10 @@ export type Database = {
       calculate_response_rate: {
         Args: { seller_uuid: string }
         Returns: number
+      }
+      check_and_award_achievements: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
       check_auction_alerts: { Args: never; Returns: undefined }
