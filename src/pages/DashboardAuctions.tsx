@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Gavel, TrendingUp, Timer, DollarSign, Plus } from "lucide-react";
+import { Gavel, TrendingUp, Timer, DollarSign, Plus, Image as ImageIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { convertArabicToEnglishNumbers } from "@/lib/utils";
@@ -53,6 +53,9 @@ const DashboardAuctions = () => {
   const [bidIncrement, setBidIncrement] = useState<string>("100");
   const [reservePrice, setReservePrice] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -117,6 +120,69 @@ const DashboardAuctions = () => {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    if (selectedImages.length + files.length > 5) {
+      toast.error("يمكنك رفع 5 صور كحد أقصى");
+      return;
+    }
+
+    const invalidFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+    if (invalidFiles.length > 0) {
+      toast.error("حجم الصورة يجب أن لا يتجاوز 5MB");
+      return;
+    }
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const invalidTypes = files.filter(file => !validTypes.includes(file.type));
+    if (invalidTypes.length > 0) {
+      toast.error("نوع الصورة يجب أن يكون JPG أو PNG أو WEBP");
+      return;
+    }
+
+    setSelectedImages(prev => [...prev, ...files]);
+
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async (userId: string): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+
+    for (const image of selectedImages) {
+      const fileExt = image.name.split('.').pop();
+      const fileName = `${userId}/auctions/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('listing-images')
+        .upload(fileName, image);
+
+      if (uploadError) {
+        console.error('Error uploading image:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('listing-images')
+        .getPublicUrl(fileName);
+
+      uploadedUrls.push(publicUrl);
+    }
+
+    return uploadedUrls;
+  };
+
   const handleCreateAuction = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -142,11 +208,19 @@ const DashboardAuctions = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      let imageUrls: string[] = [];
+      if (selectedImages.length > 0) {
+        setUploadingImages(true);
+        toast.info("جاري رفع الصور...");
+        imageUrls = await uploadImages(user?.id || '');
+      }
+      
       const { error } = await supabase.from('auctions').insert({
         user_id: user?.id,
         category_id: selectedCategory,
         title: auctionTitle,
         description: auctionDescription || null,
+        images: imageUrls.length > 0 ? imageUrls : null,
         starting_price: parseFloat(startingPrice),
         bid_increment: parseFloat(bidIncrement),
         reserve_price: reservePrice ? parseFloat(reservePrice) : null,
@@ -166,14 +240,19 @@ const DashboardAuctions = () => {
       setBidIncrement("100");
       setReservePrice("");
       setEndTime("");
+      setSelectedImages([]);
+      setImagePreviews([]);
       
       // Refresh data
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating auction:", error);
-      toast.error("فشل إنشاء المزاد");
+      toast.error("فشل إنشاء المزاد", {
+        description: error.message,
+      });
     } finally {
       setIsCreating(false);
+      setUploadingImages(false);
     }
   };
 
@@ -384,15 +463,65 @@ const DashboardAuctions = () => {
                       required
                     />
                   </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>صور المزاد (حتى 5 صور)</Label>
+                    
+                    {imagePreviews.length > 0 && (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={preview} 
+                              alt={`معاينة ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border border-border"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-2 left-2 bg-destructive text-destructive-foreground rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {selectedImages.length < 5 && (
+                      <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-smooth cursor-pointer">
+                        <input
+                          type="file"
+                          id="auction-image-upload"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          multiple
+                          onChange={handleImageSelect}
+                          className="hidden"
+                        />
+                        <label htmlFor="auction-image-upload" className="cursor-pointer">
+                          <ImageIcon className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground mb-1">
+                            انقر لاختيار الصور
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            الحد الأقصى 5 صور، كل صورة حتى 5MB
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            JPG, PNG, WEBP
+                          </p>
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <Button
                   type="submit"
-                  disabled={isCreating || categories.length === 0}
+                  disabled={isCreating || uploadingImages || categories.length === 0}
                   className="w-full md:w-auto"
                 >
                   <Plus className="h-4 w-4 ml-2" />
-                  {isCreating ? "جاري الإنشاء..." : "إنشاء المزاد"}
+                  {uploadingImages ? "جاري رفع الصور..." : isCreating ? "جاري الإنشاء..." : "إنشاء المزاد"}
                 </Button>
               </form>
             </Card>
