@@ -8,12 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, Share2, UserPlus, Gift, TrendingUp, Calendar, Users } from "lucide-react";
-import { format } from "date-fns";
+import { Copy, Share2, UserPlus, Gift, TrendingUp, Calendar, Users, CalendarDays } from "lucide-react";
+import { format, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 import { ar } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { cn } from "@/lib/utils";
 
 interface ReferredUser {
   id: string;
@@ -26,10 +30,19 @@ interface ChartData {
   count: number;
 }
 
+type TimePeriod = "3months" | "6months" | "1year" | "custom";
+
+interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
+}
+
 const DashboardReferral = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [referralCode, setReferralCode] = useState("");
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("6months");
+  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [referralStats, setReferralStats] = useState({ 
     total: 0, 
     points: 0,
@@ -53,7 +66,7 @@ const DashboardReferral = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+  }, [navigate, timePeriod, dateRange]);
 
   const loadReferralData = async (userId: string) => {
     try {
@@ -67,11 +80,26 @@ const DashboardReferral = () => {
       if (profileError) throw profileError;
       setReferralCode(profile.referral_code || '');
 
-      // Get referral statistics with full details
+      // Calculate date range based on selected period
+      let startDate: Date;
+      const now = new Date();
+      
+      if (timePeriod === "custom" && dateRange.from && dateRange.to) {
+        startDate = startOfDay(dateRange.from);
+      } else if (timePeriod === "3months") {
+        startDate = subMonths(now, 3);
+      } else if (timePeriod === "1year") {
+        startDate = subYears(now, 1);
+      } else {
+        startDate = subMonths(now, 6); // default 6 months
+      }
+
+      // Get referral statistics with full details filtered by date
       const { data: referrals, error: referralsError } = await supabase
         .from('profiles')
         .select('id, full_name, created_at')
         .eq('referred_by', userId)
+        .gte('created_at', startDate.toISOString())
         .order('created_at', { ascending: false });
 
       if (referralsError) throw referralsError;
@@ -80,7 +108,6 @@ const DashboardReferral = () => {
       setReferredUsers(referrals || []);
 
       // Calculate monthly statistics
-      const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
       
@@ -110,9 +137,11 @@ const DashboardReferral = () => {
         monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
       });
 
-      // Prepare chart data for last 6 months
+      // Prepare chart data based on selected period
       const chartDataArray: ChartData[] = [];
-      for (let i = 5; i >= 0; i--) {
+      const monthsToShow = timePeriod === "3months" ? 3 : timePeriod === "1year" ? 12 : 6;
+      
+      for (let i = monthsToShow - 1; i >= 0; i--) {
         const date = new Date(currentYear, currentMonth - i, 1);
         const monthKey = format(date, 'yyyy-MM');
         chartDataArray.push({
@@ -225,6 +254,86 @@ const DashboardReferral = () => {
               </p>
             </div>
 
+            {/* Time Period Filter */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5 text-primary" />
+                  الفترة الزمنية
+                </CardTitle>
+                <CardDescription>اختر الفترة الزمنية لعرض الإحصائيات</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Tabs value={timePeriod} onValueChange={(value) => setTimePeriod(value as TimePeriod)}>
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="3months">3 أشهر</TabsTrigger>
+                    <TabsTrigger value="6months">6 أشهر</TabsTrigger>
+                    <TabsTrigger value="1year">سنة</TabsTrigger>
+                    <TabsTrigger value="custom">نطاق مخصص</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                {timePeriod === "custom" && (
+                  <div className="flex gap-4 items-end">
+                    <div className="flex-1 space-y-2">
+                      <Label>من تاريخ</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-right font-normal",
+                              !dateRange.from && "text-muted-foreground"
+                            )}
+                          >
+                            <Calendar className="ml-2 h-4 w-4" />
+                            {dateRange.from ? format(dateRange.from, "PPP", { locale: ar }) : "اختر التاريخ"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={dateRange.from}
+                            onSelect={(date) => setDateRange({ ...dateRange, from: date })}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div className="flex-1 space-y-2">
+                      <Label>إلى تاريخ</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-right font-normal",
+                              !dateRange.to && "text-muted-foreground"
+                            )}
+                          >
+                            <Calendar className="ml-2 h-4 w-4" />
+                            {dateRange.to ? format(dateRange.to, "PPP", { locale: ar }) : "اختر التاريخ"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={dateRange.to}
+                            onSelect={(date) => setDateRange({ ...dateRange, to: date })}
+                            disabled={(date) => dateRange.from ? date < dateRange.from : false}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* إحصائيات الإحالة */}
             <div className="grid md:grid-cols-4 gap-4">
               <Card className="hover-lift">
@@ -306,7 +415,9 @@ const DashboardReferral = () => {
             <div className="grid md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>الدعوات خلال آخر 6 أشهر</CardTitle>
+                  <CardTitle>
+                    الدعوات خلال {timePeriod === "3months" ? "آخر 3 أشهر" : timePeriod === "1year" ? "آخر سنة" : timePeriod === "custom" ? "النطاق المخصص" : "آخر 6 أشهر"}
+                  </CardTitle>
                   <CardDescription>رسم بياني خطي يوضح تطور الدعوات</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -344,7 +455,9 @@ const DashboardReferral = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>توزيع الدعوات الشهرية</CardTitle>
+                  <CardTitle>
+                    توزيع الدعوات {timePeriod === "3months" ? "- آخر 3 أشهر" : timePeriod === "1year" ? "- آخر سنة" : timePeriod === "custom" ? "- النطاق المخصص" : "الشهرية"}
+                  </CardTitle>
                   <CardDescription>رسم بياني بالأعمدة لتوزيع الدعوات</CardDescription>
                 </CardHeader>
                 <CardContent>
