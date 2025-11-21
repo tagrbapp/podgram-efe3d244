@@ -1151,6 +1151,111 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_settings: {
+        Row: {
+          accent_hue: number
+          accent_lightness: number
+          accent_saturation: number
+          background_hue: number
+          background_lightness: number
+          background_saturation: number
+          border_hue: number
+          border_lightness: number
+          border_saturation: number
+          card_hue: number
+          card_lightness: number
+          card_saturation: number
+          destructive_hue: number
+          destructive_lightness: number
+          destructive_saturation: number
+          foreground_hue: number
+          foreground_lightness: number
+          foreground_saturation: number
+          id: string
+          is_active: boolean
+          muted_hue: number
+          muted_lightness: number
+          muted_saturation: number
+          primary_hue: number
+          primary_lightness: number
+          primary_saturation: number
+          secondary_hue: number
+          secondary_lightness: number
+          secondary_saturation: number
+          theme_name: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          accent_hue?: number
+          accent_lightness?: number
+          accent_saturation?: number
+          background_hue?: number
+          background_lightness?: number
+          background_saturation?: number
+          border_hue?: number
+          border_lightness?: number
+          border_saturation?: number
+          card_hue?: number
+          card_lightness?: number
+          card_saturation?: number
+          destructive_hue?: number
+          destructive_lightness?: number
+          destructive_saturation?: number
+          foreground_hue?: number
+          foreground_lightness?: number
+          foreground_saturation?: number
+          id?: string
+          is_active?: boolean
+          muted_hue?: number
+          muted_lightness?: number
+          muted_saturation?: number
+          primary_hue?: number
+          primary_lightness?: number
+          primary_saturation?: number
+          secondary_hue?: number
+          secondary_lightness?: number
+          secondary_saturation?: number
+          theme_name?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          accent_hue?: number
+          accent_lightness?: number
+          accent_saturation?: number
+          background_hue?: number
+          background_lightness?: number
+          background_saturation?: number
+          border_hue?: number
+          border_lightness?: number
+          border_saturation?: number
+          card_hue?: number
+          card_lightness?: number
+          card_saturation?: number
+          destructive_hue?: number
+          destructive_lightness?: number
+          destructive_saturation?: number
+          foreground_hue?: number
+          foreground_lightness?: number
+          foreground_saturation?: number
+          id?: string
+          is_active?: boolean
+          muted_hue?: number
+          muted_lightness?: number
+          muted_saturation?: number
+          primary_hue?: number
+          primary_lightness?: number
+          primary_saturation?: number
+          secondary_hue?: number
+          secondary_lightness?: number
+          secondary_saturation?: number
+          theme_name?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       top_bar_settings: {
         Row: {
           background_color: string | null
