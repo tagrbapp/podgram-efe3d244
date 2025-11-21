@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserCheck, UserX, Clock, CheckCircle2, XCircle, Mail, Phone, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import Navbar from "@/components/Navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 interface PendingUser {
   id: string;
@@ -197,21 +198,33 @@ const DashboardUserApprovals = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-12">
-          <p className="text-center">جاري التحميل...</p>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2">
+            <div className="flex items-center justify-center h-screen">
+              <p className="text-center">جاري التحميل...</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8" dir="rtl">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <UserCheck className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold">إدارة موافقات الأعضاء</h1>
+            </div>
+          </header>
+          <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">إدارة موافقات الأعضاء</h1>
           <p className="text-muted-foreground">
             مراجعة والموافقة على طلبات الانضمام للمنصة
           </p>
@@ -278,8 +291,10 @@ const DashboardUserApprovals = () => {
             )}
           </TabsContent>
         </Tabs>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

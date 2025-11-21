@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Loader2, Palette, RefreshCw, Sparkles } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -345,22 +345,33 @@ const DashboardTheme = () => {
 
   if (loading || !settings) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background" dir="rtl">
+          <AppSidebar />
+          <div className="flex-1 order-2">
+            <div className="flex items-center justify-center h-screen">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background" dir="rtl">
+        <AppSidebar />
+        <div className="flex-1 order-2">
+          <header className="sticky top-0 z-10 bg-background border-b">
+            <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+              <SidebarTrigger className="-ml-2" />
+              <Palette className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold">إدارة ألوان الموقع</h1>
+            </div>
+          </header>
+          <main className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Palette className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">إدارة ألوان الموقع</h1>
-          </div>
           <p className="text-muted-foreground">
             قم بتخصيص ألوان الموقع بالكامل باستخدام نظام HSL. التغييرات تظهر مباشرة على جميع الصفحات.
           </p>
@@ -636,10 +647,10 @@ const DashboardTheme = () => {
             )}
           </Button>
         </div>
+          </main>
+        </div>
       </div>
-
-      <Footer />
-    </div>
+    </SidebarProvider>
   );
 };
 
