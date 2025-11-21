@@ -1487,15 +1487,25 @@ export type Database = {
         Args: { _invitation_id: string }
         Returns: Json
       }
-      add_points: {
-        Args: {
-          _points: number
-          _reason: string
-          _reference_id?: string
-          _user_id: string
-        }
-        Returns: undefined
-      }
+      add_points:
+        | {
+            Args: {
+              _points: number
+              _reason: string
+              _reference_id?: string
+              _user_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _points: number
+              _reason: string
+              _reference_id?: string
+              _user_id: string
+            }
+            Returns: undefined
+          }
       admin_block_user: {
         Args: {
           _admin_id: string
