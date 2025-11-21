@@ -41,6 +41,7 @@ const settingsItems = [
 const adminItems = [
   { title: "إدارة الأعضاء", url: "/dashboard/user-approvals", icon: UserCheck, showBadge: true, badgeKey: "users" },
   { title: "إدارة الأدوار والصلاحيات", url: "/dashboard/roles", icon: Users, showBadge: false },
+  { title: "إحصائيات الإحالات", url: "/dashboard/referral-stats", icon: BarChart3, showBadge: false },
   { title: "إدارة البلاغات", url: "/dashboard/reports/admin", icon: Shield, showBadge: true, badgeKey: "reports" },
   { title: "إدارة الفئات", url: "/dashboard/categories", icon: FolderTree, showBadge: false },
   { title: "احتساب النقاط", url: "/dashboard/points-calculation", icon: Calculator, showBadge: false },
