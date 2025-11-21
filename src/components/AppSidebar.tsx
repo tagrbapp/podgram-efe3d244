@@ -139,9 +139,12 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1 relative"
                       activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                     >
+                      {isActive(item.url) && (
+                        <span className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-lg shadow-primary/50" />
+                      )}
                       <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                       {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">{item.title}</span>}
                     </NavLink>
@@ -152,9 +155,12 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/analytics/advanced")}>
                   <NavLink
                     to="/dashboard/analytics/advanced"
-                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1 relative"
                     activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                   >
+                    {isActive("/dashboard/analytics/advanced") && (
+                      <span className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-lg shadow-primary/50" />
+                    )}
                     <BarChart className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">التحليلات المتقدمة</span>}
                   </NavLink>
@@ -164,9 +170,12 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive("/dashboard/gamification")}>
                   <NavLink
                     to="/dashboard/gamification"
-                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                    className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1 relative"
                     activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                   >
+                    {isActive("/dashboard/gamification") && (
+                      <span className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-lg shadow-primary/50" />
+                    )}
                     <Trophy className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                     {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">النقاط والشارات</span>}
                   </NavLink>
@@ -188,9 +197,12 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive("/dashboard/admin")}>
                     <NavLink
                       to="/dashboard/admin"
-                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1 relative"
                       activeClassName="bg-destructive/15 text-destructive font-bold border-r-4 border-destructive shadow-sm"
                     >
+                      {isActive("/dashboard/admin") && (
+                        <span className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-destructive rounded-full animate-pulse shadow-lg shadow-destructive/50" />
+                      )}
                       <Shield className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                       {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">لوحة الإدارة</span>}
                     </NavLink>
@@ -199,23 +211,26 @@ export function AppSidebar() {
                 {adminItems.map((item, index) => (
                   <SidebarMenuItem key={item.title} style={{ animationDelay: `${(index + 1) * 30}ms` }} className="animate-fade-in">
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                        <NavLink
+                      <NavLink
                          to={item.url}
-                         className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                         className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1 relative"
                          activeClassName="bg-destructive/15 text-destructive font-bold border-r-4 border-destructive shadow-sm"
                        >
-                        <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
-                        {state !== "collapsed" && (
-                          <div className="flex items-center justify-between flex-1 transition-opacity duration-300">
-                            <span className="text-sm">{item.title}</span>
-                            {pendingReportsCount > 0 && (
-                              <Badge variant="destructive" className="ml-auto animate-scale-in transition-transform duration-200 hover:scale-110">
-                                {pendingReportsCount}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </NavLink>
+                         {isActive(item.url) && (
+                           <span className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-destructive rounded-full animate-pulse shadow-lg shadow-destructive/50" />
+                         )}
+                         <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
+                         {state !== "collapsed" && (
+                           <div className="flex items-center justify-between flex-1 transition-opacity duration-300">
+                             <span className="text-sm">{item.title}</span>
+                             {pendingReportsCount > 0 && (
+                               <Badge variant="destructive" className="ml-auto animate-scale-in transition-transform duration-200 hover:scale-110">
+                                 {pendingReportsCount}
+                               </Badge>
+                             )}
+                           </div>
+                         )}
+                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -237,9 +252,12 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1"
+                      className="hover:bg-accent/50 flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:translate-x-1 relative"
                       activeClassName="bg-primary/15 text-primary font-bold border-r-4 border-primary shadow-sm"
                     >
+                      {isActive(item.url) && (
+                        <span className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full animate-pulse shadow-lg shadow-primary/50" />
+                      )}
                       <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                       {state !== "collapsed" && <span className="text-sm transition-opacity duration-300">{item.title}</span>}
                     </NavLink>
