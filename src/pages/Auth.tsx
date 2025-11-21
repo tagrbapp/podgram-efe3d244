@@ -111,7 +111,12 @@ const Auth = () => {
     try {
       const validation = registerSchema.parse({ fullName, email, password, confirmPassword, referralCode });
 
-      const { error } = await signUp(validation.email, validation.password, validation.fullName);
+      const { error } = await signUp(
+        validation.email, 
+        validation.password, 
+        validation.fullName,
+        validation.referralCode
+      );
 
       if (error) {
         if (error.message.includes("User already registered")) {
@@ -122,28 +127,6 @@ const Auth = () => {
       } else {
         // Check if email confirmation is enabled
         const { data: { session } } = await supabase.auth.getSession();
-        
-        // Process referral code if provided
-        if (validation.referralCode && session?.user) {
-          try {
-            // Find the referrer by code
-            const { data: referrer } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('referral_code', validation.referralCode.toUpperCase())
-              .single();
-
-            if (referrer) {
-              // Update the new user's profile with referrer
-              await supabase
-                .from('profiles')
-                .update({ referred_by: referrer.id })
-                .eq('id', session.user.id);
-            }
-          } catch (refError) {
-            console.error('Error processing referral:', refError);
-          }
-        }
         
         if (!session) {
           // Email confirmation required - redirect to verify page

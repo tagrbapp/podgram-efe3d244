@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
 
-export const signUp = async (email: string, password: string, fullName: string) => {
+export const signUp = async (email: string, password: string, fullName: string, referralCode?: string) => {
   const redirectUrl = `${window.location.origin}/`;
   
   const { data, error } = await supabase.auth.signUp({
@@ -11,6 +11,7 @@ export const signUp = async (email: string, password: string, fullName: string) 
       emailRedirectTo: redirectUrl,
       data: {
         full_name: fullName,
+        referral_code: referralCode || '',
       },
     },
   });
