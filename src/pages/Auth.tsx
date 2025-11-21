@@ -35,6 +35,7 @@ const registerSchema = z.object({
   email: z.string().trim().email("البريد الإلكتروني غير صحيح"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
   confirmPassword: z.string(),
+  referralCode: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "كلمة المرور غير متطابقة",
   path: ["confirmPassword"],
@@ -44,6 +45,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [referralCodeFromUrl, setReferralCodeFromUrl] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,6 +56,13 @@ const Auth = () => {
       }
     };
     checkSession();
+
+    // Check for referral code in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setReferralCodeFromUrl(refCode);
+    }
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -97,9 +106,10 @@ const Auth = () => {
     const email = formData.get("register-email") as string;
     const password = formData.get("register-password") as string;
     const confirmPassword = formData.get("confirm-password") as string;
+    const referralCode = formData.get("referral-code") as string;
 
     try {
-      const validation = registerSchema.parse({ fullName, email, password, confirmPassword });
+      const validation = registerSchema.parse({ fullName, email, password, confirmPassword, referralCode });
 
       const { error } = await signUp(validation.email, validation.password, validation.fullName);
 
@@ -112,6 +122,28 @@ const Auth = () => {
       } else {
         // Check if email confirmation is enabled
         const { data: { session } } = await supabase.auth.getSession();
+        
+        // Process referral code if provided
+        if (validation.referralCode && session?.user) {
+          try {
+            // Find the referrer by code
+            const { data: referrer } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('referral_code', validation.referralCode.toUpperCase())
+              .single();
+
+            if (referrer) {
+              // Update the new user's profile with referrer
+              await supabase
+                .from('profiles')
+                .update({ referred_by: referrer.id })
+                .eq('id', session.user.id);
+            }
+          } catch (refError) {
+            console.error('Error processing referral:', refError);
+          }
+        }
         
         if (!session) {
           // Email confirmation required - redirect to verify page
@@ -354,6 +386,27 @@ const Auth = () => {
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="referral-code" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>كود الإحالة (اختياري)</span>
+                  </Label>
+                  <Input
+                    id="referral-code"
+                    name="referral-code"
+                    type="text"
+                    placeholder="أدخل كود الإحالة إن وجد"
+                    defaultValue={referralCodeFromUrl}
+                    disabled={isLoading}
+                    dir="ltr"
+                    className="transition-smooth text-left uppercase"
+                    maxLength={8}
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
+                    إذا كان لديك كود إحالة من صديق، أدخله هنا
+                  </p>
                 </div>
 
                 <Button
