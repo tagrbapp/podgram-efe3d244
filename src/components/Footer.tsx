@@ -4,6 +4,11 @@ import podgramLogo from "@/assets/podgram-logo.png";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface FooterLink {
+  title: string;
+  url: string;
+}
+
 interface FooterSettings {
   brand_name: string;
   brand_description: string;
@@ -16,6 +21,9 @@ interface FooterSettings {
   email: string;
   address: string;
   copyright_text: string;
+  quick_links: FooterLink[];
+  support_links: FooterLink[];
+  bottom_links: FooterLink[];
 }
 
 const Footer = () => {
@@ -35,7 +43,14 @@ const Footer = () => {
         .single();
 
       if (error) throw error;
-      if (data) setSettings(data);
+      if (data) {
+        setSettings({
+          ...data,
+          quick_links: Array.isArray(data.quick_links) ? data.quick_links as unknown as FooterLink[] : [],
+          support_links: Array.isArray(data.support_links) ? data.support_links as unknown as FooterLink[] : [],
+          bottom_links: Array.isArray(data.bottom_links) ? data.bottom_links as unknown as FooterLink[] : [],
+        });
+      }
     } catch (error) {
       console.error("Error fetching footer settings:", error);
     }
@@ -53,6 +68,29 @@ const Footer = () => {
   const email = settings?.email || "info@podgram.com";
   const address = settings?.address || "الرياض، المملكة العربية السعودية";
   const copyrightText = settings?.copyright_text || "Podgram. جميع الحقوق محفوظة.";
+  
+  const quickLinks = settings?.quick_links || [
+    { title: "من نحن", url: "/about" },
+    { title: "الكتالوج", url: "/catalog" },
+    { title: "المفضلة", url: "/favorites" },
+    { title: "أضف إعلان", url: "/add-listing" },
+    { title: "الرسائل", url: "/messages" },
+  ];
+  
+  const supportLinks = settings?.support_links || [
+    { title: "الأسئلة الشائعة", url: "/faq" },
+    { title: "مركز المساعدة", url: "/help" },
+    { title: "كيف تبيع؟", url: "/how-to-sell" },
+    { title: "كيف تشتري؟", url: "/how-to-buy" },
+    { title: "نصائح الأمان", url: "/safety" },
+    { title: "اتصل بنا", url: "/contact" },
+  ];
+  
+  const bottomLinks = settings?.bottom_links || [
+    { title: "سياسة الخصوصية", url: "/privacy" },
+    { title: "الشروط والأحكام", url: "/terms" },
+    { title: "سياسة ملفات تعريف الارتباط", url: "/cookies" },
+  ];
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -116,31 +154,13 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold text-lg mb-4">روابط سريعة</h3>
             <ul className="space-y-3">
-              <li>
-                <Link to="/about" className="hover:text-qultura-blue transition-smooth text-sm">
-                  من نحن
-                </Link>
-              </li>
-              <li>
-                <Link to="/catalog" className="hover:text-qultura-blue transition-smooth text-sm">
-                  الكتالوج
-                </Link>
-              </li>
-              <li>
-                <Link to="/favorites" className="hover:text-qultura-blue transition-smooth text-sm">
-                  المفضلة
-                </Link>
-              </li>
-              <li>
-                <Link to="/add-listing" className="hover:text-qultura-blue transition-smooth text-sm">
-                  أضف إعلان
-                </Link>
-              </li>
-              <li>
-                <Link to="/messages" className="hover:text-qultura-blue transition-smooth text-sm">
-                  الرسائل
-                </Link>
-              </li>
+              {quickLinks.map((link, index) => (
+                <li key={index}>
+                  <Link to={link.url} className="hover:text-qultura-blue transition-smooth text-sm">
+                    {link.title}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -148,36 +168,13 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold text-lg mb-4">الدعم والمساعدة</h3>
             <ul className="space-y-3">
-              <li>
-                <Link to="/faq" className="hover:text-qultura-blue transition-smooth text-sm">
-                  الأسئلة الشائعة
-                </Link>
-              </li>
-              <li>
-                <Link to="/help" className="hover:text-qultura-blue transition-smooth text-sm">
-                  مركز المساعدة
-                </Link>
-              </li>
-              <li>
-                <Link to="/how-to-sell" className="hover:text-qultura-blue transition-smooth text-sm">
-                  كيف تبيع؟
-                </Link>
-              </li>
-              <li>
-                <Link to="/how-to-buy" className="hover:text-qultura-blue transition-smooth text-sm">
-                  كيف تشتري؟
-                </Link>
-              </li>
-              <li>
-                <Link to="/safety" className="hover:text-qultura-blue transition-smooth text-sm">
-                  نصائح الأمان
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-qultura-blue transition-smooth text-sm">
-                  اتصل بنا
-                </Link>
-              </li>
+              {supportLinks.map((link, index) => (
+                <li key={index}>
+                  <Link to={link.url} className="hover:text-qultura-blue transition-smooth text-sm">
+                    {link.title}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -223,15 +220,11 @@ const Footer = () => {
               © {currentYear} {copyrightText}
             </p>
             <div className="flex items-center gap-6 text-sm">
-              <Link to="/privacy" className="hover:text-qultura-blue transition-smooth">
-                سياسة الخصوصية
-              </Link>
-              <Link to="/terms" className="hover:text-qultura-blue transition-smooth">
-                الشروط والأحكام
-              </Link>
-              <Link to="/cookies" className="hover:text-qultura-blue transition-smooth">
-                سياسة ملفات تعريف الارتباط
-              </Link>
+              {bottomLinks.map((link, index) => (
+                <Link key={index} to={link.url} className="hover:text-qultura-blue transition-smooth">
+                  {link.title}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

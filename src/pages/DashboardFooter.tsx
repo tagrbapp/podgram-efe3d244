@@ -11,6 +11,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Footer from "@/components/Footer";
 
+interface FooterLink {
+  title: string;
+  url: string;
+}
+
 interface FooterSettings {
   id: string;
   brand_name: string;
@@ -25,6 +30,9 @@ interface FooterSettings {
   address: string;
   copyright_text: string;
   is_active: boolean;
+  quick_links: FooterLink[];
+  support_links: FooterLink[];
+  bottom_links: FooterLink[];
 }
 
 const DashboardFooter = () => {
@@ -45,6 +53,26 @@ const DashboardFooter = () => {
     address: "الرياض، المملكة العربية السعودية",
     copyright_text: "Podgram. جميع الحقوق محفوظة.",
     is_active: true,
+    quick_links: [
+      { title: "من نحن", url: "/about" },
+      { title: "الكتالوج", url: "/catalog" },
+      { title: "المفضلة", url: "/favorites" },
+      { title: "أضف إعلان", url: "/add-listing" },
+      { title: "الرسائل", url: "/messages" },
+    ],
+    support_links: [
+      { title: "الأسئلة الشائعة", url: "/faq" },
+      { title: "مركز المساعدة", url: "/help" },
+      { title: "كيف تبيع؟", url: "/how-to-sell" },
+      { title: "كيف تشتري؟", url: "/how-to-buy" },
+      { title: "نصائح الأمان", url: "/safety" },
+      { title: "اتصل بنا", url: "/contact" },
+    ],
+    bottom_links: [
+      { title: "سياسة الخصوصية", url: "/privacy" },
+      { title: "الشروط والأحكام", url: "/terms" },
+      { title: "سياسة ملفات تعريف الارتباط", url: "/cookies" },
+    ],
   });
 
   useEffect(() => {
@@ -81,7 +109,14 @@ const DashboardFooter = () => {
         .single();
 
       if (error) throw error;
-      if (data) setSettings(data);
+      if (data) {
+        setSettings({
+          ...data,
+          quick_links: Array.isArray(data.quick_links) ? data.quick_links as unknown as FooterLink[] : [],
+          support_links: Array.isArray(data.support_links) ? data.support_links as unknown as FooterLink[] : [],
+          bottom_links: Array.isArray(data.bottom_links) ? data.bottom_links as unknown as FooterLink[] : [],
+        });
+      }
     } catch (error) {
       console.error("Error fetching footer settings:", error);
       toast.error("حدث خطأ في تحميل الإعدادات");
@@ -108,6 +143,9 @@ const DashboardFooter = () => {
           address: settings.address,
           copyright_text: settings.copyright_text,
           is_active: settings.is_active,
+          quick_links: settings.quick_links as any,
+          support_links: settings.support_links as any,
+          bottom_links: settings.bottom_links as any,
         })
         .eq("id", settings.id);
 
@@ -281,6 +319,135 @@ const DashboardFooter = () => {
                 placeholder="الرياض، المملكة العربية السعودية"
               />
             </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold border-b pb-2">الروابط السريعة</h3>
+            {settings.quick_links.map((link, index) => (
+              <div key={index} className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>عنوان الرابط</Label>
+                  <Input
+                    value={link.title}
+                    onChange={(e) => {
+                      const newLinks = [...settings.quick_links];
+                      newLinks[index].title = e.target.value;
+                      setSettings({ ...settings, quick_links: newLinks });
+                    }}
+                    placeholder="من نحن"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>مسار الرابط</Label>
+                  <Input
+                    value={link.url}
+                    onChange={(e) => {
+                      const newLinks = [...settings.quick_links];
+                      newLinks[index].url = e.target.value;
+                      setSettings({ ...settings, quick_links: newLinks });
+                    }}
+                    placeholder="/about"
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSettings({
+                ...settings,
+                quick_links: [...settings.quick_links, { title: "", url: "" }]
+              })}
+            >
+              + إضافة رابط سريع
+            </Button>
+          </div>
+
+          {/* Support Links */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold border-b pb-2">روابط الدعم والمساعدة</h3>
+            {settings.support_links.map((link, index) => (
+              <div key={index} className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>عنوان الرابط</Label>
+                  <Input
+                    value={link.title}
+                    onChange={(e) => {
+                      const newLinks = [...settings.support_links];
+                      newLinks[index].title = e.target.value;
+                      setSettings({ ...settings, support_links: newLinks });
+                    }}
+                    placeholder="الأسئلة الشائعة"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>مسار الرابط</Label>
+                  <Input
+                    value={link.url}
+                    onChange={(e) => {
+                      const newLinks = [...settings.support_links];
+                      newLinks[index].url = e.target.value;
+                      setSettings({ ...settings, support_links: newLinks });
+                    }}
+                    placeholder="/faq"
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSettings({
+                ...settings,
+                support_links: [...settings.support_links, { title: "", url: "" }]
+              })}
+            >
+              + إضافة رابط دعم
+            </Button>
+          </div>
+
+          {/* Bottom Links */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold border-b pb-2">روابط أسفل الصفحة</h3>
+            {settings.bottom_links.map((link, index) => (
+              <div key={index} className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>عنوان الرابط</Label>
+                  <Input
+                    value={link.title}
+                    onChange={(e) => {
+                      const newLinks = [...settings.bottom_links];
+                      newLinks[index].title = e.target.value;
+                      setSettings({ ...settings, bottom_links: newLinks });
+                    }}
+                    placeholder="سياسة الخصوصية"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>مسار الرابط</Label>
+                  <Input
+                    value={link.url}
+                    onChange={(e) => {
+                      const newLinks = [...settings.bottom_links];
+                      newLinks[index].url = e.target.value;
+                      setSettings({ ...settings, bottom_links: newLinks });
+                    }}
+                    placeholder="/privacy"
+                  />
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSettings({
+                ...settings,
+                bottom_links: [...settings.bottom_links, { title: "", url: "" }]
+              })}
+            >
+              + إضافة رابط
+            </Button>
           </div>
 
           {/* Copyright */}
