@@ -44,6 +44,7 @@ const adminItems = [
   { title: "إدارة الفئات", url: "/dashboard/categories", icon: FolderTree },
   { title: "احتساب النقاط", url: "/dashboard/points-calculation", icon: Calculator },
   { title: "لوحة المتصدرين", url: "/dashboard/leaderboard", icon: Award },
+  { title: "إدارة المكافآت", url: "/dashboard/achievements", icon: Trophy },
   { title: "إدارة الصفحة الرئيسية", url: "/dashboard/homepage", icon: Home },
   { title: "إدارة الشريط العلوي", url: "/dashboard/top-bar", icon: ChevronUp },
   { title: "إدارة الفوتر", url: "/dashboard/footer", icon: ChevronDown },
