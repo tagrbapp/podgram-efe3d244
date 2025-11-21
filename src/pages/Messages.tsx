@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession, onAuthStateChange } from "@/lib/auth";
 import { toast } from "sonner";
-import { MessageCircle, Send, User, Search, MoreVertical, Image as ImageIcon, Paperclip, Smile, Check, CheckCheck } from "lucide-react";
+import { MessageCircle, Send, User, Search, MoreVertical, Image as ImageIcon, Paperclip, Smile, Check, CheckCheck, Pin, Archive, ArchiveRestore } from "lucide-react";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -23,6 +23,10 @@ interface Conversation {
   seller_id: string;
   created_at: string;
   updated_at: string;
+  is_pinned_by_buyer: boolean;
+  is_pinned_by_seller: boolean;
+  is_archived_by_buyer: boolean;
+  is_archived_by_seller: boolean;
   listings: {
     title: string;
     images: string[] | null;
@@ -63,6 +67,7 @@ const Messages = () => {
   const [channel, setChannel] = useState<RealtimeChannel | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -182,6 +187,10 @@ const Messages = () => {
         seller_id,
         created_at,
         updated_at,
+        is_pinned_by_buyer,
+        is_pinned_by_seller,
+        is_archived_by_buyer,
+        is_archived_by_seller,
         listings (
           title,
           images
@@ -346,12 +355,106 @@ const Messages = () => {
     return user?.id === conv.buyer_id ? conv.seller_profile : conv.buyer_profile;
   };
 
-  const filteredConversations = conversations.filter(conv => {
-    if (!searchQuery) return true;
-    const otherUser = getOtherUserProfile(conv);
-    return otherUser.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           conv.listings.title.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const togglePin = async (conversationId: string) => {
+    if (!user) return;
+    
+    const conv = conversations.find(c => c.id === conversationId);
+    if (!conv) return;
+    
+    const isBuyer = user.id === conv.buyer_id;
+    const currentPinStatus = isBuyer ? conv.is_pinned_by_buyer : conv.is_pinned_by_seller;
+    
+    const { error } = await supabase
+      .from("conversations")
+      .update({
+        [isBuyer ? 'is_pinned_by_buyer' : 'is_pinned_by_seller']: !currentPinStatus
+      })
+      .eq("id", conversationId);
+    
+    if (error) {
+      toast.error("خطأ في تثبيت المحادثة");
+      return;
+    }
+    
+    setConversations(prev => 
+      prev.map(c => 
+        c.id === conversationId 
+          ? { ...c, [isBuyer ? 'is_pinned_by_buyer' : 'is_pinned_by_seller']: !currentPinStatus }
+          : c
+      )
+    );
+    
+    toast.success(currentPinStatus ? "تم إلغاء التثبيت" : "تم التثبيت");
+  };
+
+  const toggleArchive = async (conversationId: string) => {
+    if (!user) return;
+    
+    const conv = conversations.find(c => c.id === conversationId);
+    if (!conv) return;
+    
+    const isBuyer = user.id === conv.buyer_id;
+    const currentArchiveStatus = isBuyer ? conv.is_archived_by_buyer : conv.is_archived_by_seller;
+    
+    const { error } = await supabase
+      .from("conversations")
+      .update({
+        [isBuyer ? 'is_archived_by_buyer' : 'is_archived_by_seller']: !currentArchiveStatus
+      })
+      .eq("id", conversationId);
+    
+    if (error) {
+      toast.error("خطأ في أرشفة المحادثة");
+      return;
+    }
+    
+    setConversations(prev => 
+      prev.map(c => 
+        c.id === conversationId 
+          ? { ...c, [isBuyer ? 'is_archived_by_buyer' : 'is_archived_by_seller']: !currentArchiveStatus }
+          : c
+      )
+    );
+    
+    toast.success(currentArchiveStatus ? "تم إلغاء الأرشفة" : "تم الأرشفة");
+    
+    if (!currentArchiveStatus) {
+      setSelectedConversation(null);
+    }
+  };
+
+  const isPinned = (conv: Conversation) => {
+    if (!user) return false;
+    return user.id === conv.buyer_id ? conv.is_pinned_by_buyer : conv.is_pinned_by_seller;
+  };
+
+  const isArchived = (conv: Conversation) => {
+    if (!user) return false;
+    return user.id === conv.buyer_id ? conv.is_archived_by_buyer : conv.is_archived_by_seller;
+  };
+
+  const filteredConversations = conversations
+    .filter(conv => {
+      // Filter by archive status
+      if (isArchived(conv) !== showArchived) return false;
+      
+      // Filter by search query
+      if (!searchQuery) return true;
+      const otherUser = getOtherUserProfile(conv);
+      return otherUser.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+             conv.listings.title.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+    .sort((a, b) => {
+      // Sort pinned conversations first
+      const aPinned = isPinned(a);
+      const bPinned = isPinned(b);
+      
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+      
+      // Then sort by updated_at
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+    });
 
   const formatMessageTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -410,7 +513,7 @@ const Messages = () => {
             <div className="grid lg:grid-cols-12 gap-4 md:gap-6 h-[calc(100vh-8rem)] md:h-[calc(100vh-10rem)]">
               {/* Conversations List */}
               <Card className="lg:col-span-4 border-0 shadow-xl rounded-2xl overflow-hidden bg-card/95 backdrop-blur">
-                <div className="p-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+                <div className="p-4 border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent space-y-3">
                   <div className="relative">
                     <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
@@ -420,6 +523,24 @@ const Messages = () => {
                       className="pr-11 h-11 rounded-full bg-background/80 border-primary/20 focus:border-primary shadow-sm transition-all"
                     />
                   </div>
+                  <Button
+                    variant={showArchived ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowArchived(!showArchived)}
+                    className="w-full rounded-full"
+                  >
+                    {showArchived ? (
+                      <>
+                        <ArchiveRestore className="h-4 w-4 ml-2" />
+                        عرض المحادثات النشطة
+                      </>
+                    ) : (
+                      <>
+                        <Archive className="h-4 w-4 ml-2" />
+                        عرض الأرشيف
+                      </>
+                    )}
+                  </Button>
                 </div>
                 <ScrollArea className="h-[calc(100%-5rem)]">
                   {filteredConversations.length === 0 ? (
@@ -439,58 +560,105 @@ const Messages = () => {
                       {filteredConversations.map((conv, index) => {
                         const otherUser = getOtherUserProfile(conv);
                         const isSelected = selectedConversation?.id === conv.id;
+                        const pinned = isPinned(conv);
+                        const archived = isArchived(conv);
+                        
                         return (
-                          <button
+                          <div
                             key={conv.id}
-                            onClick={() => setSelectedConversation(conv)}
                             style={{ animationDelay: `${index * 50}ms` }}
-                            className={`w-full p-4 text-right transition-all duration-300 animate-fade-in group relative ${
-                              isSelected 
-                                ? "bg-gradient-to-l from-primary/15 to-primary/5 border-r-4 border-primary shadow-sm" 
-                                : "hover:bg-accent/30"
-                            }`}
+                            className="relative animate-fade-in group"
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="relative">
-                                <Avatar className="h-13 w-13 border-2 border-border shadow-lg transition-transform group-hover:scale-105">
-                                  <AvatarImage src={otherUser.avatar_url || undefined} />
-                                  <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold text-lg">
-                                    {otherUser.full_name[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                {conv.unread_count! > 0 && (
-                                  <div className="absolute -top-1 -left-1 w-6 h-6 bg-destructive rounded-full flex items-center justify-center shadow-md animate-pulse">
-                                    <span className="text-[11px] text-destructive-foreground font-bold">
-                                      {conv.unread_count!.toLocaleString('en-US')}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1">
-                                  <p className="font-semibold truncate text-foreground text-base">{otherUser.full_name}</p>
-                                  {conv.last_message && (
-                                    <span className="text-xs text-muted-foreground mr-2 flex-shrink-0 font-medium">
-                                      {formatMessageTime(conv.last_message.created_at)}
-                                    </span>
+                            <button
+                              onClick={() => setSelectedConversation(conv)}
+                              className={`w-full p-4 text-right transition-all duration-300 ${
+                                isSelected 
+                                  ? "bg-gradient-to-l from-primary/15 to-primary/5 border-r-4 border-primary shadow-sm" 
+                                  : "hover:bg-accent/30"
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="relative">
+                                  <Avatar className="h-13 w-13 border-2 border-border shadow-lg transition-transform group-hover:scale-105">
+                                    <AvatarImage src={otherUser.avatar_url || undefined} />
+                                    <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold text-lg">
+                                      {otherUser.full_name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {conv.unread_count! > 0 && (
+                                    <div className="absolute -top-1 -left-1 w-6 h-6 bg-destructive rounded-full flex items-center justify-center shadow-md animate-pulse">
+                                      <span className="text-[11px] text-destructive-foreground font-bold">
+                                        {conv.unread_count!.toLocaleString('en-US')}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {pinned && (
+                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-md">
+                                      <Pin className="h-3 w-3 text-primary-foreground fill-current" />
+                                    </div>
                                   )}
                                 </div>
-                                <p className="text-xs text-primary/80 truncate mb-1.5 flex items-center gap-1.5 font-medium">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                                  {conv.listings.title}
-                                </p>
-                                {conv.last_message && (
-                                  <p className={`text-sm truncate leading-snug ${
-                                    conv.unread_count! > 0 
-                                      ? "font-semibold text-foreground" 
-                                      : "text-muted-foreground"
-                                  }`}>
-                                    {conv.last_message.content}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-semibold truncate text-foreground text-base">{otherUser.full_name}</p>
+                                      {pinned && (
+                                        <Pin className="h-3.5 w-3.5 text-primary fill-current flex-shrink-0" />
+                                      )}
+                                    </div>
+                                    {conv.last_message && (
+                                      <span className="text-xs text-muted-foreground mr-2 flex-shrink-0 font-medium">
+                                        {formatMessageTime(conv.last_message.created_at)}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-primary/80 truncate mb-1.5 flex items-center gap-1.5 font-medium">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                    {conv.listings.title}
                                   </p>
-                                )}
+                                  {conv.last_message && (
+                                    <p className={`text-sm truncate leading-snug ${
+                                      conv.unread_count! > 0 
+                                        ? "font-semibold text-foreground" 
+                                        : "text-muted-foreground"
+                                    }`}>
+                                      {conv.last_message.content}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
+                            </button>
+                            
+                            {/* Action buttons */}
+                            <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  togglePin(conv.id);
+                                }}
+                                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur hover:bg-primary/10"
+                              >
+                                <Pin className={`h-4 w-4 ${pinned ? 'text-primary fill-current' : 'text-muted-foreground'}`} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleArchive(conv.id);
+                                }}
+                                className="h-8 w-8 rounded-full bg-background/80 backdrop-blur hover:bg-destructive/10"
+                              >
+                                {archived ? (
+                                  <ArchiveRestore className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <Archive className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </Button>
                             </div>
-                          </button>
+                          </div>
                         );
                       })}
                     </div>
