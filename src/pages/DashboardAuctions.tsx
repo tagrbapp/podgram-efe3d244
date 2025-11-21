@@ -295,9 +295,13 @@ const DashboardAuctions = () => {
     return (
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background" dir="rtl">
-          <AppSidebar />
-          <div className="flex-1 order-2 flex items-center justify-center">
-            <div className="text-center">جاري التحميل...</div>
+          <div className="flex-1 order-2">
+            <div className="min-h-screen flex items-center justify-center">
+              <p className="text-lg">جاري التحميل...</p>
+            </div>
+          </div>
+          <div className="order-1">
+            <AppSidebar />
           </div>
         </div>
       </SidebarProvider>
@@ -307,15 +311,12 @@ const DashboardAuctions = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background" dir="rtl">
-        <AppSidebar />
         <div className="flex-1 order-2">
-          <header className="sticky top-0 z-10 bg-background border-b">
-            <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-              <SidebarTrigger className="-ml-2" />
-              <h1 className="text-2xl font-bold">إدارة المزادات</h1>
-            </div>
+          <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
+            <SidebarTrigger />
+            <h1 className="text-2xl font-bold mr-4">إدارة المزادات</h1>
           </header>
-          <main className="container mx-auto p-6" dir="rtl">
+          <main className="p-6" dir="rtl">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-foreground mb-2">
                 إدارة المزادات
@@ -632,6 +633,10 @@ const DashboardAuctions = () => {
               </div>
             </Card>
           </main>
+        </div>
+        
+        <div className="order-1">
+          <AppSidebar />
         </div>
       </div>
     </SidebarProvider>

@@ -395,9 +395,12 @@ const Profile = () => {
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background" dir="rtl">
           <div className="flex-1 order-2">
-            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
               <SidebarTrigger />
-              <h1 className="text-lg font-semibold">جاري التحميل...</h1>
+              <div className="flex items-center gap-3 mr-4">
+                <User className="h-6 w-6" />
+                <h1 className="text-2xl font-bold">الملف الشخصي</h1>
+              </div>
             </header>
             <main className="p-6">
               <div className="grid gap-6">
@@ -420,9 +423,12 @@ const Profile = () => {
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background" dir="rtl">
           <div className="flex-1 order-2">
-            <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+            <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
               <SidebarTrigger />
-              <h1 className="text-lg font-semibold">الملف الشخصي</h1>
+              <div className="flex items-center gap-3 mr-4">
+                <User className="h-6 w-6" />
+                <h1 className="text-2xl font-bold">الملف الشخصي</h1>
+              </div>
             </header>
             <main className="p-6">
               <div className="text-center py-12">
@@ -444,11 +450,11 @@ const Profile = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background" dir="rtl">
         <div className="flex-1 order-2">
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 shadow-sm">
+          <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">
             <SidebarTrigger />
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mr-4">
               <User className="h-6 w-6" />
-              <h1 className="text-xl font-semibold">الملف الشخصي</h1>
+              <h1 className="text-2xl font-bold">الملف الشخصي</h1>
             </div>
           </header>
           <main className="p-6 max-w-7xl mx-auto">
