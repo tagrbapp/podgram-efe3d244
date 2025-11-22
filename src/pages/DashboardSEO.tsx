@@ -109,6 +109,28 @@ const DashboardSEO = () => {
 
       if (error) {
         console.error('Error fetching analytics:', error);
+        
+        // معالجة أخطاء محددة
+        if (error.message?.includes('credentials')) {
+          toast({
+            title: "❌ خطأ في بيانات الاعتماد",
+            description: "تأكد من إدخال ملف JSON الصحيح من Google Service Account",
+            variant: "destructive",
+          });
+        } else if (error.message?.includes('Invalid credentials format')) {
+          toast({
+            title: "❌ تنسيق خاطئ",
+            description: "يجب أن يكون ملف JSON كامل وليس كلمة مرور",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "⚠️ تنبيه",
+            description: "يتم عرض بيانات تجريبية. تأكد من إعداد Google Analytics بشكل صحيح.",
+            variant: "destructive",
+          });
+        }
+        
         // استخدام بيانات وهمية في حالة الخطأ
         setSearchEngines([
           { name: "Google", icon: "🔍", referrals: 1250, percentage: 65, trend: "up" },
@@ -117,18 +139,39 @@ const DashboardSEO = () => {
           { name: "DuckDuckGo", icon: "🦆", referrals: 95, percentage: 5, trend: "up" },
         ]);
         setTotalReferrals(1915);
-        toast({
-          title: "تنبيه",
-          description: "يتم عرض بيانات تجريبية. تأكد من إعداد Google Analytics بشكل صحيح.",
-          variant: "destructive",
-        });
-      } else if (data) {
+      } else if (data?.error) {
+        console.error('API Error:', data.error);
+        if (data.error.includes('credentials')) {
+          toast({
+            title: "❌ خطأ في الاتصال",
+            description: "تحقق من إعدادات Google Analytics",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "❌ خطأ",
+            description: data.error,
+            variant: "destructive",
+          });
+        }
+        // بيانات تجريبية
+        setSearchEngines([
+          { name: "Google", icon: "🔍", referrals: 1250, percentage: 65, trend: "up" },
+          { name: "Bing", icon: "🅱️", referrals: 380, percentage: 20, trend: "stable" },
+          { name: "Yahoo", icon: "⚪", referrals: 190, percentage: 10, trend: "down" },
+          { name: "DuckDuckGo", icon: "🦆", referrals: 95, percentage: 5, trend: "up" },
+        ]);
+        setTotalReferrals(1915);
+      } else if (data?.searchEngines) {
         setSearchEngines(data.searchEngines || []);
         setTotalReferrals(data.totalReferrals || 0);
+        toast({
+          title: "✅ نجح الاتصال!",
+          description: "تم جلب البيانات الحقيقية من Google Analytics بنجاح",
+        });
       }
     } catch (error) {
       console.error('Error:', error);
-      // استخدام بيانات وهمية في حالة الخطأ
       setSearchEngines([
         { name: "Google", icon: "🔍", referrals: 1250, percentage: 65, trend: "up" },
         { name: "Bing", icon: "🅱️", referrals: 380, percentage: 20, trend: "stable" },
@@ -136,6 +179,11 @@ const DashboardSEO = () => {
         { name: "DuckDuckGo", icon: "🦆", referrals: 95, percentage: 5, trend: "up" },
       ]);
       setTotalReferrals(1915);
+      toast({
+        title: "❌ خطأ في الاتصال",
+        description: "حدث خطأ غير متوقع. يتم عرض بيانات تجريبية.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -155,16 +203,11 @@ const DashboardSEO = () => {
 
   const handleRefreshAnalytics = async () => {
     toast({
-      title: "جاري تحديث البيانات",
-      description: "يتم الآن جلب أحدث إحصائيات محركات البحث",
+      title: "🔄 جاري الاختبار",
+      description: "يتم الآن اختبار الاتصال بـ Google Analytics...",
     });
     
     await fetchAnalyticsData();
-    
-    toast({
-      title: "تم التحديث بنجاح",
-      description: "تم تحديث بيانات محركات البحث",
-    });
   };
 
   const handleUpdateMeta = () => {
@@ -194,9 +237,9 @@ const DashboardSEO = () => {
             تحسين ظهور الموقع في نتائج البحث وتتبع الإحالات
           </p>
         </div>
-        <Button onClick={handleRefreshAnalytics} disabled={loading}>
+        <Button onClick={handleRefreshAnalytics} disabled={loading} size="lg">
           <RefreshCw className={`h-4 w-4 ml-2 ${loading ? "animate-spin" : ""}`} />
-          تحديث البيانات
+          {loading ? "جاري الاختبار..." : "اختبار الاتصال"}
         </Button>
       </div>
 
@@ -317,7 +360,7 @@ const DashboardSEO = () => {
             </CardContent>
           </Card>
 
-          {/* Referral Chart */}
+          
           <Card>
             <CardHeader>
               <CardTitle>توزيع الإحالات</CardTitle>
@@ -460,46 +503,47 @@ const DashboardSEO = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="meta-keywords">الكلمات المفتاحية (Keywords)</Label>
-                <Textarea
+                <Input
                   id="meta-keywords"
                   value={metaData.keywords}
                   onChange={(e) => setMetaData({ ...metaData, keywords: e.target.value })}
-                  placeholder="الكلمات المفتاحية مفصولة بفواصل"
-                  rows={2}
+                  placeholder="كلمات مفتاحية، مفصولة، بفواصل"
                 />
                 <p className="text-xs text-muted-foreground">
-                  افصل الكلمات بفواصل (،)
+                  افصل الكلمات بفواصل
                 </p>
               </div>
 
               <Button onClick={handleUpdateMeta} className="w-full">
-                حفظ التغييرات
+                حفظ الإعدادات
               </Button>
             </CardContent>
           </Card>
 
-          {/* Google Search Console */}
+          {/* Google Analytics Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>ربط Google Search Console</CardTitle>
+              <CardTitle>إعدادات Google Analytics</CardTitle>
               <CardDescription>
-                اربط موقعك مع Google Search Console للحصول على تحليلات أعمق
+                إدارة اتصال Google Analytics API
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  للحصول على بيانات دقيقة من Google، قم بربط موقعك مع Google Search Console
-                </p>
+              <div className="p-4 bg-muted rounded-lg space-y-2">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  متطلبات الإعداد
+                </h4>
+                <ul className="text-sm space-y-1 text-muted-foreground">
+                  <li>• Property ID من Google Analytics</li>
+                  <li>• Service Account JSON من Google Cloud Console</li>
+                  <li>• تفعيل Google Analytics Data API</li>
+                </ul>
               </div>
               <Button variant="outline" className="w-full" asChild>
-                <a
-                  href="https://search.google.com/search-console"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 ml-2" />
-                  فتح Google Search Console
+                  فتح Google Cloud Console
                 </a>
               </Button>
             </CardContent>
@@ -510,120 +554,64 @@ const DashboardSEO = () => {
         <TabsContent value="tools" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>أدوات SEO</CardTitle>
-              <CardDescription>أدوات لإدارة وتحسين الأرشفة</CardDescription>
+              <CardTitle>أدوات تحسين محركات البحث</CardTitle>
+              <CardDescription>
+                أدوات مساعدة لتحسين وإدارة SEO
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button variant="outline" className="h-auto p-6" onClick={handleGenerateSitemap}>
-                  <div className="flex flex-col items-center gap-3 text-center">
-                    <FileText className="h-8 w-8 text-primary" />
-                    <div>
-                      <div className="font-semibold">إنشاء Sitemap</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        إنشاء ملف sitemap.xml محدث
-                      </div>
-                    </div>
-                  </div>
+                <Button variant="outline" onClick={handleGenerateSitemap}>
+                  <FileText className="h-4 w-4 ml-2" />
+                  إنشاء Sitemap
                 </Button>
-
-                <Button variant="outline" className="h-auto p-6" asChild>
+                <Button variant="outline" asChild>
                   <a href="/sitemap.xml" target="_blank">
-                    <div className="flex flex-col items-center gap-3 text-center">
-                      <Download className="h-8 w-8 text-primary" />
-                      <div>
-                        <div className="font-semibold">تحميل Sitemap</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          تحميل ملف sitemap.xml
-                        </div>
-                      </div>
-                    </div>
+                    <Download className="h-4 w-4 ml-2" />
+                    تحميل Sitemap
                   </a>
                 </Button>
-
-                <Button variant="outline" className="h-auto p-6" asChild>
+                <Button variant="outline" asChild>
                   <a href="/robots.txt" target="_blank">
-                    <div className="flex flex-col items-center gap-3 text-center">
-                      <FileCode className="h-8 w-8 text-primary" />
-                      <div>
-                        <div className="font-semibold">عرض robots.txt</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          مراجعة ملف robots.txt
-                        </div>
-                      </div>
-                    </div>
+                    <FileCode className="h-4 w-4 ml-2" />
+                    عرض robots.txt
                   </a>
                 </Button>
-
-                <Button variant="outline" className="h-auto p-6" asChild>
-                  <a
-                    href="https://pagespeed.web.dev/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <div className="flex flex-col items-center gap-3 text-center">
-                      <TrendingUp className="h-8 w-8 text-primary" />
-                      <div>
-                        <div className="font-semibold">اختبار السرعة</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          اختبار سرعة الموقع
-                        </div>
-                      </div>
-                    </div>
+                <Button variant="outline" asChild>
+                  <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                    Google Search Console
                   </a>
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Indexing Status */}
+          {/* Useful Links */}
           <Card>
             <CardHeader>
-              <CardTitle>حالة الأرشفة</CardTitle>
-              <CardDescription>
-                معلومات حول الصفحات المؤرشفة في محركات البحث
-              </CardDescription>
+              <CardTitle>روابط مفيدة</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    <div>
-                      <div className="font-medium">الصفحات المؤرشفة</div>
-                      <div className="text-sm text-muted-foreground">
-                        تم أرشفة معظم صفحات الموقع
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant="secondary">45 صفحة</Badge>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <AlertCircle className="h-5 w-5 text-yellow-500" />
-                    <div>
-                      <div className="font-medium">في انتظار الأرشفة</div>
-                      <div className="text-sm text-muted-foreground">
-                        صفحات جديدة لم تتم أرشفتها بعد
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant="secondary">3 صفحات</Badge>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <div>
-                      <div className="font-medium">إجمالي الصفحات</div>
-                      <div className="text-sm text-muted-foreground">
-                        جميع صفحات الموقع
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant="secondary">48 صفحة</Badge>
-                </div>
+              <div className="space-y-2">
+                <Button variant="ghost" className="w-full justify-start" asChild>
+                  <a href="https://developers.google.com/search/docs" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                    دليل Google Search Central
+                  </a>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start" asChild>
+                  <a href="https://schema.org/" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                    Schema.org Documentation
+                  </a>
+                </Button>
+                <Button variant="ghost" className="w-full justify-start" asChild>
+                  <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                    PageSpeed Insights
+                  </a>
+                </Button>
               </div>
             </CardContent>
           </Card>
