@@ -193,7 +193,7 @@ const AuctionCard = ({
 
           {/* Timer */}
           <div className="bg-gradient-to-br from-muted/60 to-muted/40 rounded-2xl p-4 border-2 border-border/40 shadow-inner backdrop-blur-sm">
-            <AuctionTimer endTime={endTime} />
+            <AuctionTimer endTime={endTime} auctionId={id} />
           </div>
         </div>
 
