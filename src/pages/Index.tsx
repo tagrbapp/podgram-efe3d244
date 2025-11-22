@@ -64,6 +64,26 @@ const Index = () => {
       }
     };
     initializeData();
+
+    // الاستماع للتحديثات في الوقت الفعلي على المزادات
+    const channel = supabase
+      .channel("auctions-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "auctions",
+        },
+        () => {
+          fetchAuctions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchSectionSettings = async () => {
