@@ -1,4 +1,4 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp, ChevronDown, Palette, Calculator, Award, BarChart3, UserPlus } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp, ChevronDown, Palette, Calculator, Award, BarChart3, UserPlus, Search } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +48,7 @@ const adminItems = [
   { title: "لوحة المتصدرين", url: "/dashboard/leaderboard", icon: Award, showBadge: false },
   { title: "إدارة المكافآت", url: "/dashboard/achievements", icon: Trophy, showBadge: false },
   { title: "تقارير الإنجازات", url: "/dashboard/achievements-reports", icon: BarChart3, showBadge: false },
+  { title: "إدارة SEO ومحركات البحث", url: "/dashboard/seo", icon: Search, showBadge: false },
   { title: "إدارة الصفحة الرئيسية", url: "/dashboard/homepage", icon: Home, showBadge: false },
   { title: "إدارة الشريط العلوي", url: "/dashboard/top-bar", icon: ChevronUp, showBadge: false },
   { title: "إدارة الفوتر", url: "/dashboard/footer", icon: ChevronDown, showBadge: false },

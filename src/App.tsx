@@ -49,6 +49,7 @@ import DashboardAchievements from "./pages/DashboardAchievements";
 import DashboardAchievementsReports from "./pages/DashboardAchievementsReports";
 import DashboardReferral from "./pages/DashboardReferral";
 import DashboardReferralStats from "./pages/DashboardReferralStats";
+import DashboardSEO from "./pages/DashboardSEO";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -100,6 +101,7 @@ const App = () => (
           <Route path="/dashboard/achievements-reports" element={<DashboardAchievementsReports />} />
           <Route path="/dashboard/referral" element={<DashboardReferral />} />
           <Route path="/dashboard/referral-stats" element={<DashboardReferralStats />} />
+          <Route path="/dashboard/seo" element={<DashboardSEO />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
