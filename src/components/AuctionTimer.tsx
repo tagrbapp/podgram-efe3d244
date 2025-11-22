@@ -1,25 +1,38 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuctionTimerProps {
   endTime: string;
+  auctionId?: string;
   onExpire?: () => void;
 }
 
-const AuctionTimer = ({ endTime, onExpire }: AuctionTimerProps) => {
+const AuctionTimer = ({ endTime, auctionId, onExpire }: AuctionTimerProps) => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    const calculateTimeLeft = async () => {
       const now = new Date().getTime();
       const end = new Date(endTime).getTime();
       const difference = end - now;
 
       if (difference <= 0) {
         setTimeLeft("انتهى المزاد");
-        setIsExpired(true);
-        onExpire?.();
+        
+        if (!isExpired && auctionId) {
+          setIsExpired(true);
+          
+          // تحديث حالة المزاد في قاعدة البيانات
+          await supabase
+            .from("auctions")
+            .update({ status: "ended" })
+            .eq("id", auctionId)
+            .eq("status", "active");
+          
+          onExpire?.();
+        }
         return;
       }
 
@@ -43,7 +56,7 @@ const AuctionTimer = ({ endTime, onExpire }: AuctionTimerProps) => {
     const interval = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(interval);
-  }, [endTime, onExpire]);
+  }, [endTime, auctionId, onExpire, isExpired]);
 
   return (
     <div
