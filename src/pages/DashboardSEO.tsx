@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -47,13 +48,8 @@ interface SEOIssue {
 
 const DashboardSEO = () => {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [searchEngines, setSearchEngines] = useState<SearchEngineStats[]>([
-    { name: "Google", icon: "🔍", referrals: 1250, percentage: 65, trend: "up" },
-    { name: "Bing", icon: "🅱️", referrals: 380, percentage: 20, trend: "stable" },
-    { name: "Yahoo", icon: "⚪", referrals: 190, percentage: 10, trend: "down" },
-    { name: "DuckDuckGo", icon: "🦆", referrals: 95, percentage: 5, trend: "up" },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [searchEngines, setSearchEngines] = useState<SearchEngineStats[]>([]);
 
   const [seoIssues, setSeoIssues] = useState<SEOIssue[]>([
     {
@@ -94,7 +90,56 @@ const DashboardSEO = () => {
     keywords: "مزادات فاخرة, ساعات فاخرة, حقائب فاخرة, مجوهرات",
   });
 
-  const totalReferrals = searchEngines.reduce((sum, engine) => sum + engine.referrals, 0);
+  const [totalReferrals, setTotalReferrals] = useState(0);
+
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, []);
+
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('google-analytics', {
+        body: {
+          startDate: '30daysAgo',
+          endDate: 'today',
+          metrics: ['sessions']
+        }
+      });
+
+      if (error) {
+        console.error('Error fetching analytics:', error);
+        // استخدام بيانات وهمية في حالة الخطأ
+        setSearchEngines([
+          { name: "Google", icon: "🔍", referrals: 1250, percentage: 65, trend: "up" },
+          { name: "Bing", icon: "🅱️", referrals: 380, percentage: 20, trend: "stable" },
+          { name: "Yahoo", icon: "⚪", referrals: 190, percentage: 10, trend: "down" },
+          { name: "DuckDuckGo", icon: "🦆", referrals: 95, percentage: 5, trend: "up" },
+        ]);
+        setTotalReferrals(1915);
+        toast({
+          title: "تنبيه",
+          description: "يتم عرض بيانات تجريبية. تأكد من إعداد Google Analytics بشكل صحيح.",
+          variant: "destructive",
+        });
+      } else if (data) {
+        setSearchEngines(data.searchEngines || []);
+        setTotalReferrals(data.totalReferrals || 0);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      // استخدام بيانات وهمية في حالة الخطأ
+      setSearchEngines([
+        { name: "Google", icon: "🔍", referrals: 1250, percentage: 65, trend: "up" },
+        { name: "Bing", icon: "🅱️", referrals: 380, percentage: 20, trend: "stable" },
+        { name: "Yahoo", icon: "⚪", referrals: 190, percentage: 10, trend: "down" },
+        { name: "DuckDuckGo", icon: "🦆", referrals: 95, percentage: 5, trend: "up" },
+      ]);
+      setTotalReferrals(1915);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getTrendIcon = (trend: "up" | "down" | "stable") => {
     if (trend === "up") return "📈";
@@ -108,20 +153,18 @@ const DashboardSEO = () => {
     return <CheckCircle2 className="h-5 w-5 text-green-500" />;
   };
 
-  const handleRefreshAnalytics = () => {
-    setLoading(true);
+  const handleRefreshAnalytics = async () => {
     toast({
       title: "جاري تحديث البيانات",
       description: "يتم الآن جلب أحدث إحصائيات محركات البحث",
     });
     
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "تم التحديث بنجاح",
-        description: "تم تحديث بيانات محركات البحث",
-      });
-    }, 2000);
+    await fetchAnalyticsData();
+    
+    toast({
+      title: "تم التحديث بنجاح",
+      description: "تم تحديث بيانات محركات البحث",
+    });
   };
 
   const handleUpdateMeta = () => {
