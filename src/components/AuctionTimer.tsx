@@ -25,11 +25,15 @@ const AuctionTimer = ({ endTime, auctionId, onExpire }: AuctionTimerProps) => {
           setIsExpired(true);
           
           // تحديث حالة المزاد في قاعدة البيانات
-          await supabase
+          const { error } = await supabase
             .from("auctions")
             .update({ status: "ended" })
             .eq("id", auctionId)
             .eq("status", "active");
+          
+          if (!error) {
+            console.log("تم تحديث حالة المزاد إلى منتهي");
+          }
           
           onExpire?.();
         }
