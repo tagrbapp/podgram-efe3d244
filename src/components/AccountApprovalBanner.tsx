@@ -5,6 +5,7 @@ import { Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 
 export const AccountApprovalBanner = () => {
   const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
+  const [membershipType, setMembershipType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,12 +23,13 @@ export const AccountApprovalBanner = () => {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("approval_status")
+        .select("approval_status, membership_type")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setApprovalStatus(profile.approval_status);
+        setMembershipType(profile.membership_type);
       }
     } catch (error) {
       console.error("Error checking approval status:", error);
@@ -36,7 +38,8 @@ export const AccountApprovalBanner = () => {
     }
   };
 
-  if (loading || !approvalStatus || approvalStatus === "approved") {
+  // Don't show banner for consumers or approved accounts
+  if (loading || !approvalStatus || approvalStatus === "approved" || membershipType === "consumer") {
     return null;
   }
 
@@ -48,7 +51,7 @@ export const AccountApprovalBanner = () => {
           حسابك قيد المراجعة
         </AlertTitle>
         <AlertDescription className="text-yellow-700 dark:text-yellow-300">
-          شكراً لتسجيلك! حسابك قيد المراجعة من قبل إدارة الموقع. 
+          شكراً لتسجيلك كتاجر! حسابك قيد المراجعة من قبل إدارة الموقع. 
           ستتمكن من إضافة المزادات والإعلانات بعد الموافقة على حسابك.
           سيتم إشعارك فور الموافقة.
         </AlertDescription>
@@ -64,7 +67,7 @@ export const AccountApprovalBanner = () => {
           لم تتم الموافقة على حسابك
         </AlertTitle>
         <AlertDescription className="text-red-700 dark:text-red-300">
-          نعتذر، لم تتم الموافقة على طلب انضمامك للمنصة.
+          نعتذر، لم تتم الموافقة على طلب انضمامك للمنصة كتاجر.
           للمزيد من المعلومات، يرجى التواصل مع إدارة الموقع.
         </AlertDescription>
       </Alert>
