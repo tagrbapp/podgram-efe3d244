@@ -37,10 +37,12 @@ const DashboardAdmin = () => {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<any[]>([]);
   const [listings, setListings] = useState<any[]>([]);
+  const [auctions, setAuctions] = useState<any[]>([]);
   const [actions, setActions] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalListings: 0,
+    totalAuctions: 0,
     pendingReports: 0,
     blockedUsers: 0,
   });
@@ -65,11 +67,13 @@ const DashboardAdmin = () => {
       const [
         { count: usersCount },
         { count: listingsCount },
+        { count: auctionsCount },
         { count: reportsCount },
         { count: blockedCount },
       ] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("listings").select("*", { count: "exact", head: true }),
+        supabase.from("auctions").select("*", { count: "exact", head: true }).is("deleted_at", null),
         supabase.from("reports").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("blocked_users").select("*", { count: "exact", head: true }),
       ]);
@@ -77,6 +81,7 @@ const DashboardAdmin = () => {
       setStats({
         totalUsers: usersCount || 0,
         totalListings: listingsCount || 0,
+        totalAuctions: auctionsCount || 0,
         pendingReports: reportsCount || 0,
         blockedUsers: blockedCount || 0,
       });
@@ -103,6 +108,37 @@ const DashboardAdmin = () => {
         console.error("Error loading listings:", listingsError);
       } else {
         setListings(listingsData || []);
+      }
+
+      // Load auctions
+      const { data: auctionsData, error: auctionsError } = await supabase
+        .from("auctions")
+        .select(`
+          *,
+          categories (name)
+        `)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (auctionsError) {
+        console.error("Error loading auctions:", auctionsError);
+      } else {
+        // Get bid counts for each auction
+        const auctionsWithCounts = await Promise.all(
+          (auctionsData || []).map(async (auction) => {
+            const { count } = await supabase
+              .from("bids")
+              .select("*", { count: "exact", head: true })
+              .eq("auction_id", auction.id);
+            
+            return {
+              ...auction,
+              bids_count: count || 0
+            };
+          })
+        );
+        setAuctions(auctionsWithCounts);
       }
 
       // Load admin actions
@@ -194,6 +230,30 @@ const DashboardAdmin = () => {
     }
   };
 
+  const handleDeleteAuction = async (auctionId: string) => {
+    const { user } = await getSession();
+    if (!user) return;
+
+    const reason = prompt("أدخل سبب حذف المزاد:");
+    if (!reason) return;
+
+    try {
+      const { error } = await supabase.rpc("admin_delete_auction", {
+        _admin_id: user.id,
+        _auction_id: auctionId,
+        _reason: reason,
+      });
+
+      if (error) throw error;
+
+      toast.success("تم حذف المزاد بنجاح");
+      loadAdminData(user.id);
+    } catch (error) {
+      console.error("Error deleting auction:", error);
+      toast.error("فشل حذف المزاد");
+    }
+  };
+
   const filteredUsers = users.filter(
     (user) =>
       user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -204,6 +264,12 @@ const DashboardAdmin = () => {
     (listing) =>
       listing.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       listing.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredAuctions = auctions.filter(
+    (auction) =>
+      auction.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      auction.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -243,9 +309,10 @@ const DashboardAdmin = () => {
       <AdminStats {...stats} />
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="users">المستخدمون</TabsTrigger>
           <TabsTrigger value="listings">الإعلانات</TabsTrigger>
+          <TabsTrigger value="auctions">المزادات</TabsTrigger>
           <TabsTrigger value="actions">سجل الإجراءات</TabsTrigger>
         </TabsList>
 
@@ -388,6 +455,79 @@ const DashboardAdmin = () => {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleDeleteListing(listing.id)}>
                             حذف الإعلان
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="auctions" className="space-y-4">
+          <div className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="بحث في المزادات..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pr-9"
+              />
+            </div>
+          </div>
+
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>العنوان</TableHead>
+                  <TableHead>التصنيف</TableHead>
+                  <TableHead>السعر الابتدائي</TableHead>
+                  <TableHead>المزايدة الحالية</TableHead>
+                  <TableHead>عدد المزايدات</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>تاريخ الانتهاء</TableHead>
+                  <TableHead>الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAuctions.map((auction) => (
+                  <TableRow key={auction.id}>
+                    <TableCell className="font-medium">{auction.title}</TableCell>
+                    <TableCell>{auction.categories?.name || "غير محدد"}</TableCell>
+                    <TableCell>{auction.starting_price} ريال</TableCell>
+                    <TableCell>
+                      {auction.current_bid ? `${auction.current_bid} ريال` : "-"}
+                    </TableCell>
+                    <TableCell>{auction.bids_count}</TableCell>
+                    <TableCell>
+                      <Badge variant={auction.status === "active" ? "default" : "secondary"}>
+                        {auction.status === "active" ? "نشط" : "منتهي"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(auction.end_time), "PPp", { locale: ar })}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            الإجراءات
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/auction/${auction.id}`)}>
+                            <Eye className="ml-2 h-4 w-4" />
+                            عرض التفاصيل
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteAuction(auction.id)}
+                            className="text-destructive"
+                          >
+                            حذف المزاد
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

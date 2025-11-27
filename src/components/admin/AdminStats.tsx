@@ -1,16 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, AlertCircle, ShieldOff } from "lucide-react";
+import { Users, FileText, AlertCircle, ShieldOff, Gavel } from "lucide-react";
 
 interface AdminStatsProps {
   totalUsers: number;
   totalListings: number;
+  totalAuctions: number;
   pendingReports: number;
   blockedUsers: number;
 }
 
-const AdminStats = ({ totalUsers, totalListings, pendingReports, blockedUsers }: AdminStatsProps) => {
+const AdminStats = ({ totalUsers, totalListings, totalAuctions, pendingReports, blockedUsers }: AdminStatsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium">إجمالي المستخدمين</CardTitle>
@@ -28,6 +29,16 @@ const AdminStats = ({ totalUsers, totalListings, pendingReports, blockedUsers }:
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalListings}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium">إجمالي المزادات</CardTitle>
+          <Gavel className="h-4 w-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{totalAuctions}</div>
         </CardContent>
       </Card>
 
