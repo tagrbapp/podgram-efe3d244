@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { signIn, signUp, getSession } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Mail, Lock, User, Eye, EyeOff, Store } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { z } from "zod";
 import podgramLogo from "@/assets/podgram-logo.png";
 import heroImage from "@/assets/hero-luxury.jpg";
@@ -48,6 +49,7 @@ const Auth = () => {
   const [referralCodeFromUrl, setReferralCodeFromUrl] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [registerPassword, setRegisterPassword] = useState("");
+  const [membershipType, setMembershipType] = useState<"merchant" | "consumer">("consumer");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -142,7 +144,8 @@ const Auth = () => {
         validation.email, 
         validation.password, 
         validation.fullName,
-        validation.referralCode
+        validation.referralCode,
+        membershipType
       );
 
       if (error) {
@@ -157,15 +160,25 @@ const Auth = () => {
         
         if (!session) {
           // Email confirmation required - redirect to verify page
+          const message = membershipType === "merchant" 
+            ? "تحقق من بريدك الإلكتروني لتفعيل حسابك. سيتم مراجعة طلبك من قبل الإدارة"
+            : "تحقق من بريدك الإلكتروني لتفعيل حسابك";
+            
           toast.success("تم إنشاء الحساب!", {
-            description: "تحقق من بريدك الإلكتروني لتفعيل حسابك"
+            description: message
           });
           navigate("/verify-email", { state: { email: validation.email } });
         } else {
-          // Auto-confirmed - proceed to dashboard
-          toast.success("تم إنشاء الحساب بنجاح!", {
-            description: "جاري تحويلك إلى لوحة التحكم..."
-          });
+          // Auto-confirmed - show different messages based on membership type
+          if (membershipType === "merchant") {
+            toast.success("تم إنشاء الحساب بنجاح!", {
+              description: "سيتم مراجعة طلبك من قبل الإدارة قريباً"
+            });
+          } else {
+            toast.success("تم إنشاء الحساب بنجاح!", {
+              description: "يمكنك الآن البدء في المزايدة على المنتجات"
+            });
+          }
           navigate("/dashboard");
         }
       }
@@ -324,6 +337,57 @@ const Auth = () => {
                   <p className="text-xs text-muted-foreground text-right">
                     يجب إدخال اسمين عربيين على الأقل (بدون أرقام أو رموز)
                   </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">
+                    نوع العضوية
+                  </Label>
+                  <RadioGroup 
+                    value={membershipType} 
+                    onValueChange={(value) => setMembershipType(value as "merchant" | "consumer")}
+                    className="gap-3"
+                  >
+                    <div 
+                      className="flex items-center space-x-2 space-x-reverse border rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => setMembershipType("consumer")}
+                    >
+                      <RadioGroupItem value="consumer" id="consumer" />
+                      <Label htmlFor="consumer" className="flex-1 cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                            <User className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1 text-right">
+                            <div className="font-medium">مستهلك</div>
+                            <div className="text-xs text-muted-foreground">
+                              يمكنك المزايدة على المنتجات فوراً دون الحاجة لموافقة الإدارة
+                            </div>
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
+                    
+                    <div 
+                      className="flex items-center space-x-2 space-x-reverse border rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => setMembershipType("merchant")}
+                    >
+                      <RadioGroupItem value="merchant" id="merchant" />
+                      <Label htmlFor="merchant" className="flex-1 cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                            <Store className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1 text-right">
+                            <div className="font-medium">تاجر</div>
+                            <div className="text-xs text-muted-foreground">
+                              يمكنك طرح المنتجات والمزادات بعد موافقة الإدارة
+                            </div>
+                          </div>
+                        </div>
+                      </Label>
+                    </div>
+                  </RadioGroup>
                 </div>
 
                 <div className="space-y-2">

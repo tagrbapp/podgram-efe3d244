@@ -1051,6 +1051,7 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          membership_type: Database["public"]["Enums"]["membership_type"]
           phone: string | null
           referral_code: string | null
           referred_by: string | null
@@ -1064,6 +1065,7 @@ export type Database = {
           created_at?: string
           full_name: string
           id: string
+          membership_type?: Database["public"]["Enums"]["membership_type"]
           phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
@@ -1077,6 +1079,7 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          membership_type?: Database["public"]["Enums"]["membership_type"]
           phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
@@ -1626,6 +1629,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      membership_type: "merchant" | "consumer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1754,6 +1758,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      membership_type: ["merchant", "consumer"],
     },
   },
 } as const
