@@ -110,6 +110,13 @@ const AuctionDetails = () => {
         .single();
 
       if (auctionError) throw auctionError;
+      
+      // Check if auction is deleted
+      if (auctionData.deleted_at) {
+        toast.error("هذا المزاد تم حذفه من قبل الإدارة");
+        navigate("/auctions");
+        return;
+      }
 
       setAuction(auctionData);
 
