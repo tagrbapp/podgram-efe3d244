@@ -148,6 +148,7 @@ const Index = () => {
         )
       `)
       .in("status", ["active", "ended"])
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(auctionLimit);
 

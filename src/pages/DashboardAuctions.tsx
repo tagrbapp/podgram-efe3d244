@@ -91,6 +91,7 @@ const DashboardAuctions = () => {
         .from('auctions')
         .select('*')
         .eq('user_id', user.id)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       // Get bid counts for each auction

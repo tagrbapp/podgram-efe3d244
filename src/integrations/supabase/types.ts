@@ -228,6 +228,7 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           current_bid: number | null
+          deleted_at: string | null
           description: string | null
           end_time: string
           highest_bidder_id: string | null
@@ -249,6 +250,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           current_bid?: number | null
+          deleted_at?: string | null
           description?: string | null
           end_time: string
           highest_bidder_id?: string | null
@@ -270,6 +272,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           current_bid?: number | null
+          deleted_at?: string | null
           description?: string | null
           end_time?: string
           highest_bidder_id?: string | null

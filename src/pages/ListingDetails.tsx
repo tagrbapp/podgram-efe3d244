@@ -160,6 +160,7 @@ const ListingDetails = () => {
         .select("*")
         .eq("listing_id", id)
         .eq("status", "active")
+        .is("deleted_at", null)
         .maybeSingle();
 
       if (auctionData) {

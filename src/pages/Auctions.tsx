@@ -41,7 +41,8 @@ const Auctions = () => {
           name
         )
       `)
-      .eq("status", status);
+      .eq("status", status)
+      .is("deleted_at", null);
     
     // For active auctions, only show those that haven't ended yet
     if (status === "active") {

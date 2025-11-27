@@ -136,6 +136,7 @@ const Catalog = () => {
         category:categories(id, name)
       `)
       .eq("status", activeTab === "active" ? "active" : "ended")
+      .is("deleted_at", null)
       .gte("starting_price", priceRange[0])
       .lte("starting_price", priceRange[1]);
 
