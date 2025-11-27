@@ -46,6 +46,8 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [referralCodeFromUrl, setReferralCodeFromUrl] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [registerPassword, setRegisterPassword] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -64,6 +66,31 @@ const Auth = () => {
       setReferralCodeFromUrl(refCode);
     }
   }, [navigate]);
+
+  const calculatePasswordStrength = (password: string): number => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    return strength;
+  };
+
+  const getPasswordStrengthLabel = (strength: number): string => {
+    if (strength === 0) return "";
+    if (strength <= 2) return "ضعيفة";
+    if (strength === 3) return "متوسطة";
+    if (strength === 4) return "قوية";
+    return "قوية جداً";
+  };
+
+  const getPasswordStrengthColor = (strength: number): string => {
+    if (strength <= 2) return "bg-red-500";
+    if (strength === 3) return "bg-yellow-500";
+    if (strength === 4) return "bg-green-500";
+    return "bg-green-600";
+  };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -331,6 +358,12 @@ const Auth = () => {
                       disabled={isLoading}
                       dir="ltr"
                       className="transition-smooth pl-10 text-left"
+                      value={registerPassword}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setRegisterPassword(value);
+                        setPasswordStrength(calculatePasswordStrength(value));
+                      }}
                     />
                     <button
                       type="button"
@@ -340,8 +373,33 @@ const Auth = () => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  
+                  {registerPassword && (
+                    <div className="space-y-1">
+                      <div className="flex gap-1 h-1">
+                        {[1, 2, 3, 4, 5].map((level) => (
+                          <div
+                            key={level}
+                            className={`flex-1 rounded-full transition-all ${
+                              level <= passwordStrength
+                                ? getPasswordStrengthColor(passwordStrength)
+                                : "bg-muted"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-right" style={{
+                        color: passwordStrength <= 2 ? 'hsl(0, 84%, 60%)' : 
+                               passwordStrength === 3 ? 'hsl(48, 96%, 53%)' : 
+                               'hsl(142, 71%, 45%)'
+                      }}>
+                        قوة كلمة المرور: {getPasswordStrengthLabel(passwordStrength)}
+                      </p>
+                    </div>
+                  )}
+                  
                   <p className="text-xs text-muted-foreground text-right">
-                    يجب أن تحتوي على 6 أحرف على الأقل
+                    استخدم 8+ أحرف مع مزيج من الأحرف الكبيرة والصغيرة، أرقام ورموز
                   </p>
                 </div>
 
