@@ -34,6 +34,7 @@ import TestNotifications from "./pages/TestNotifications";
 import DashboardAnnouncements from "./pages/DashboardAnnouncements";
 import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
 import DashboardHomepage from "./pages/DashboardHomepage";
+import DashboardAuthSettings from "./pages/DashboardAuthSettings";
 import DashboardTopBar from "./pages/DashboardTopBar";
 import DashboardFooter from "./pages/DashboardFooter";
 import DashboardTheme from "./pages/DashboardTheme";
@@ -90,6 +91,7 @@ const App = () => (
           <Route path="/dashboard/announcements" element={<DashboardAnnouncements />} />
           <Route path="/dashboard/hero-carousel" element={<DashboardHeroCarousel />} />
           <Route path="/dashboard/homepage" element={<DashboardHomepage />} />
+          <Route path="/dashboard/auth-settings" element={<DashboardAuthSettings />} />
           <Route path="/dashboard/top-bar" element={<DashboardTopBar />} />
           <Route path="/dashboard/footer" element={<DashboardFooter />} />
           <Route path="/dashboard/theme" element={<DashboardTheme />} />
