@@ -1524,6 +1524,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_delete_auction: {
+        Args: { _admin_id: string; _auction_id: string; _reason: string }
+        Returns: undefined
+      }
       admin_delete_listing: {
         Args: { _admin_id: string; _listing_id: string; _reason: string }
         Returns: undefined

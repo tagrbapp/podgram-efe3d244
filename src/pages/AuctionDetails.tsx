@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Clock, Tag, TrendingUp, User, Calendar, Gavel, ArrowLeft } from "lucide-react";
+import { Clock, Tag, TrendingUp, User, Calendar, Gavel, ArrowLeft, Trash2 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import AuctionTimer from "@/components/AuctionTimer";
@@ -24,6 +24,18 @@ import { AuctionReportDialog } from "@/components/AuctionReportDialog";
 import SEO from "@/components/SEO";
 import AuctionSchema from "@/components/AuctionSchema";
 import AuctionExtendedAlert from "@/components/AuctionExtendedAlert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Auction {
   id: string;
@@ -68,10 +80,24 @@ const AuctionDetails = () => {
   const [userHasBid, setUserHasBid] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showExtendedAlert, setShowExtendedAlert] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUser(user);
+    
+    // Check if user is admin or moderator
+    if (user) {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["admin", "moderator"]);
+      
+      setIsAdmin(roles && roles.length > 0);
+    }
   };
 
   const fetchAuctionDetails = async () => {
@@ -187,6 +213,33 @@ const AuctionDetails = () => {
   const isOwner = currentUser?.id === auction.user_id;
   const isActive = auction.status === "active" && new Date(auction.end_time) > new Date();
 
+  const handleDeleteAuction = async () => {
+    if (!deleteReason.trim()) {
+      toast.error("يرجى إدخال سبب الحذف");
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.rpc("admin_delete_auction", {
+        _admin_id: currentUser?.id,
+        _auction_id: auction.id,
+        _reason: deleteReason,
+      });
+
+      if (error) throw error;
+
+      toast.success("تم حذف المزاد بنجاح");
+      navigate("/auctions");
+    } catch (error) {
+      console.error("Error deleting auction:", error);
+      toast.error("فشل حذف المزاد");
+    } finally {
+      setIsDeleting(false);
+      setDeleteReason("");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -221,7 +274,7 @@ const AuctionDetails = () => {
           ]}
         />
         
-        {/* Enhanced Header with Back button, Share button, and Report */}
+        {/* Enhanced Header with Back button, Share button, Report, and Admin Delete */}
         <div className="flex items-center justify-between mb-8 bg-card/50 backdrop-blur-sm rounded-2xl p-4 border border-border/50">
           <Button
             variant="ghost"
@@ -232,6 +285,43 @@ const AuctionDetails = () => {
             العودة للمزادات
           </Button>
           <div className="flex items-center gap-3">
+            {isAdmin && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    حذف المزاد
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>تأكيد حذف المزاد</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-4">
+                      <p>هل أنت متأكد من حذف هذا المزاد؟ سيتم إخفاؤه من المنصة وإرسال إشعار للبائع.</p>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-foreground">سبب الحذف (مطلوب)</label>
+                        <Textarea
+                          value={deleteReason}
+                          onChange={(e) => setDeleteReason(e.target.value)}
+                          placeholder="أدخل سبب حذف المزاد..."
+                          className="min-h-[100px]"
+                        />
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAuction}
+                      disabled={isDeleting || !deleteReason.trim()}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      {isDeleting ? "جاري الحذف..." : "حذف المزاد"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             {!isOwner && currentUser && (
               <AuctionReportDialog 
                 auctionId={auction.id}
