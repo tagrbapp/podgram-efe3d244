@@ -42,6 +42,25 @@ const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
+interface AuthSettings {
+  merchant_title: string;
+  merchant_description: string;
+  consumer_title: string;
+  consumer_description: string;
+  membership_section_title: string;
+  full_name_label: string;
+  full_name_placeholder: string;
+  full_name_hint: string;
+  email_label: string;
+  password_label: string;
+  password_hint: string;
+  confirm_password_label: string;
+  referral_code_label: string;
+  register_button_text: string;
+  login_tab_text: string;
+  register_tab_text: string;
+}
+
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -50,6 +69,7 @@ const Auth = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [registerPassword, setRegisterPassword] = useState("");
   const [membershipType, setMembershipType] = useState<"merchant" | "consumer">("consumer");
+  const [authSettings, setAuthSettings] = useState<AuthSettings | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +80,20 @@ const Auth = () => {
       }
     };
     checkSession();
+
+    // Fetch auth settings
+    const fetchAuthSettings = async () => {
+      const { data } = await supabase
+        .from("auth_settings")
+        .select("*")
+        .eq("is_active", true)
+        .single();
+      
+      if (data) {
+        setAuthSettings(data);
+      }
+    };
+    fetchAuthSettings();
 
     // Check for referral code in URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -233,8 +267,12 @@ const Auth = () => {
           <Card className="p-8 shadow-elegant border-2" dir="rtl">
             <Tabs defaultValue="login" dir="rtl">
               <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
-                <TabsTrigger value="register" className="text-base">حساب جديد</TabsTrigger>
-                <TabsTrigger value="login" className="text-base">تسجيل الدخول</TabsTrigger>
+                <TabsTrigger value="register" className="text-base">
+                  {authSettings?.register_tab_text || "حساب جديد"}
+                </TabsTrigger>
+                <TabsTrigger value="login" className="text-base">
+                  {authSettings?.login_tab_text || "تسجيل الدخول"}
+                </TabsTrigger>
               </TabsList>
 
               {/* تسجيل الدخول */}
@@ -322,26 +360,26 @@ const Auth = () => {
                 <div className="space-y-2">
                   <Label htmlFor="name" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    <span>الاسم الكامل</span>
+                    <span>{authSettings?.full_name_label || "الاسم الكامل"}</span>
                   </Label>
                   <Input
                     id="name"
                     name="name"
                     type="text"
-                    placeholder="أحمد محمد"
+                    placeholder={authSettings?.full_name_placeholder || "أحمد محمد"}
                     required
                     disabled={isLoading}
                     dir="rtl"
                     className="transition-smooth text-right"
                   />
                   <p className="text-xs text-muted-foreground text-right">
-                    يجب إدخال اسمين عربيين على الأقل (بدون أرقام أو رموز)
+                    {authSettings?.full_name_hint || "يجب إدخال اسمين عربيين على الأقل (بدون أرقام أو رموز)"}
                   </p>
                 </div>
 
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">
-                    نوع العضوية
+                    {authSettings?.membership_section_title || "نوع العضوية"}
                   </Label>
                   <RadioGroup 
                     value={membershipType} 
@@ -359,9 +397,9 @@ const Auth = () => {
                             <User className="w-5 h-5 text-primary" />
                           </div>
                           <div className="flex-1 text-right">
-                            <div className="font-medium">مستهلك</div>
+                            <div className="font-medium">{authSettings?.consumer_title || "مستهلك"}</div>
                             <div className="text-xs text-muted-foreground">
-                              يمكنك المزايدة على المنتجات فوراً دون الحاجة لموافقة الإدارة
+                              {authSettings?.consumer_description || "يمكنك المزايدة على المنتجات فوراً دون الحاجة لموافقة الإدارة"}
                             </div>
                           </div>
                         </div>
@@ -379,9 +417,9 @@ const Auth = () => {
                             <Store className="w-5 h-5 text-primary" />
                           </div>
                           <div className="flex-1 text-right">
-                            <div className="font-medium">تاجر</div>
+                            <div className="font-medium">{authSettings?.merchant_title || "تاجر"}</div>
                             <div className="text-xs text-muted-foreground">
-                              يمكنك طرح المنتجات والمزادات بعد موافقة الإدارة
+                              {authSettings?.merchant_description || "يمكنك طرح المنتجات والمزادات بعد موافقة الإدارة"}
                             </div>
                           </div>
                         </div>
@@ -393,7 +431,7 @@ const Auth = () => {
                 <div className="space-y-2">
                   <Label htmlFor="register-email" className="flex items-center gap-2">
                     <Mail className="h-4 w-4" />
-                    <span>البريد الإلكتروني</span>
+                    <span>{authSettings?.email_label || "البريد الإلكتروني"}</span>
                   </Label>
                   <Input
                     id="register-email"
@@ -410,7 +448,7 @@ const Auth = () => {
                 <div className="space-y-2">
                   <Label htmlFor="register-password" className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
-                    <span>كلمة المرور</span>
+                    <span>{authSettings?.password_label || "كلمة المرور"}</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -463,14 +501,14 @@ const Auth = () => {
                   )}
                   
                   <p className="text-xs text-muted-foreground text-right">
-                    استخدم 8+ أحرف مع مزيج من الأحرف الكبيرة والصغيرة، أرقام ورموز
+                    {authSettings?.password_hint || "استخدم 8+ أحرف مع مزيج من الأحرف الكبيرة والصغيرة، أرقام ورموز"}
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password" className="flex items-center gap-2">
                     <Lock className="h-4 w-4" />
-                    <span>تأكيد كلمة المرور</span>
+                    <span>{authSettings?.confirm_password_label || "تأكيد كلمة المرور"}</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -496,7 +534,7 @@ const Auth = () => {
                 <div className="space-y-2">
                   <Label htmlFor="referral-code" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    <span>كود الإحالة (اختياري)</span>
+                    <span>{authSettings?.referral_code_label || "كود الإحالة (اختياري)"}</span>
                   </Label>
                   <Input
                     id="referral-code"
@@ -524,7 +562,7 @@ const Auth = () => {
                   disabled={isLoading}
                 >
                   <ArrowRight className="h-5 w-5" />
-                  <span>{isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}</span>
+                  <span>{isLoading ? "جاري إنشاء الحساب..." : (authSettings?.register_button_text || "إنشاء حساب")}</span>
                 </Button>
 
                 <div className="text-center pt-6">

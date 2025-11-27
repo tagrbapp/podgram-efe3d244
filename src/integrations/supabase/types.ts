@@ -306,6 +306,78 @@ export type Database = {
           },
         ]
       }
+      auth_settings: {
+        Row: {
+          confirm_password_label: string
+          consumer_description: string
+          consumer_title: string
+          created_at: string | null
+          email_label: string
+          full_name_hint: string
+          full_name_label: string
+          full_name_placeholder: string
+          id: string
+          is_active: boolean
+          login_tab_text: string
+          membership_section_title: string
+          merchant_description: string
+          merchant_title: string
+          password_hint: string
+          password_label: string
+          referral_code_label: string
+          register_button_text: string
+          register_tab_text: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          confirm_password_label?: string
+          consumer_description?: string
+          consumer_title?: string
+          created_at?: string | null
+          email_label?: string
+          full_name_hint?: string
+          full_name_label?: string
+          full_name_placeholder?: string
+          id?: string
+          is_active?: boolean
+          login_tab_text?: string
+          membership_section_title?: string
+          merchant_description?: string
+          merchant_title?: string
+          password_hint?: string
+          password_label?: string
+          referral_code_label?: string
+          register_button_text?: string
+          register_tab_text?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          confirm_password_label?: string
+          consumer_description?: string
+          consumer_title?: string
+          created_at?: string | null
+          email_label?: string
+          full_name_hint?: string
+          full_name_label?: string
+          full_name_placeholder?: string
+          id?: string
+          is_active?: boolean
+          login_tab_text?: string
+          membership_section_title?: string
+          merchant_description?: string
+          merchant_title?: string
+          password_hint?: string
+          password_label?: string
+          referral_code_label?: string
+          register_button_text?: string
+          register_tab_text?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       auto_bids: {
         Row: {
           auction_id: string
