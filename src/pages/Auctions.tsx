@@ -33,7 +33,7 @@ const Auctions = () => {
   const fetchAuctions = async (status: string) => {
     setLoading(true);
     
-    const { data, error } = await supabase
+    let query = supabase
       .from("auctions")
       .select(`
         *,
@@ -41,8 +41,16 @@ const Auctions = () => {
           name
         )
       `)
-      .eq("status", status)
-      .order("end_time", { ascending: status === "active" });
+      .eq("status", status);
+    
+    // For active auctions, only show those that haven't ended yet
+    if (status === "active") {
+      query = query.gt("end_time", new Date().toISOString());
+    }
+    
+    query = query.order("end_time", { ascending: status === "active" });
+    
+    const { data, error } = await query;
 
     if (!error && data) {
       // Fetch bid counts for each auction
