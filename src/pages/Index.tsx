@@ -5,9 +5,10 @@ import ListingCard from "@/components/ListingCard";
 import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
+import CategoryCard from "@/components/CategoryCard";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
-import { Gavel, TrendingUp } from "lucide-react";
+import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Listing {
@@ -36,21 +37,32 @@ interface Auction {
   bid_count: number;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  listings_count: number;
+}
+
 const Index = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [auctionsLoading, setAuctionsLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [sectionVisibility, setSectionVisibility] = useState({
     hero: true,
     announcements: true,
+    categories: true,
     live_auctions: true,
     featured_listings: true,
   });
   const [sectionSettings, setSectionSettings] = useState({
     hero: { items_limit: 12, background_color: "bg-gray-50" },
     announcements: { items_limit: 12, background_color: "bg-gray-50" },
+    categories: { items_limit: 8, background_color: "bg-muted/30" },
     live_auctions: { items_limit: 6, background_color: "bg-background" },
     featured_listings: { items_limit: 12, background_color: "bg-gray-50" },
   });
@@ -61,6 +73,7 @@ const Index = () => {
       if (settings) {
         fetchListings(settings);
         fetchAuctions(settings);
+        fetchCategories(settings);
       }
     };
     initializeData();
@@ -172,6 +185,44 @@ const Index = () => {
     setAuctionsLoading(false);
   };
 
+  const fetchCategories = async (settings?: any) => {
+    setCategoriesLoading(true);
+    const currentSettings = settings || sectionSettings;
+    const categoryLimit = currentSettings.categories?.items_limit || 8;
+    
+    const { data } = await supabase
+      .from("categories")
+      .select("*")
+      .order("name");
+
+    if (data) {
+      const categoriesWithCounts = await Promise.all(
+        data.slice(0, categoryLimit).map(async (category) => {
+          const { count } = await supabase
+            .from("listings")
+            .select("*", { count: "exact", head: true })
+            .eq("category_id", category.id)
+            .eq("status", "active");
+          
+          return {
+            ...category,
+            listings_count: count || 0,
+          };
+        })
+      );
+      
+      setCategories(categoriesWithCounts);
+    }
+    setCategoriesLoading(false);
+  };
+
+  const getCategoryIcon = (iconName: string) => {
+    const icons: Record<string, any> = {
+      Watch, Briefcase, Home, Car, ShoppingBag, Gem, Package
+    };
+    return icons[iconName] || Package;
+  };
+
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -242,6 +293,58 @@ const Index = () => {
             {/* Decorative Elements */}
             <div className="absolute top-0 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10" />
+          </section>
+        )}
+
+        {/* Categories Section */}
+        {sectionVisibility.categories && (
+          <section className="relative py-16 lg:py-20 bg-gradient-to-br from-muted/30 via-background to-muted/20">
+            <div className="container mx-auto px-4">
+              {/* Section Header */}
+              <div className="text-center mb-12 space-y-4 animate-fade-in">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                  تصفح حسب الفئة
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  اكتشف المنتجات الفاخرة في فئتك المفضلة
+                </p>
+              </div>
+
+              {/* Categories Grid */}
+              {categoriesLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="h-64 bg-card rounded-3xl animate-pulse shadow-card" />
+                  ))}
+                </div>
+              ) : categories.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {categories.map((category, index) => (
+                    <div 
+                      key={category.id} 
+                      className="animate-scale-in hover-lift"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <CategoryCard
+                        icon={getCategoryIcon(category.icon)}
+                        title={category.name}
+                        count={category.listings_count}
+                        id={category.id}
+                        trending={category.listings_count > 10}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 animate-fade-in">
+                  <p className="text-muted-foreground text-lg">لا توجد فئات متاحة حالياً</p>
+                </div>
+              )}
+            </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
           </section>
         )}
 
