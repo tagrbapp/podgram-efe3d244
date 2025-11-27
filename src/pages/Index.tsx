@@ -8,7 +8,7 @@ import AuctionCard from "@/components/AuctionCard";
 import CategoryCard from "@/components/CategoryCard";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
-import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem } from "lucide-react";
+import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Listing {
@@ -218,7 +218,8 @@ const Index = () => {
 
   const getCategoryIcon = (iconName: string) => {
     const icons: Record<string, any> = {
-      Watch, Briefcase, Home, Car, ShoppingBag, Gem, Package
+      Watch, Briefcase, Home, Car, ShoppingBag, Gem, Package,
+      Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator
     };
     return icons[iconName] || Package;
   };
