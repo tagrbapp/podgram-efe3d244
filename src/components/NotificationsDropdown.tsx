@@ -79,13 +79,13 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
         break;
       
       case 'system':
-        // Check if it's an approval/rejection notification
-        if (notification.title.includes('موافق') || notification.title.includes('رفض') || notification.title.includes('قبول')) {
-          // Navigate to dashboard for approval status
-          navigate('/dashboard');
-        } else if (notification.message.includes('موافقة') || notification.message.includes('مراجعة')) {
-          // Admin approval notifications - go to approvals page
+        // If notification has related_user_id, it's an approval-related notification
+        if (notification.related_user_id) {
+          // Navigate to user approvals page for admin to take action
           navigate('/dashboard/user-approvals');
+        } else {
+          // Other system notifications go to dashboard
+          navigate('/dashboard');
         }
         break;
       
