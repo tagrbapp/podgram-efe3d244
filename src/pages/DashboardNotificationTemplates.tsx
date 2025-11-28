@@ -404,73 +404,77 @@ const DashboardNotificationTemplates = () => {
                 </DialogHeader>
                 {editingTemplate && (
                   <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>اسم القالب</Label>
-                      <Input
-                        value={editingTemplate.name}
-                        onChange={(e) =>
-                          setEditingTemplate({ ...editingTemplate, name: e.target.value })
-                        }
-                        className="text-right"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-right block">اسم القالب</Label>
+                    <Input
+                      value={editingTemplate.name}
+                      onChange={(e) =>
+                        setEditingTemplate({ ...editingTemplate, name: e.target.value })
+                      }
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label>الوصف</Label>
-                      <Textarea
-                        value={editingTemplate.description || ""}
-                        onChange={(e) =>
-                          setEditingTemplate({
-                            ...editingTemplate,
-                            description: e.target.value,
-                          })
-                        }
-                        className="text-right"
-                        rows={2}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-right block">الوصف</Label>
+                    <Textarea
+                      value={editingTemplate.description || ""}
+                      onChange={(e) =>
+                        setEditingTemplate({
+                          ...editingTemplate,
+                          description: e.target.value,
+                        })
+                      }
+                      className="text-right"
+                      dir="rtl"
+                      rows={2}
+                    />
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label>قالب العنوان</Label>
-                      <Input
-                        value={editingTemplate.title_template}
-                        onChange={(e) =>
-                          setEditingTemplate({
-                            ...editingTemplate,
-                            title_template: e.target.value,
-                          })
-                        }
-                        className="text-right"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-right block">قالب العنوان</Label>
+                    <Input
+                      value={editingTemplate.title_template}
+                      onChange={(e) =>
+                        setEditingTemplate({
+                          ...editingTemplate,
+                          title_template: e.target.value,
+                        })
+                      }
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label>قالب الرسالة</Label>
-                      <Textarea
-                        value={editingTemplate.message_template}
-                        onChange={(e) =>
-                          setEditingTemplate({
-                            ...editingTemplate,
-                            message_template: e.target.value,
-                          })
-                        }
-                        className="text-right"
-                        rows={4}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-right block">قالب الرسالة</Label>
+                    <Textarea
+                      value={editingTemplate.message_template}
+                      onChange={(e) =>
+                        setEditingTemplate({
+                          ...editingTemplate,
+                          message_template: e.target.value,
+                        })
+                      }
+                      className="text-right"
+                      dir="rtl"
+                      rows={4}
+                    />
+                  </div>
 
-                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                      <Label htmlFor="is-active" className="cursor-pointer">
-                        تفعيل القالب
-                      </Label>
-                      <Switch
-                        id="is-active"
-                        checked={editingTemplate.is_active}
-                        onCheckedChange={(checked) =>
-                          setEditingTemplate({ ...editingTemplate, is_active: checked })
-                        }
-                      />
-                    </div>
+                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg" dir="rtl">
+                    <Label htmlFor="is-active" className="cursor-pointer">
+                      تفعيل القالب
+                    </Label>
+                    <Switch
+                      id="is-active"
+                      checked={editingTemplate.is_active}
+                      onCheckedChange={(checked) =>
+                        setEditingTemplate({ ...editingTemplate, is_active: checked })
+                      }
+                    />
+                  </div>
 
                     {editingTemplate.variables && Array.isArray(editingTemplate.variables) && editingTemplate.variables.length > 0 && (
                       <div className="p-4 bg-muted/50 rounded-lg">
