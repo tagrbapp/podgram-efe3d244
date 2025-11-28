@@ -7,8 +7,26 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { ArrowRight, Mail, Save } from "lucide-react";
+import { ArrowRight, Mail, Save, Eye, Palette, Sparkles, Crown, X } from "lucide-react";
+
+interface EmailTemplate {
+  id: string;
+  name: string;
+  description: string;
+  template_type: 'approval' | 'rejection';
+  primary_color: string;
+  background_color: string;
+  text_color: string;
+  header_style: string;
+  show_features_box: boolean;
+  show_footer_logo: boolean;
+  button_style: string;
+  is_default: boolean;
+}
 
 interface EmailSettings {
   id: string;
@@ -23,6 +41,8 @@ interface EmailSettings {
   sender_name: string;
   sender_email: string;
   footer_text: string;
+  approval_template_id: string | null;
+  rejection_template_id: string | null;
 }
 
 const DashboardEmailSettings = () => {
@@ -30,10 +50,14 @@ const DashboardEmailSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<EmailSettings | null>(null);
+  const [approvalTemplates, setApprovalTemplates] = useState<EmailTemplate[]>([]);
+  const [rejectionTemplates, setRejectionTemplates] = useState<EmailTemplate[]>([]);
+  const [previewTemplate, setPreviewTemplate] = useState<EmailTemplate | null>(null);
 
   useEffect(() => {
     checkAuth();
     fetchSettings();
+    fetchTemplates();
   }, []);
 
   const checkAuth = async () => {
@@ -72,6 +96,27 @@ const DashboardEmailSettings = () => {
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("email_templates")
+        .select("*")
+        .eq("is_active", true)
+        .order("is_default", { ascending: false });
+
+      if (error) throw error;
+
+      const approval = (data?.filter(t => t.template_type === 'approval') || []) as EmailTemplate[];
+      const rejection = (data?.filter(t => t.template_type === 'rejection') || []) as EmailTemplate[];
+      
+      setApprovalTemplates(approval);
+      setRejectionTemplates(rejection);
+    } catch (error: any) {
+      console.error("Error fetching templates:", error);
+      toast.error("فشل تحميل القوالب");
+    }
+  };
+
   const handleSave = async () => {
     if (!settings) return;
 
@@ -91,6 +136,8 @@ const DashboardEmailSettings = () => {
           sender_name: settings.sender_name,
           sender_email: settings.sender_email,
           footer_text: settings.footer_text,
+          approval_template_id: settings.approval_template_id,
+          rejection_template_id: settings.rejection_template_id,
         })
         .eq("id", settings.id);
 
@@ -101,6 +148,17 @@ const DashboardEmailSettings = () => {
       toast.error("فشل حفظ الإعدادات");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const getTemplateIcon = (style: string) => {
+    switch (style) {
+      case 'modern':
+        return <Sparkles className="h-4 w-4" />;
+      case 'luxury':
+        return <Crown className="h-4 w-4" />;
+      default:
+        return <Palette className="h-4 w-4" />;
     }
   };
 
@@ -130,6 +188,130 @@ const DashboardEmailSettings = () => {
       </div>
 
       <div className="space-y-6">
+        {/* Template Selection for Approval */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-600">
+              <Palette className="h-5 w-5" />
+              قالب بريد الموافقة
+            </CardTitle>
+            <CardDescription>اختر القالب المناسب لرسائل الموافقة</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={settings.approval_template_id || ''}
+              onValueChange={(value) => setSettings({ ...settings, approval_template_id: value })}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {approvalTemplates.map((template) => (
+                  <div key={template.id} className="relative">
+                    <div
+                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        settings.approval_template_id === template.id
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-border hover:border-green-300'
+                      }`}
+                      onClick={() => setSettings({ ...settings, approval_template_id: template.id })}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <RadioGroupItem value={template.id} id={`approval-${template.id}`} />
+                        {template.is_default && (
+                          <Badge variant="secondary" className="text-xs">افتراضي</Badge>
+                        )}
+                      </div>
+                      <div
+                        className="w-full h-24 rounded mb-3"
+                        style={{ backgroundColor: template.primary_color, opacity: 0.1 }}
+                      />
+                      <div className="flex items-center gap-2 mb-1">
+                        {getTemplateIcon(template.header_style)}
+                        <h4 className="font-semibold">{template.name}</h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{template.description}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewTemplate(template);
+                        }}
+                      >
+                        <Eye className="h-3 w-3 ml-1" />
+                        معاينة
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </RadioGroup>
+          </CardContent>
+        </Card>
+
+        <Separator />
+
+        {/* Template Selection for Rejection */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-600">
+              <Palette className="h-5 w-5" />
+              قالب بريد الرفض
+            </CardTitle>
+            <CardDescription>اختر القالب المناسب لرسائل الرفض</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              value={settings.rejection_template_id || ''}
+              onValueChange={(value) => setSettings({ ...settings, rejection_template_id: value })}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {rejectionTemplates.map((template) => (
+                  <div key={template.id} className="relative">
+                    <div
+                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        settings.rejection_template_id === template.id
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-border hover:border-red-300'
+                      }`}
+                      onClick={() => setSettings({ ...settings, rejection_template_id: template.id })}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <RadioGroupItem value={template.id} id={`rejection-${template.id}`} />
+                        {template.is_default && (
+                          <Badge variant="secondary" className="text-xs">افتراضي</Badge>
+                        )}
+                      </div>
+                      <div
+                        className="w-full h-24 rounded mb-3"
+                        style={{ backgroundColor: template.primary_color, opacity: 0.1 }}
+                      />
+                      <div className="flex items-center gap-2 mb-1">
+                        {getTemplateIcon(template.header_style)}
+                        <h4 className="font-semibold">{template.name}</h4>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{template.description}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-3"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewTemplate(template);
+                        }}
+                      >
+                        <Eye className="h-3 w-3 ml-1" />
+                        معاينة
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </RadioGroup>
+          </CardContent>
+        </Card>
+
+        <Separator />
+
         {/* General Settings */}
         <Card>
           <CardHeader>
@@ -302,6 +484,106 @@ const DashboardEmailSettings = () => {
           </Button>
         </div>
       </div>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewTemplate} onOpenChange={() => setPreviewTemplate(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              معاينة القالب: {previewTemplate?.name}
+            </DialogTitle>
+            <DialogDescription>{previewTemplate?.description}</DialogDescription>
+          </DialogHeader>
+          
+          {previewTemplate && (
+            <div className="mt-4">
+              <div 
+                className="border rounded-lg p-8 bg-gradient-to-br"
+                style={{ 
+                  background: `linear-gradient(135deg, ${previewTemplate.primary_color}10, ${previewTemplate.primary_color}05)` 
+                }}
+              >
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-2xl mx-auto">
+                  <div 
+                    className="p-8 text-center"
+                    style={{ 
+                      background: previewTemplate.primary_color,
+                      padding: previewTemplate.header_style === 'luxury' ? '40px' : '20px'
+                    }}
+                  >
+                    <h1 
+                      className="text-white font-bold"
+                      style={{ 
+                        fontSize: previewTemplate.header_style === 'modern' ? '28px' : '24px' 
+                      }}
+                    >
+                      {previewTemplate.template_type === 'approval' 
+                        ? settings?.approval_title || 'مرحباً بك! 🎉'
+                        : settings?.rejection_title || 'مرحباً'
+                      }
+                    </h1>
+                  </div>
+                  
+                  <div className="p-8">
+                    <p className="text-gray-700 text-base leading-relaxed mb-6">
+                      {previewTemplate.template_type === 'approval' 
+                        ? settings?.approval_message || 'يسعدنا إبلاغك بأنه تمت الموافقة على طلب ترقية عضويتك.'
+                        : settings?.rejection_message || 'نعتذر عن إبلاغك بأنه لم تتم الموافقة على طلب ترقية عضويتك.'
+                      }
+                    </p>
+                    
+                    {previewTemplate.template_type === 'approval' && previewTemplate.show_features_box && (
+                      <div 
+                        className="bg-gray-50 p-6 rounded-lg mb-6"
+                        style={{ borderRight: `4px solid ${previewTemplate.primary_color}` }}
+                      >
+                        <h2 className="text-gray-900 font-semibold text-lg mb-4">المزايا الجديدة:</h2>
+                        <ul className="text-gray-600 space-y-2 list-disc list-inside">
+                          <li>إمكانية إضافة عدد غير محدود من الإعلانات</li>
+                          <li>إنشاء مزادات خاصة</li>
+                          <li>أولوية في الظهور</li>
+                          <li>إحصائيات متقدمة</li>
+                        </ul>
+                      </div>
+                    )}
+                    
+                    <div className="text-center my-8">
+                      <button
+                        className="font-bold px-8 py-3 rounded-lg transition-all"
+                        style={{
+                          background: previewTemplate.button_style === 'outline' ? 'transparent' : previewTemplate.primary_color,
+                          border: previewTemplate.button_style === 'outline' ? `2px solid ${previewTemplate.primary_color}` : 'none',
+                          color: previewTemplate.button_style === 'outline' ? previewTemplate.primary_color : 'white'
+                        }}
+                      >
+                        {previewTemplate.template_type === 'approval' 
+                          ? settings?.approval_button_text || 'زيارة المنصة'
+                          : 'التواصل معنا'
+                        }
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-6 text-center border-t">
+                    <p className="text-sm text-gray-600">
+                      {settings?.footer_text || 'شكراً لاختيارك Podgram'}<br/>
+                      <strong>{settings?.sender_name || 'Podgram'}</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 flex justify-end">
+                <Button onClick={() => setPreviewTemplate(null)} variant="outline">
+                  <X className="h-4 w-4 ml-2" />
+                  إغلاق
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
