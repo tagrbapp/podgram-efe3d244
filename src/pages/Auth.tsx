@@ -387,41 +387,33 @@ const Auth = () => {
                     className="gap-3"
                   >
                     <div 
-                      className="flex items-center space-x-2 space-x-reverse border rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+                      className="flex flex-row-reverse items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setMembershipType("consumer")}
                     >
                       <RadioGroupItem value="consumer" id="consumer" />
-                      <Label htmlFor="consumer" className="flex-1 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                            <User className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1 text-right">
-                            <div className="font-medium">{authSettings?.consumer_title || "مستهلك"}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {authSettings?.consumer_description || "يمكنك المزايدة على المنتجات فوراً دون الحاجة لموافقة الإدارة"}
-                            </div>
-                          </div>
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 flex-shrink-0">
+                        <User className="w-5 h-5 text-primary" />
+                      </div>
+                      <Label htmlFor="consumer" className="flex-1 cursor-pointer text-right">
+                        <div className="font-medium">{authSettings?.consumer_title || "مستهلك"}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {authSettings?.consumer_description || "يمكنك المزايدة على المنتجات فوراً دون الحاجة لموافقة الإدارة"}
                         </div>
                       </Label>
                     </div>
                     
                     <div 
-                      className="flex items-center space-x-2 space-x-reverse border rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+                      className="flex flex-row-reverse items-center gap-3 border rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-colors"
                       onClick={() => setMembershipType("merchant")}
                     >
                       <RadioGroupItem value="merchant" id="merchant" />
-                      <Label htmlFor="merchant" className="flex-1 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                            <Store className="w-5 h-5 text-primary" />
-                          </div>
-                          <div className="flex-1 text-right">
-                            <div className="font-medium">{authSettings?.merchant_title || "تاجر"}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {authSettings?.merchant_description || "يمكنك طرح المنتجات والمزادات بعد موافقة الإدارة"}
-                            </div>
-                          </div>
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 flex-shrink-0">
+                        <Store className="w-5 h-5 text-primary" />
+                      </div>
+                      <Label htmlFor="merchant" className="flex-1 cursor-pointer text-right">
+                        <div className="font-medium">{authSettings?.merchant_title || "تاجر"}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {authSettings?.merchant_description || "يمكنك طرح المنتجات والمزادات بعد موافقة الإدارة"}
                         </div>
                       </Label>
                     </div>
