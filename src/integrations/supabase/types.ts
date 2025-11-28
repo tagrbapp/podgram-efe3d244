@@ -1232,6 +1232,54 @@ export type Database = {
           },
         ]
       }
+      notification_templates: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          message_template: string
+          name: string
+          template_key: string
+          title_template: string
+          type: string
+          updated_at: string | null
+          updated_by: string | null
+          variables: Json | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          message_template: string
+          name: string
+          template_key: string
+          title_template: string
+          type: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          message_template?: string
+          name?: string
+          template_key?: string
+          title_template?: string
+          type?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -1877,6 +1925,14 @@ export type Database = {
           bids_count: number
           date: string
           revenue: number
+        }[]
+      }
+      get_notification_from_template: {
+        Args: { _template_key: string; _variables?: Json }
+        Returns: {
+          message: string
+          title: string
+          type: string
         }[]
       }
       get_revenue_by_period: {
