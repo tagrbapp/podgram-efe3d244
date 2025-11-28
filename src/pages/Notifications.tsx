@@ -23,6 +23,9 @@ const Notifications = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [filter, setFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -46,10 +49,34 @@ const Notifications = () => {
   } = useRealtimeNotifications(user?.id);
 
   const filteredNotifications = notifications.filter((notification) => {
-    if (filter === "all") return true;
-    if (filter === "unread") return !notification.is_read;
-    if (filter === "read") return notification.is_read;
-    return notification.type === filter;
+    // فلترة حسب النوع/الحالة
+    let typeMatch = true;
+    if (filter === "unread") typeMatch = !notification.is_read;
+    else if (filter === "read") typeMatch = notification.is_read;
+    else if (filter !== "all") typeMatch = notification.type === filter;
+
+    // البحث النصي
+    const searchMatch = !searchQuery || 
+      notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      notification.message.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // فلترة حسب التاريخ
+    let dateMatch = true;
+    const notificationDate = new Date(notification.created_at);
+    
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      dateMatch = dateMatch && notificationDate >= start;
+    }
+    
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateMatch = dateMatch && notificationDate <= end;
+    }
+
+    return typeMatch && searchMatch && dateMatch;
   });
 
   const handleNotificationClick = (notification: any) => {
@@ -160,22 +187,86 @@ const Notifications = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-4 mb-6">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="تصفية الإشعارات" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الإشعارات</SelectItem>
-                  <SelectItem value="unread">غير المقروءة</SelectItem>
-                  <SelectItem value="read">المقروءة</SelectItem>
-                  <SelectItem value="bid">المزايدات</SelectItem>
-                  <SelectItem value="message">الرسائل</SelectItem>
-                  <SelectItem value="sale">المبيعات</SelectItem>
-                  <SelectItem value="system">النظام</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-4 mb-6">
+              {/* البحث النصي */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="ابحث في العنوان أو الرسالة..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-right"
+                  />
+                  <Filter className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                </div>
+                {(searchQuery || startDate || endDate || filter !== "all") && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setStartDate("");
+                      setEndDate("");
+                      setFilter("all");
+                    }}
+                  >
+                    مسح الفلاتر
+                  </Button>
+                )}
+              </div>
+
+              {/* الفلاتر */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">النوع:</label>
+                  <Select value={filter} onValueChange={setFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="تصفية الإشعارات" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">الكل</SelectItem>
+                      <SelectItem value="unread">غير المقروءة</SelectItem>
+                      <SelectItem value="read">المقروءة</SelectItem>
+                      <SelectItem value="bid">المزايدات</SelectItem>
+                      <SelectItem value="outbid">تجاوز المزايدة</SelectItem>
+                      <SelectItem value="message">الرسائل</SelectItem>
+                      <SelectItem value="sale">المبيعات</SelectItem>
+                      <SelectItem value="auction_start">بدء المزاد</SelectItem>
+                      <SelectItem value="auction_end">انتهاء المزاد</SelectItem>
+                      <SelectItem value="auction_won">فوز بالمزاد</SelectItem>
+                      <SelectItem value="system">النظام</SelectItem>
+                      <SelectItem value="favorite">المفضلة</SelectItem>
+                      <SelectItem value="review">التقييمات</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">من:</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-muted-foreground">إلى:</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+              </div>
+
+              {/* عدد النتائج */}
+              <div className="text-sm text-muted-foreground">
+                عرض {filteredNotifications.length} من {notifications.length} إشعار
+              </div>
             </div>
 
             {loading ? (
