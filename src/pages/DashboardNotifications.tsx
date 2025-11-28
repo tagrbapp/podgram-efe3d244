@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Bell, Edit, Trash2, Send, Users } from "lucide-react";
+import { Bell, Edit, Trash2, Send, Users, Filter } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import Navbar from "@/components/Navbar";
@@ -45,6 +45,11 @@ const DashboardNotifications = () => {
   const [editingNotification, setEditingNotification] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
   
   // Form states for sending notification
   const [newNotification, setNewNotification] = useState({
@@ -209,6 +214,41 @@ const DashboardNotifications = () => {
     }
   };
 
+  // تطبيق الفلاتر
+  const filteredNotifications = notifications.filter((notification) => {
+    // البحث النصي
+    const searchMatch = !searchQuery || 
+      notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      notification.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      notification.profiles?.full_name.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // فلترة حسب النوع
+    const typeMatch = filterType === "all" || notification.type === filterType;
+
+    // فلترة حسب الحالة
+    const statusMatch = filterStatus === "all" || 
+      (filterStatus === "read" && notification.is_read) ||
+      (filterStatus === "unread" && !notification.is_read);
+
+    // فلترة حسب التاريخ
+    let dateMatch = true;
+    const notificationDate = new Date(notification.created_at);
+    
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      dateMatch = dateMatch && notificationDate >= start;
+    }
+    
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateMatch = dateMatch && notificationDate <= end;
+    }
+
+    return searchMatch && typeMatch && statusMatch && dateMatch;
+  });
+
   if (!user || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -331,6 +371,109 @@ const DashboardNotifications = () => {
                 </div>
               </CardHeader>
               <CardContent>
+                {/* الفلاتر والبحث */}
+                <div className="space-y-4 mb-6 p-4 bg-muted/30 rounded-lg">
+                  {/* البحث النصي */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        placeholder="ابحث في العنوان، الرسالة أو اسم المستخدم..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full px-4 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-right"
+                      />
+                      <Filter className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                    {(searchQuery || startDate || endDate || filterType !== "all" || filterStatus !== "all") && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setStartDate("");
+                          setEndDate("");
+                          setFilterType("all");
+                          setFilterStatus("all");
+                        }}
+                      >
+                        مسح الفلاتر
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* الفلاتر */}
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-muted-foreground">النوع:</label>
+                      <Select value={filterType} onValueChange={setFilterType}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">الكل</SelectItem>
+                          <SelectItem value="system">نظام</SelectItem>
+                          <SelectItem value="message">رسالة</SelectItem>
+                          <SelectItem value="bid">مزايدة</SelectItem>
+                          <SelectItem value="outbid">تجاوز المزايدة</SelectItem>
+                          <SelectItem value="sale">بيع</SelectItem>
+                          <SelectItem value="auction_start">بدء مزاد</SelectItem>
+                          <SelectItem value="auction_end">انتهاء مزاد</SelectItem>
+                          <SelectItem value="auction_won">فوز بالمزاد</SelectItem>
+                          <SelectItem value="favorite">مفضلة</SelectItem>
+                          <SelectItem value="review">تقييم</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-muted-foreground">الحالة:</label>
+                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">الكل</SelectItem>
+                          <SelectItem value="read">مقروء</SelectItem>
+                          <SelectItem value="unread">غير مقروء</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-muted-foreground">من:</label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-muted-foreground">إلى:</label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="px-3 py-1.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                  </div>
+
+                  {/* عدد النتائج */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      عرض {filteredNotifications.length} من {notifications.length} إشعار
+                    </span>
+                    {filteredNotifications.length !== notifications.length && (
+                      <Badge variant="secondary">
+                        تمت التصفية
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -344,7 +487,14 @@ const DashboardNotifications = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {notifications.map((notification) => (
+                    {filteredNotifications.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          لا توجد إشعارات تطابق معايير البحث
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredNotifications.map((notification) => (
                       <TableRow key={notification.id}>
                         <TableCell className="text-right">
                           {notification.profiles?.full_name || "غير معروف"}
@@ -465,7 +615,8 @@ const DashboardNotifications = () => {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
