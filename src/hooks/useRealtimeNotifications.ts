@@ -180,6 +180,18 @@ export const useRealtimeNotifications = (userId: string | null) => {
     }
   };
 
+  const markAsUnread = async (notificationId: string) => {
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: false })
+      .eq("id", notificationId);
+
+    if (error) {
+      console.error("Error marking notification as unread:", error);
+      toast.error("فشل تحديث الإشعار");
+    }
+  };
+
   const markAllAsRead = async () => {
     if (!userId) return;
 
@@ -230,6 +242,7 @@ export const useRealtimeNotifications = (userId: string | null) => {
     unreadCount,
     loading,
     markAsRead,
+    markAsUnread,
     markAllAsRead,
     deleteNotification,
     deleteAllNotifications,

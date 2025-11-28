@@ -31,6 +31,8 @@ import DashboardAuctionAnalytics from "./pages/DashboardAuctionAnalytics";
 import DashboardBidderProfile from "./pages/DashboardBidderProfile";
 import AuctionInvitations from "./pages/AuctionInvitations";
 import TestNotifications from "./pages/TestNotifications";
+import Notifications from "./pages/Notifications";
+import DashboardNotifications from "./pages/DashboardNotifications";
 import DashboardAnnouncements from "./pages/DashboardAnnouncements";
 import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
 import DashboardHomepage from "./pages/DashboardHomepage";
@@ -110,6 +112,8 @@ const App = () => (
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/test-notifications" element={<TestNotifications />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/dashboard/notifications" element={<DashboardNotifications />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/listing/:id" element={<ListingDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
