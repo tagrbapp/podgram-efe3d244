@@ -782,6 +782,7 @@ export type Database = {
           approval_button_text: string
           approval_message: string
           approval_subject: string
+          approval_template_id: string | null
           approval_title: string
           created_at: string | null
           footer_text: string
@@ -790,6 +791,7 @@ export type Database = {
           rejection_footer: string
           rejection_message: string
           rejection_subject: string
+          rejection_template_id: string | null
           rejection_title: string
           sender_email: string
           sender_name: string
@@ -800,6 +802,7 @@ export type Database = {
           approval_button_text?: string
           approval_message?: string
           approval_subject?: string
+          approval_template_id?: string | null
           approval_title?: string
           created_at?: string | null
           footer_text?: string
@@ -808,6 +811,7 @@ export type Database = {
           rejection_footer?: string
           rejection_message?: string
           rejection_subject?: string
+          rejection_template_id?: string | null
           rejection_title?: string
           sender_email?: string
           sender_name?: string
@@ -818,6 +822,7 @@ export type Database = {
           approval_button_text?: string
           approval_message?: string
           approval_subject?: string
+          approval_template_id?: string | null
           approval_title?: string
           created_at?: string | null
           footer_text?: string
@@ -826,11 +831,87 @@ export type Database = {
           rejection_footer?: string
           rejection_message?: string
           rejection_subject?: string
+          rejection_template_id?: string | null
           rejection_title?: string
           sender_email?: string
           sender_name?: string
           updated_at?: string | null
           updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_settings_approval_template_id_fkey"
+            columns: ["approval_template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_settings_rejection_template_id_fkey"
+            columns: ["rejection_template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          background_color: string
+          button_style: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          header_style: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          preview_image: string | null
+          primary_color: string
+          show_features_box: boolean
+          show_footer_logo: boolean
+          template_type: string
+          text_color: string
+          updated_at: string | null
+        }
+        Insert: {
+          background_color?: string
+          button_style?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          header_style?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          preview_image?: string | null
+          primary_color?: string
+          show_features_box?: boolean
+          show_footer_logo?: boolean
+          template_type: string
+          text_color?: string
+          updated_at?: string | null
+        }
+        Update: {
+          background_color?: string
+          button_style?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          header_style?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          preview_image?: string | null
+          primary_color?: string
+          show_features_box?: boolean
+          show_footer_logo?: boolean
+          template_type?: string
+          text_color?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
