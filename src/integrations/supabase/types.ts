@@ -1008,6 +1008,57 @@ export type Database = {
           },
         ]
       }
+      membership_change_history: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          business_description: string | null
+          business_name: string | null
+          business_type: string | null
+          commercial_registration: string | null
+          created_at: string | null
+          from_status: string
+          from_type: Database["public"]["Enums"]["membership_type"]
+          id: string
+          rejection_reason: string | null
+          to_status: string
+          to_type: Database["public"]["Enums"]["membership_type"]
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          business_description?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          commercial_registration?: string | null
+          created_at?: string | null
+          from_status: string
+          from_type: Database["public"]["Enums"]["membership_type"]
+          id?: string
+          rejection_reason?: string | null
+          to_status: string
+          to_type: Database["public"]["Enums"]["membership_type"]
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          business_description?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          commercial_registration?: string | null
+          created_at?: string | null
+          from_status?: string
+          from_type?: Database["public"]["Enums"]["membership_type"]
+          id?: string
+          rejection_reason?: string | null
+          to_status?: string
+          to_type?: Database["public"]["Enums"]["membership_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -1120,13 +1171,19 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           avatar_url: string | null
+          business_description: string | null
+          business_name: string | null
+          business_type: string | null
+          commercial_registration: string | null
           created_at: string
           full_name: string
           id: string
+          id_document_url: string | null
           membership_type: Database["public"]["Enums"]["membership_type"]
           phone: string | null
           referral_code: string | null
           referred_by: string | null
+          rejection_reason: string | null
           updated_at: string
         }
         Insert: {
@@ -1134,13 +1191,19 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
+          business_description?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          commercial_registration?: string | null
           created_at?: string
           full_name: string
           id: string
+          id_document_url?: string | null
           membership_type?: Database["public"]["Enums"]["membership_type"]
           phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          rejection_reason?: string | null
           updated_at?: string
         }
         Update: {
@@ -1148,13 +1211,19 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           avatar_url?: string | null
+          business_description?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          commercial_registration?: string | null
           created_at?: string
           full_name?: string
           id?: string
+          id_document_url?: string | null
           membership_type?: Database["public"]["Enums"]["membership_type"]
           phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          rejection_reason?: string | null
           updated_at?: string
         }
         Relationships: [
