@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { convertArabicToEnglishNumbers } from "@/lib/utils";
 import { AccountApprovalBanner } from "@/components/AccountApprovalBanner";
+import { MembershipUpgradeDialog } from "@/components/MembershipUpgradeDialog";
 
 interface Category {
   id: string;
@@ -44,6 +45,8 @@ const DashboardAuctions = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
+  const [membershipType, setMembershipType] = useState<string | null>(null);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   // Form state
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -69,15 +72,16 @@ const DashboardAuctions = () => {
         return;
       }
 
-      // Check approval status
+      // Check approval status and membership type
       const { data: profile } = await supabase
         .from("profiles")
-        .select("approval_status")
+        .select("approval_status, membership_type")
         .eq("id", user.id)
         .single();
 
       if (profile) {
         setApprovalStatus(profile.approval_status);
+        setMembershipType(profile.membership_type);
       }
 
       // Fetch categories
@@ -186,6 +190,12 @@ const DashboardAuctions = () => {
 
   const handleCreateAuction = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if user is consumer
+    if (membershipType === "consumer") {
+      setShowUpgradeDialog(true);
+      return;
+    }
 
     if (!selectedCategory || !auctionTitle || !startingPrice || !endTime) {
       toast.error("الرجاء ملء جميع الحقول المطلوبة");
@@ -311,6 +321,13 @@ const DashboardAuctions = () => {
 
   return (
     <SidebarProvider>
+      <MembershipUpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        onSuccess={() => {
+          fetchData();
+        }}
+      />
       <div className="min-h-screen flex w-full bg-background" dir="rtl">
         <div className="flex-1 order-2">
           <header className="h-16 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 sticky top-0 z-10 flex items-center px-6">

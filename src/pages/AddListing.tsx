@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import type { User, Session } from "@supabase/supabase-js";
 import { convertArabicToEnglishNumbers } from "@/lib/utils";
 import { AccountApprovalBanner } from "@/components/AccountApprovalBanner";
+import { MembershipUpgradeDialog } from "@/components/MembershipUpgradeDialog";
 
 interface Category {
   id: string;
@@ -31,6 +32,8 @@ const AddListing = () => {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
+  const [membershipType, setMembershipType] = useState<string | null>(null);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   useEffect(() => {
     const subscription = onAuthStateChange((session, user) => {
@@ -65,12 +68,18 @@ const AddListing = () => {
   const checkApprovalStatus = async (userId: string) => {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("approval_status")
+      .select("approval_status, membership_type")
       .eq("id", userId)
       .single();
 
     if (profile) {
       setApprovalStatus(profile.approval_status);
+      setMembershipType(profile.membership_type);
+      
+      // Check if consumer trying to add listing
+      if (profile.membership_type === "consumer") {
+        setShowUpgradeDialog(true);
+      }
     }
   };
 
@@ -233,6 +242,14 @@ const AddListing = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Navbar />
+      
+      <MembershipUpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        onSuccess={() => {
+          navigate("/dashboard");
+        }}
+      />
       
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto">
