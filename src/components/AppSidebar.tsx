@@ -43,6 +43,7 @@ const adminItems = [
   { title: "إدارة الأدوار والصلاحيات", url: "/dashboard/roles", icon: Users, showBadge: false },
   { title: "إدارة البلاغات", url: "/dashboard/reports/admin", icon: Shield, showBadge: true, badgeKey: "reports" },
   { title: "إدارة الإشعارات", url: "/dashboard/notifications", icon: Bell, showBadge: false },
+  { title: "قوالب الإشعارات الأوتوماتيكية", url: "/dashboard/notification-templates", icon: Bell, showBadge: false },
   { title: "إدارة الفئات", url: "/dashboard/categories", icon: FolderTree, showBadge: false },
   { title: "إدارة الإحالات", url: "/dashboard/referral-stats", icon: BarChart3, showBadge: false },
   { title: "إدارة المكافآت", url: "/dashboard/achievements", icon: Trophy, showBadge: false },

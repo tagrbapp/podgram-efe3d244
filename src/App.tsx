@@ -33,6 +33,7 @@ import AuctionInvitations from "./pages/AuctionInvitations";
 import TestNotifications from "./pages/TestNotifications";
 import Notifications from "./pages/Notifications";
 import DashboardNotifications from "./pages/DashboardNotifications";
+import DashboardNotificationTemplates from "./pages/DashboardNotificationTemplates";
 import DashboardAnnouncements from "./pages/DashboardAnnouncements";
 import DashboardHeroCarousel from "./pages/DashboardHeroCarousel";
 import DashboardHomepage from "./pages/DashboardHomepage";
@@ -114,6 +115,7 @@ const App = () => (
           <Route path="/test-notifications" element={<TestNotifications />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/dashboard/notifications" element={<DashboardNotifications />} />
+          <Route path="/dashboard/notification-templates" element={<DashboardNotificationTemplates />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/listing/:id" element={<ListingDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
