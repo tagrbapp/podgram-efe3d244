@@ -1,4 +1,4 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp, ChevronDown, Palette, Calculator, Award, BarChart3, UserPlus, Search, Mail } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp, ChevronDown, Palette, Calculator, Award, BarChart3, UserPlus, Search, Mail, Bell } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,7 @@ const adminItems = [
   { title: "إدارة الأعضاء", url: "/dashboard/user-approvals", icon: UserCheck, showBadge: true, badgeKey: "users" },
   { title: "إدارة الأدوار والصلاحيات", url: "/dashboard/roles", icon: Users, showBadge: false },
   { title: "إدارة البلاغات", url: "/dashboard/reports/admin", icon: Shield, showBadge: true, badgeKey: "reports" },
+  { title: "إدارة الإشعارات", url: "/dashboard/notifications", icon: Bell, showBadge: false },
   { title: "إدارة الفئات", url: "/dashboard/categories", icon: FolderTree, showBadge: false },
   { title: "إدارة الإحالات", url: "/dashboard/referral-stats", icon: BarChart3, showBadge: false },
   { title: "إدارة المكافآت", url: "/dashboard/achievements", icon: Trophy, showBadge: false },
