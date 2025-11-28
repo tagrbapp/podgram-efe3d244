@@ -777,6 +777,63 @@ export type Database = {
           },
         ]
       }
+      email_settings: {
+        Row: {
+          approval_button_text: string
+          approval_message: string
+          approval_subject: string
+          approval_title: string
+          created_at: string | null
+          footer_text: string
+          id: string
+          is_active: boolean
+          rejection_footer: string
+          rejection_message: string
+          rejection_subject: string
+          rejection_title: string
+          sender_email: string
+          sender_name: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          approval_button_text?: string
+          approval_message?: string
+          approval_subject?: string
+          approval_title?: string
+          created_at?: string | null
+          footer_text?: string
+          id?: string
+          is_active?: boolean
+          rejection_footer?: string
+          rejection_message?: string
+          rejection_subject?: string
+          rejection_title?: string
+          sender_email?: string
+          sender_name?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          approval_button_text?: string
+          approval_message?: string
+          approval_subject?: string
+          approval_title?: string
+          created_at?: string | null
+          footer_text?: string
+          id?: string
+          is_active?: boolean
+          rejection_footer?: string
+          rejection_message?: string
+          rejection_subject?: string
+          rejection_title?: string
+          sender_email?: string
+          sender_name?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
