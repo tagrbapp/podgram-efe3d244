@@ -30,16 +30,70 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
     deleteAllNotifications,
   } = useRealtimeNotifications(userId);
 
-  const handleNotificationClick = async (
-    notificationId: string,
-    listingId: string | null,
-    isRead: boolean
-  ) => {
-    if (!isRead) {
-      await markAsRead(notificationId);
+  const handleNotificationClick = async (notification: {
+    id: string;
+    type: string;
+    listing_id: string | null;
+    related_user_id: string | null;
+    is_read: boolean;
+    title: string;
+    message: string;
+  }) => {
+    if (!notification.is_read) {
+      await markAsRead(notification.id);
     }
-    if (listingId) {
-      navigate(`/listing/${listingId}`);
+
+    // Route based on notification type
+    switch (notification.type) {
+      case 'bid':
+      case 'outbid':
+      case 'auction_start':
+      case 'auction_end':
+      case 'auction_won':
+        // Navigate to auction details if listing_id exists
+        if (notification.listing_id) {
+          navigate(`/auction/${notification.listing_id}`);
+        }
+        break;
+      
+      case 'message':
+        // Navigate to messages page
+        navigate('/messages');
+        break;
+      
+      case 'review':
+        // Navigate to listing or profile if available
+        if (notification.listing_id) {
+          navigate(`/listing/${notification.listing_id}`);
+        } else if (notification.related_user_id) {
+          navigate(`/profile/${notification.related_user_id}`);
+        }
+        break;
+      
+      case 'sale':
+      case 'favorite':
+        // Navigate to listing details
+        if (notification.listing_id) {
+          navigate(`/listing/${notification.listing_id}`);
+        }
+        break;
+      
+      case 'system':
+        // Check if it's an approval/rejection notification
+        if (notification.title.includes('موافق') || notification.title.includes('رفض') || notification.title.includes('قبول')) {
+          // Navigate to dashboard for approval status
+          navigate('/dashboard');
+        } else if (notification.message.includes('موافقة') || notification.message.includes('مراجعة')) {
+          // Admin approval notifications - go to approvals page
+          navigate('/dashboard/user-approvals');
+        }
+        break;
+      
+      default:
+        // For any other type with listing_id
+        if (notification.listing_id) {
+          navigate(`/listing/${notification.listing_id}`);
+        }
     }
   };
 
@@ -48,13 +102,22 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
       case "message":
         return "💬";
       case "bid":
+      case "outbid":
         return "🔨";
+      case "auction_start":
+        return "🏁";
+      case "auction_end":
+        return "⏰";
+      case "auction_won":
+        return "🏆";
       case "sale":
         return "💰";
       case "review":
         return "⭐";
       case "favorite":
         return "❤️";
+      case "system":
+        return "🔔";
       default:
         return "🔔";
     }
@@ -114,11 +177,15 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
                     !notification.is_read ? "bg-primary/5" : ""
                   }`}
                   onClick={() =>
-                    handleNotificationClick(
-                      notification.id,
-                      notification.listing_id,
-                      notification.is_read
-                    )
+                    handleNotificationClick({
+                      id: notification.id,
+                      type: notification.type,
+                      listing_id: notification.listing_id,
+                      related_user_id: notification.related_user_id,
+                      is_read: notification.is_read,
+                      title: notification.title,
+                      message: notification.message,
+                    })
                   }
                 >
                   <div className="flex gap-3 w-full">
