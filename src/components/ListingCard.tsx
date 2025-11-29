@@ -6,6 +6,7 @@ import { Heart, Clock, Eye, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import CollectionTags from "./CollectionTags";
 
 interface ListingCardProps {
   id: string;
@@ -15,9 +16,27 @@ interface ListingCardProps {
   time: string;
   image: string;
   category: string;
+  season?: string;
+  condition?: string;
+  conditionRating?: number;
+  isTrending?: boolean;
+  tags?: string[];
 }
 
-const ListingCard = ({ id, title, price, location, time, image, category }: ListingCardProps) => {
+const ListingCard = ({ 
+  id, 
+  title, 
+  price, 
+  location, 
+  time, 
+  image, 
+  category,
+  season,
+  condition = 'new',
+  conditionRating,
+  isTrending,
+  tags 
+}: ListingCardProps) => {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
@@ -132,11 +151,19 @@ const ListingCard = ({ id, title, price, location, time, image, category }: List
       <div className="p-5 space-y-3">
         {/* Brand & Title */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2">
             <Badge variant="secondary" className="bg-muted text-foreground text-xs px-3 py-1 rounded-full">
               {category}
             </Badge>
-            <div className="h-2 w-2 rounded-full bg-secondary"></div>
+            {/* Collection Tags */}
+            <CollectionTags 
+              season={season}
+              condition={condition}
+              conditionRating={conditionRating}
+              isTrending={isTrending}
+              tags={tags}
+              compact
+            />
           </div>
           
           <h3 className="font-semibold text-base text-foreground line-clamp-2 leading-snug">

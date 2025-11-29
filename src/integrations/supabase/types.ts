@@ -226,6 +226,8 @@ export type Database = {
         Row: {
           bid_increment: number
           category_id: string | null
+          condition: string | null
+          condition_rating: number | null
           created_at: string | null
           current_bid: number | null
           deleted_at: string | null
@@ -236,11 +238,14 @@ export type Database = {
           images: string[] | null
           invited_bidders: string[] | null
           is_private: boolean | null
+          is_trending: boolean | null
           listing_id: string | null
           reserve_price: number | null
+          season: string | null
           start_time: string
           starting_price: number
           status: string
+          tags: string[] | null
           title: string | null
           updated_at: string | null
           user_id: string | null
@@ -248,6 +253,8 @@ export type Database = {
         Insert: {
           bid_increment?: number
           category_id?: string | null
+          condition?: string | null
+          condition_rating?: number | null
           created_at?: string | null
           current_bid?: number | null
           deleted_at?: string | null
@@ -258,11 +265,14 @@ export type Database = {
           images?: string[] | null
           invited_bidders?: string[] | null
           is_private?: boolean | null
+          is_trending?: boolean | null
           listing_id?: string | null
           reserve_price?: number | null
+          season?: string | null
           start_time?: string
           starting_price: number
           status?: string
+          tags?: string[] | null
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -270,6 +280,8 @@ export type Database = {
         Update: {
           bid_increment?: number
           category_id?: string | null
+          condition?: string | null
+          condition_rating?: number | null
           created_at?: string | null
           current_bid?: number | null
           deleted_at?: string | null
@@ -280,11 +292,14 @@ export type Database = {
           images?: string[] | null
           invited_bidders?: string[] | null
           is_private?: boolean | null
+          is_trending?: boolean | null
           listing_id?: string | null
           reserve_price?: number | null
+          season?: string | null
           start_time?: string
           starting_price?: number
           status?: string
+          tags?: string[] | null
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -1090,15 +1105,20 @@ export type Database = {
       listings: {
         Row: {
           category_id: string | null
+          condition: string | null
+          condition_rating: number | null
           created_at: string
           description: string | null
           email: string | null
           id: string
           images: string[] | null
+          is_trending: boolean | null
           location: string
           phone: string | null
           price: number
+          season: string | null
           status: string | null
+          tags: string[] | null
           title: string
           updated_at: string
           user_id: string
@@ -1106,15 +1126,20 @@ export type Database = {
         }
         Insert: {
           category_id?: string | null
+          condition?: string | null
+          condition_rating?: number | null
           created_at?: string
           description?: string | null
           email?: string | null
           id?: string
           images?: string[] | null
+          is_trending?: boolean | null
           location: string
           phone?: string | null
           price: number
+          season?: string | null
           status?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
           user_id: string
@@ -1122,15 +1147,20 @@ export type Database = {
         }
         Update: {
           category_id?: string | null
+          condition?: string | null
+          condition_rating?: number | null
           created_at?: string
           description?: string | null
           email?: string | null
           id?: string
           images?: string[] | null
+          is_trending?: boolean | null
           location?: string
           phone?: string | null
           price?: number
+          season?: string | null
           status?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
           user_id?: string
