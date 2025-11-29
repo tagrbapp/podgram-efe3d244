@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AuctionTimer from "./AuctionTimer";
+import CollectionTags from "./CollectionTags";
 
 interface AuctionCardProps {
   id: string;
@@ -19,6 +20,11 @@ interface AuctionCardProps {
   category: string;
   status: string;
   totalBids: number;
+  season?: string;
+  condition?: string;
+  conditionRating?: number;
+  isTrending?: boolean;
+  tags?: string[];
 }
 
 const AuctionCard = ({
@@ -32,6 +38,11 @@ const AuctionCard = ({
   category,
   status,
   totalBids,
+  season,
+  condition = 'new',
+  conditionRating,
+  isTrending,
+  tags,
 }: AuctionCardProps) => {
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -149,11 +160,19 @@ const AuctionCard = ({
       <div className="p-5 space-y-3">
         {/* Brand & Title */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2">
             <Badge variant="secondary" className="bg-muted text-foreground text-xs px-3 py-1 rounded-full">
               {category}
             </Badge>
-            <div className="h-2 w-2 rounded-full bg-primary"></div>
+            {/* Collection Tags */}
+            <CollectionTags 
+              season={season}
+              condition={condition}
+              conditionRating={conditionRating}
+              isTrending={isTrending}
+              tags={tags}
+              compact
+            />
           </div>
           
           <h3 className="font-semibold text-base text-foreground line-clamp-2 leading-snug">
