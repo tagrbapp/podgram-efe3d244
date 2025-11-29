@@ -20,6 +20,11 @@ interface Listing {
   created_at: string;
   images: string[] | null;
   category_name?: string;
+  season?: string;
+  condition?: string;
+  condition_rating?: number;
+  is_trending?: boolean;
+  tags?: string[];
 }
 
 interface Auction {
@@ -32,6 +37,11 @@ interface Auction {
   current_bid: number | null;
   end_time: string;
   status: string;
+  season?: string;
+  condition: string;
+  condition_rating?: number;
+  is_trending: boolean;
+  tags?: string[];
   categories: {
     name: string;
   } | null;
@@ -398,7 +408,7 @@ const Index = () => {
                       {auctions
                         .filter(a => a.status === "active")
                         .map((auction) => (
-                          <div key={auction.id} className="animate-scale-in hover-lift">
+                           <div key={auction.id} className="animate-scale-in hover-lift">
                             <AuctionCard
                               id={auction.id}
                               listingId={auction.listing_id || ""}
@@ -410,6 +420,11 @@ const Index = () => {
                               category={auction.categories?.name || "غير محدد"}
                               status={auction.status}
                               totalBids={auction.bid_count}
+                              season={auction.season}
+                              condition={auction.condition}
+                              conditionRating={auction.condition_rating}
+                              isTrending={auction.is_trending}
+                              tags={auction.tags}
                             />
                           </div>
                         ))}
@@ -451,6 +466,11 @@ const Index = () => {
                               category={auction.categories?.name || "غير محدد"}
                               status={auction.status}
                               totalBids={auction.bid_count}
+                              season={auction.season}
+                              condition={auction.condition}
+                              conditionRating={auction.condition_rating}
+                              isTrending={auction.is_trending}
+                              tags={auction.tags}
                             />
                           </div>
                         ))}
@@ -523,6 +543,11 @@ const Index = () => {
                         time={getTimeAgo(listing.created_at)}
                         image={listing.images?.[0] || "/placeholder.svg"}
                         category={listing.category_name || "غير محدد"}
+                        season={listing.season}
+                        condition={listing.condition}
+                        conditionRating={listing.condition_rating}
+                        isTrending={listing.is_trending}
+                        tags={listing.tags}
                       />
                     </div>
                   ))}
