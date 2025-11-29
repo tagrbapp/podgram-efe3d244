@@ -98,29 +98,8 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
   };
 
   const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "message":
-        return "💬";
-      case "bid":
-      case "outbid":
-        return "🔨";
-      case "auction_start":
-        return "🏁";
-      case "auction_end":
-        return "⏰";
-      case "auction_won":
-        return "🏆";
-      case "sale":
-        return "💰";
-      case "review":
-        return "⭐";
-      case "favorite":
-        return "❤️";
-      case "system":
-        return "🔔";
-      default:
-        return "🔔";
-    }
+    const iconClass = "h-5 w-5 text-yellow-500";
+    return <Bell className={iconClass} />;
   };
 
   return (
@@ -143,16 +122,16 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-96" align="end">
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b" dir="rtl">
           <h3 className="font-semibold text-lg">الإشعارات</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={markAllAsRead}
-              className="text-xs hover:text-primary"
+              className="text-xs hover:text-primary gap-1"
             >
-              <Check className="h-3 w-3 ml-1" />
+              <Check className="h-4 w-4" />
               تحديد الكل كمقروء
             </Button>
           )}
@@ -173,8 +152,8 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
               {notifications.map((notification) => (
                 <DropdownMenuItem
                   key={notification.id}
-                  className={`p-4 cursor-pointer transition-colors ${
-                    !notification.is_read ? "bg-primary/5" : ""
+                  className={`p-4 cursor-pointer transition-all hover:bg-accent/50 ${
+                    !notification.is_read ? "bg-blue-50 dark:bg-blue-950/20" : ""
                   }`}
                   onClick={() =>
                     handleNotificationClick({
@@ -188,39 +167,37 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
                     })
                   }
                 >
-                  <div className="flex gap-3 w-full">
-                    <div className="text-2xl flex-shrink-0">
+                  <div className="flex items-start gap-3 w-full" dir="rtl">
+                    <div className="flex-shrink-0 mt-1">
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h4 className="font-semibold text-sm truncate">
+                        <h4 className="font-semibold text-sm text-right">
                           {notification.title}
                         </h4>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 flex-shrink-0"
+                          className="h-6 w-6 flex-shrink-0 hover:bg-destructive/10 hover:text-destructive"
                           onClick={(e) => {
                             e.stopPropagation();
                             deleteNotification(notification.id);
                           }}
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <p className="text-xs text-muted-foreground line-clamp-2 text-right mb-1">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground text-right">
                         {formatDistanceToNow(new Date(notification.created_at), {
                           addSuffix: true,
+                          locale: ar,
                         })}
                       </p>
                     </div>
-                    {!notification.is_read && (
-                      <div className="h-2 w-2 bg-primary rounded-full flex-shrink-0 mt-1" />
-                    )}
                   </div>
                 </DropdownMenuItem>
               ))}
@@ -231,14 +208,14 @@ export const NotificationsDropdown = ({ userId }: NotificationsDropdownProps) =>
         {notifications.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <div className="p-2">
+            <div className="p-2" dir="rtl">
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 gap-2"
                 onClick={deleteAllNotifications}
               >
-                <Trash2 className="h-4 w-4 ml-2" />
+                <Trash2 className="h-4 w-4" />
                 حذف جميع الإشعارات
               </Button>
             </div>
