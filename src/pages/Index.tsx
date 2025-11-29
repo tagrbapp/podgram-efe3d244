@@ -6,6 +6,7 @@ import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
 import CategoryCard from "@/components/CategoryCard";
+import CategoryCatalogSection from "@/components/CategoryCatalogSection";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator } from "lucide-react";
@@ -348,6 +349,9 @@ const Index = () => {
             <div className="absolute bottom-0 left-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
           </section>
         )}
+
+        {/* Category Catalog Section */}
+        <CategoryCatalogSection />
 
         {/* Live Auctions Section */}
         {sectionVisibility.live_auctions && (
