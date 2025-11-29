@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import ListingCard from "@/components/ListingCard";
 import AuctionCard from "@/components/AuctionCard";
+import CollectionTagsFilter from "@/components/CollectionTagsFilter";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import ProductComparisonDialog from "@/components/ProductComparisonDialog";
+import { Separator } from "@/components/ui/separator";
 
 interface Listing {
   id: string;
@@ -26,6 +28,11 @@ interface Listing {
   images: string[];
   views: number;
   description: string;
+  season?: string;
+  condition?: string;
+  condition_rating?: number;
+  is_trending?: boolean;
+  tags?: string[];
   category: {
     id: string;
     name: string;
@@ -42,6 +49,11 @@ interface Auction {
   end_time: string;
   status: string;
   images: string[] | null;
+  season?: string;
+  condition?: string;
+  condition_rating?: number;
+  is_trending?: boolean;
+  tags?: string[];
   category: {
     id: string;
     name: string;
@@ -68,6 +80,11 @@ const Catalog = () => {
   const [activeTab, setActiveTab] = useState<"active" | "ended">("active");
   const [compareProducts, setCompareProducts] = useState<Listing[]>([]);
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
+  
+  // Collection tags filters
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedSeasons, setSelectedSeasons] = useState<string[]>([]);
+  const [showTrending, setShowTrending] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -99,6 +116,11 @@ const Catalog = () => {
         images,
         views,
         description,
+        season,
+        condition,
+        condition_rating,
+        is_trending,
+        tags,
         category:categories(id, name)
       `)
       .eq("status", activeTab === "active" ? "active" : "sold")
@@ -133,6 +155,11 @@ const Catalog = () => {
         end_time,
         status,
         images,
+        season,
+        condition,
+        condition_rating,
+        is_trending,
+        tags,
         category:categories(id, name)
       `)
       .eq("status", activeTab === "active" ? "active" : "ended")
@@ -182,7 +209,7 @@ const Catalog = () => {
     }));
 
     // Merge and sort
-    const allItems: CatalogItem[] = [...formattedListings, ...formattedAuctions];
+    let allItems: CatalogItem[] = [...formattedListings, ...formattedAuctions];
     
     if (sortBy === "price-asc") {
       allItems.sort((a, b) => {
@@ -198,8 +225,41 @@ const Catalog = () => {
       });
     }
 
+    // Apply collection tags filters
+    if (showTrending) {
+      allItems = allItems.filter(item => item.is_trending);
+    }
+    
+    if (selectedConditions.length > 0) {
+      allItems = allItems.filter(item => 
+        item.condition && selectedConditions.includes(item.condition)
+      );
+    }
+    
+    if (selectedSeasons.length > 0) {
+      allItems = allItems.filter(item => 
+        item.season && selectedSeasons.some(s => item.season?.includes(s.replace('_', ' ')))
+      );
+    }
+
     setItems(allItems);
     setLoading(false);
+  };
+
+  const handleConditionChange = (condition: string) => {
+    setSelectedConditions(prev =>
+      prev.includes(condition)
+        ? prev.filter(c => c !== condition)
+        : [...prev, condition]
+    );
+  };
+
+  const handleSeasonChange = (season: string) => {
+    setSelectedSeasons(prev =>
+      prev.includes(season)
+        ? prev.filter(s => s !== season)
+        : [...prev, season]
+    );
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -214,6 +274,9 @@ const Catalog = () => {
     setSelectedCategories([]);
     setPriceRange([0, 100000]);
     setSortBy("newest");
+    setSelectedConditions([]);
+    setSelectedSeasons([]);
+    setShowTrending(false);
   };
 
   const toggleCompare = (item: CatalogItem) => {
@@ -297,6 +360,18 @@ const Catalog = () => {
           </div>
         </div>
       </div>
+
+      <Separator />
+
+      {/* Collection Tags Filters */}
+      <CollectionTagsFilter
+        selectedConditions={selectedConditions}
+        selectedSeasons={selectedSeasons}
+        showTrending={showTrending}
+        onConditionChange={handleConditionChange}
+        onSeasonChange={handleSeasonChange}
+        onTrendingChange={setShowTrending}
+      />
 
       {/* Clear Filters */}
       <Button
@@ -412,6 +487,11 @@ const Catalog = () => {
                               time={getTimeAgo(item.created_at)}
                               image={item.images?.[0] || "/placeholder.svg"}
                               category={item.category?.name || "غير محدد"}
+                              season={item.season}
+                              condition={item.condition}
+                              conditionRating={item.condition_rating}
+                              isTrending={item.is_trending}
+                              tags={item.tags}
                             />
                             <div className="absolute top-4 left-4 z-10">
                               <Button
