@@ -14,10 +14,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import ListingCard from "@/components/ListingCard";
+import { UserBidsHistory } from "@/components/UserBidsHistory";
+import { UserReviewsSection } from "@/components/UserReviewsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession } from "@/lib/auth";
 import { toast } from "sonner";
-import { User, Phone, Calendar, MapPin, MessageSquare, Package, TrendingUp, Eye, Star, ArrowRight, ShieldCheck, Flag, StarIcon, Clock, Zap, BarChart, Reply } from "lucide-react";
+import { User, Phone, Calendar, MapPin, MessageSquare, Package, TrendingUp, Eye, Star, ArrowRight, ShieldCheck, Flag, StarIcon, Clock, Zap, BarChart, Reply, Award, Gavel } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -756,13 +758,18 @@ const Profile = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Bids History */}
+            <UserBidsHistory userId={id!} limit={5} />
           </div>
 
-          {/* Listings Section */}
-          <div className="md:col-span-2">
+          {/* Listings & Reviews Section */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Listings Card */}
             <Card className="shadow-lg border-0">
               <div className="p-6 border-b bg-gradient-to-r from-card to-card/80">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Package className="h-6 w-6 text-primary" />
                   إعلانات {isOwnProfile ? "الخاصة بك" : profile.full_name}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -792,15 +799,12 @@ const Profile = () => {
                   </div>
                 ) : (
                   <Tabs defaultValue="active" dir="rtl">
-                    <TabsList className="grid w-full grid-cols-3 mb-6">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
                       <TabsTrigger value="active">
                         النشطة ({activeListings.length})
                       </TabsTrigger>
                       <TabsTrigger value="all">
                         الكل ({listings.length})
-                      </TabsTrigger>
-                      <TabsTrigger value="reviews">
-                        التقييمات ({reviews.length})
                       </TabsTrigger>
                     </TabsList>
 
@@ -813,7 +817,7 @@ const Profile = () => {
                             title={listing.title}
                             price={listing.price}
                             location={listing.location}
-                            time={new Date(listing.created_at).toLocaleDateString('ar-SA')}
+                            time={new Date(listing.created_at).toLocaleDateString('en-US')}
                             image={listing.images?.[0] || "/placeholder.svg"}
                             category={listing.categories?.name || "غير محدد"}
                           />
@@ -835,140 +839,57 @@ const Profile = () => {
                             title={listing.title}
                             price={listing.price}
                             location={listing.location}
-                            time={new Date(listing.created_at).toLocaleDateString('ar-SA')}
+                            time={new Date(listing.created_at).toLocaleDateString('en-US')}
                             image={listing.images?.[0] || "/placeholder.svg"}
                             category={listing.categories?.name || "غير محدد"}
                           />
                         ))}
                       </div>
                     </TabsContent>
-
-                    <TabsContent value="reviews">
-                      {reviews.length === 0 ? (
-                        <div className="text-center py-12">
-                          <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                            <Star className="h-10 w-10 text-muted-foreground/50" />
-                          </div>
-                          <p className="text-lg font-medium text-muted-foreground">
-                            لا توجد تقييمات بعد
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {reviews.map((review) => (
-                            <Card key={review.id} className="p-4">
-                              <div className="flex items-start gap-4">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage src={review.profiles.avatar_url || undefined} />
-                                  <AvatarFallback className="bg-gradient-primary text-primary-foreground">
-                                    {getInitials(review.profiles.full_name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div>
-                                      <p className="font-semibold">{review.profiles.full_name}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {new Date(review.created_at).toLocaleDateString('ar-SA', {
-                                          year: 'numeric',
-                                          month: 'long',
-                                          day: 'numeric'
-                                        })}
-                                      </p>
-                                    </div>
-                                    {renderStars(review.rating, 16)}
-                                  </div>
-                                  {review.comment && (
-                                    <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-                                      {review.comment}
-                                    </p>
-                                  )}
-                                  
-                                  {/* Seller Reply */}
-                                  {review.seller_reply && (
-                                    <div className="mt-3 p-3 bg-muted/50 rounded-lg border-r-2 border-primary">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <Reply className="h-3 w-3 text-primary" />
-                                        <span className="text-xs font-semibold text-primary">رد البائع</span>
-                                      </div>
-                                      <p className="text-sm text-muted-foreground">
-                                        {review.seller_reply}
-                                      </p>
-                                      {review.replied_at && (
-                                        <p className="text-xs text-muted-foreground/70 mt-1">
-                                          {new Date(review.replied_at).toLocaleDateString('ar-SA')}
-                                        </p>
-                                      )}
-                                    </div>
-                                  )}
-                                  
-                                  {/* Reply Button for Seller */}
-                                  {isOwnProfile && !review.seller_reply && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="mt-2 text-primary"
-                                      onClick={() => {
-                                        setSelectedReview(review);
-                                        setIsReplyDialogOpen(true);
-                                      }}
-                                    >
-                                      <Reply className="ml-1 h-3 w-3" />
-                                      رد على التقييم
-                                    </Button>
-                                   )}
-                                 </div>
-                               </div>
-                             </Card>
-                          ))}
-                        </div>
-                      )}
-                    </TabsContent>
                   </Tabs>
                 )}
               </div>
             </Card>
+
+            {/* Reviews Section - Using new component */}
+            <UserReviewsSection
+              reviews={reviews}
+              averageRating={averageRating}
+              isOwnProfile={isOwnProfile}
+              onReplyClick={(review) => {
+                setSelectedReview(review);
+                setIsReplyDialogOpen(true);
+              }}
+            />
           </div>
         </div>
-      
-      {/* Reply Dialog */}
-      <Dialog open={isReplyDialogOpen} onOpenChange={setIsReplyDialogOpen}>
-        <DialogContent dir="rtl">
-          <DialogHeader>
-            <DialogTitle>الرد على التقييم</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {selectedReview && (
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="font-semibold">{selectedReview.profiles.full_name}</p>
-                  {renderStars(selectedReview.rating, 14)}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {selectedReview.comment}
-                </p>
+
+        {/* Reply Dialog */}
+        <Dialog open={isReplyDialogOpen} onOpenChange={setIsReplyDialogOpen}>
+          <DialogContent dir="rtl">
+            <DialogHeader>
+              <DialogTitle>الرد على التقييم</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="reply-text">ردك</Label>
+                <Textarea
+                  id="reply-text"
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  placeholder="اكتب ردك هنا..."
+                  className="mt-2"
+                  rows={4}
+                />
               </div>
-            )}
-            <div>
-              <Label htmlFor="reply-text">ردك</Label>
-              <Textarea
-                id="reply-text"
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="اكتب ردك على التقييم..."
-                className="mt-2"
-                rows={4}
-              />
+              <Button onClick={handleSubmitReply} className="w-full">
+                إرسال الرد
+              </Button>
             </div>
-            <Button onClick={handleSubmitReply} className="w-full">
-              إرسال الرد
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
           </main>
         </div>
-        
         <div className="order-1">
           <AppSidebar />
         </div>
