@@ -308,12 +308,12 @@ const DashboardAdmin = () => {
           <main className="p-6 space-y-6">
       <AdminStats {...stats} />
 
-      <Tabs defaultValue="users" className="w-full">
+      <Tabs defaultValue="users" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="users">المستخدمون</TabsTrigger>
-          <TabsTrigger value="listings">الإعلانات</TabsTrigger>
-          <TabsTrigger value="auctions">المزادات</TabsTrigger>
           <TabsTrigger value="actions">سجل الإجراءات</TabsTrigger>
+          <TabsTrigger value="auctions">المزادات</TabsTrigger>
+          <TabsTrigger value="listings">الإعلانات</TabsTrigger>
+          <TabsTrigger value="users">المستخدمون</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-4">
@@ -330,16 +330,16 @@ const DashboardAdmin = () => {
           </div>
 
           <Card>
-            <Table>
+            <Table dir="rtl">
               <TableHeader>
                 <TableRow>
-                  <TableHead>المستخدم</TableHead>
-                  <TableHead>الإعلانات</TableHead>
-                  <TableHead>المبيعات</TableHead>
-                  <TableHead>التقييم</TableHead>
-                  <TableHead>المستوى</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead>الإجراءات</TableHead>
+                  <TableHead className="text-right">المستخدم</TableHead>
+                  <TableHead className="text-right">الإعلانات</TableHead>
+                  <TableHead className="text-right">المبيعات</TableHead>
+                  <TableHead className="text-right">التقييم</TableHead>
+                  <TableHead className="text-right">المستوى</TableHead>
+                  <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -377,7 +377,7 @@ const DashboardAdmin = () => {
                             الإجراءات
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="start" className="bg-popover border border-border z-50">
                           <DropdownMenuItem onClick={() => navigate(`/profile/${user.id}`)}>
                             <Eye className="ml-2 h-4 w-4" />
                             عرض الملف
@@ -416,15 +416,15 @@ const DashboardAdmin = () => {
           </div>
 
           <Card>
-            <Table>
+            <Table dir="rtl">
               <TableHeader>
                 <TableRow>
-                  <TableHead>العنوان</TableHead>
-                  <TableHead>البائع</TableHead>
-                  <TableHead>السعر</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead>التاريخ</TableHead>
-                  <TableHead>الإجراءات</TableHead>
+                  <TableHead className="text-right">العنوان</TableHead>
+                  <TableHead className="text-right">البائع</TableHead>
+                  <TableHead className="text-right">السعر</TableHead>
+                  <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-right">التاريخ</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -448,7 +448,7 @@ const DashboardAdmin = () => {
                             الإجراءات
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="start" className="bg-popover border border-border z-50">
                           <DropdownMenuItem onClick={() => navigate(`/listing/${listing.id}`)}>
                             <Eye className="ml-2 h-4 w-4" />
                             عرض التفاصيل
@@ -480,17 +480,17 @@ const DashboardAdmin = () => {
           </div>
 
           <Card>
-            <Table>
+            <Table dir="rtl">
               <TableHeader>
                 <TableRow>
-                  <TableHead>العنوان</TableHead>
-                  <TableHead>التصنيف</TableHead>
-                  <TableHead>السعر الابتدائي</TableHead>
-                  <TableHead>المزايدة الحالية</TableHead>
-                  <TableHead>عدد المزايدات</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead>تاريخ الانتهاء</TableHead>
-                  <TableHead>الإجراءات</TableHead>
+                  <TableHead className="text-right">العنوان</TableHead>
+                  <TableHead className="text-right">التصنيف</TableHead>
+                  <TableHead className="text-right">السعر الابتدائي</TableHead>
+                  <TableHead className="text-right">المزايدة الحالية</TableHead>
+                  <TableHead className="text-right">عدد المزايدات</TableHead>
+                  <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-right">تاريخ الانتهاء</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -518,7 +518,7 @@ const DashboardAdmin = () => {
                             الإجراءات
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="start" className="bg-popover border border-border z-50">
                           <DropdownMenuItem onClick={() => navigate(`/auction/${auction.id}`)}>
                             <Eye className="ml-2 h-4 w-4" />
                             عرض التفاصيل
