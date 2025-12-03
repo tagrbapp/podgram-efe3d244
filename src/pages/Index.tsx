@@ -7,6 +7,7 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
 import CategoryCard from "@/components/CategoryCard";
 import CategoryCatalogSection from "@/components/CategoryCatalogSection";
+import CategoriesStrip from "@/components/CategoriesStrip";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator } from "lucide-react";
@@ -368,7 +369,7 @@ const Index = () => {
           <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-muted/30 to-background">
             <div className="container mx-auto px-4">
               {/* Section Header */}
-              <div className="text-center mb-12 space-y-4 animate-fade-in">
+              <div className="text-center mb-8 space-y-4 animate-fade-in">
                 <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-full mb-4">
                   <Gavel className="w-6 h-6 text-primary animate-pulse" />
                   <span className="text-sm font-semibold text-primary uppercase tracking-wider">
@@ -381,6 +382,11 @@ const Index = () => {
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                   شارك في المزادات الحية واحصل على أفضل المنتجات الفاخرة بأسعار تنافسية
                 </p>
+              </div>
+
+              {/* Categories Strip */}
+              <div className="mb-10 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                <CategoriesStrip />
               </div>
 
               {/* Tabs */}
