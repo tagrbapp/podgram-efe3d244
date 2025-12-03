@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -7,6 +7,7 @@ import {
   ChevronLeft, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Category {
   id: string;
@@ -23,9 +24,42 @@ const CategoriesStrip = ({ onCategorySelect, selectedCategory: externalSelected 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [internalSelected, setInternalSelected] = useState<string | null>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   
   const selectedCategory = externalSelected !== undefined ? externalSelected : internalSelected;
+
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      // RTL: scrollLeft is negative
+      setCanScrollRight(scrollLeft > -(scrollWidth - clientWidth - 10));
+      setCanScrollLeft(scrollLeft < -10);
+    }
+  };
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollButtons);
+      return () => container.removeEventListener('scroll', checkScrollButtons);
+    }
+  }, [categories]);
 
   useEffect(() => {
     fetchCategories();
@@ -81,15 +115,41 @@ const CategoriesStrip = ({ onCategorySelect, selectedCategory: externalSelected 
   if (categories.length === 0) return null;
 
   return (
-    <div className="relative group">
+    <div className="relative group" dir="rtl">
+      {/* Navigation Arrows */}
+      {canScrollRight && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-background/95 backdrop-blur-sm shadow-lg border-border/50 hover:bg-primary hover:text-primary-foreground transition-all"
+          onClick={scrollRight}
+        >
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+      )}
+      
+      {canScrollLeft && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 h-10 w-10 rounded-full bg-background/95 backdrop-blur-sm shadow-lg border-border/50 hover:bg-primary hover:text-primary-foreground transition-all"
+          onClick={scrollLeft}
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+      )}
+
       {/* Gradient Fade Left */}
-      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
       
       {/* Gradient Fade Right */}
-      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
       {/* Categories Container */}
-      <div className="flex gap-4 overflow-x-auto py-4 px-8 scrollbar-hide scroll-smooth">
+      <div 
+        ref={scrollContainerRef}
+        className="flex gap-4 overflow-x-auto py-4 px-14 scrollbar-hide scroll-smooth"
+      >
         {/* All Categories Button */}
         <button
           onClick={() => handleCategoryClick(null)}
