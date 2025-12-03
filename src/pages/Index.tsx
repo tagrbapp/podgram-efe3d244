@@ -6,7 +6,7 @@ import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
 import CategoryCard from "@/components/CategoryCard";
-import CategoryCatalogSection from "@/components/CategoryCatalogSection";
+
 import CategoriesStrip from "@/components/CategoriesStrip";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
@@ -382,8 +382,6 @@ const Index = () => {
           </section>
         )}
 
-        {/* Category Catalog Section */}
-        <CategoryCatalogSection />
 
         {/* Live Auctions Section */}
         {sectionVisibility.live_auctions && (
