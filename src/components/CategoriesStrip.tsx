@@ -14,11 +14,18 @@ interface Category {
   icon: string;
 }
 
-const CategoriesStrip = () => {
+interface CategoriesStripProps {
+  onCategorySelect?: (categoryId: string | null) => void;
+  selectedCategory?: string | null;
+}
+
+const CategoriesStrip = ({ onCategorySelect, selectedCategory: externalSelected }: CategoriesStripProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [internalSelected, setInternalSelected] = useState<string | null>(null);
   const navigate = useNavigate();
+  
+  const selectedCategory = externalSelected !== undefined ? externalSelected : internalSelected;
 
   useEffect(() => {
     fetchCategories();
@@ -45,9 +52,17 @@ const CategoriesStrip = () => {
     return icons[iconName] || Package;
   };
 
-  const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    navigate(`/auctions?category=${categoryId}`);
+  const handleCategoryClick = (categoryId: string | null) => {
+    if (onCategorySelect) {
+      onCategorySelect(categoryId);
+    } else {
+      setInternalSelected(categoryId);
+      if (categoryId) {
+        navigate(`/auctions?category=${categoryId}`);
+      } else {
+        navigate(`/auctions`);
+      }
+    }
   };
 
   if (loading) {
@@ -77,20 +92,29 @@ const CategoriesStrip = () => {
       <div className="flex gap-4 overflow-x-auto py-4 px-8 scrollbar-hide scroll-smooth">
         {/* All Categories Button */}
         <button
-          onClick={() => navigate("/auctions")}
+          onClick={() => handleCategoryClick(null)}
           className={cn(
             "flex-shrink-0 flex flex-col items-center justify-center gap-3 p-4 rounded-2xl",
             "w-28 h-28 transition-all duration-300",
             "bg-gradient-to-br from-primary/20 via-primary/10 to-transparent",
-            "border-2 border-primary/30 hover:border-primary",
+            "border-2 hover:border-primary",
             "hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1",
-            "group/item cursor-pointer"
+            "group/item cursor-pointer",
+            selectedCategory === null 
+              ? "border-primary shadow-lg shadow-primary/20" 
+              : "border-primary/30"
           )}
         >
-          <div className="p-3 rounded-xl bg-primary/20 group-hover/item:bg-primary/30 transition-colors">
+          <div className={cn(
+            "p-3 rounded-xl transition-colors",
+            selectedCategory === null ? "bg-primary/30" : "bg-primary/20 group-hover/item:bg-primary/30"
+          )}>
             <Package className="w-6 h-6 text-primary" />
           </div>
-          <span className="text-sm font-semibold text-foreground text-center leading-tight">
+          <span className={cn(
+            "text-sm text-center leading-tight transition-colors",
+            selectedCategory === null ? "font-bold text-foreground" : "font-semibold text-foreground"
+          )}>
             الكل
           </span>
         </button>
