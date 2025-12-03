@@ -289,6 +289,16 @@
   .text-gradient-sunset {
     @apply bg-gradient-sunset bg-clip-text text-transparent;
   }
+
+  /* إخفاء شريط التمرير */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* استيراد الخطوط العربية من Google Fonts */
