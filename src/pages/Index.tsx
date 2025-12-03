@@ -60,10 +60,12 @@ const Index = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [filteredAuctions, setFilteredAuctions] = useState<Auction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [auctionsLoading, setAuctionsLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [sectionVisibility, setSectionVisibility] = useState({
     hero: true,
     announcements: true,
@@ -110,6 +112,15 @@ const Index = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Update filtered auctions when auctions change
+  useEffect(() => {
+    if (selectedCategoryId === null) {
+      setFilteredAuctions(auctions);
+    } else {
+      setFilteredAuctions(auctions.filter(a => a.category_id === selectedCategoryId));
+    }
+  }, [auctions, selectedCategoryId]);
 
   const fetchSectionSettings = async () => {
     const { data } = await supabase
@@ -193,8 +204,18 @@ const Index = () => {
       );
       
       setAuctions(auctionsWithCounts);
+      setFilteredAuctions(auctionsWithCounts);
     }
     setAuctionsLoading(false);
+  };
+
+  const handleCategorySelect = (categoryId: string | null) => {
+    setSelectedCategoryId(categoryId);
+    if (categoryId === null) {
+      setFilteredAuctions(auctions);
+    } else {
+      setFilteredAuctions(auctions.filter(a => a.category_id === categoryId));
+    }
   };
 
   const fetchCategories = async (settings?: any) => {
@@ -386,7 +407,10 @@ const Index = () => {
 
               {/* Categories Strip */}
               <div className="mb-10 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <CategoriesStrip />
+                <CategoriesStrip 
+                  onCategorySelect={handleCategorySelect}
+                  selectedCategory={selectedCategoryId}
+                />
               </div>
 
               {/* Tabs */}
@@ -409,9 +433,9 @@ const Index = () => {
                         <div key={i} className="h-96 bg-card rounded-3xl animate-pulse shadow-card" />
                       ))}
                     </div>
-                  ) : auctions.filter(a => a.status === "active").length > 0 ? (
+                  ) : filteredAuctions.filter(a => a.status === "active").length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {auctions
+                      {filteredAuctions
                         .filter(a => a.status === "active")
                         .map((auction) => (
                            <div key={auction.id} className="animate-scale-in hover-lift">
@@ -455,9 +479,9 @@ const Index = () => {
                         <div key={i} className="h-96 bg-card rounded-3xl animate-pulse shadow-card" />
                       ))}
                     </div>
-                  ) : auctions.filter(a => a.status === "ended").length > 0 ? (
+                  ) : filteredAuctions.filter(a => a.status === "ended").length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {auctions
+                      {filteredAuctions
                         .filter(a => a.status === "ended")
                         .map((auction) => (
                           <div key={auction.id} className="animate-scale-in hover-lift">
