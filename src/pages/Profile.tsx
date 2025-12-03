@@ -16,6 +16,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ListingCard from "@/components/ListingCard";
 import { UserBidsHistory } from "@/components/UserBidsHistory";
 import { UserReviewsSection } from "@/components/UserReviewsSection";
+import { UserAuctionsSection } from "@/components/UserAuctionsSection";
+import { UserBadgesSection } from "@/components/UserBadgesSection";
+import { UserPointsCard } from "@/components/UserPointsCard";
 import { supabase } from "@/integrations/supabase/client";
 import { getSession } from "@/lib/auth";
 import { toast } from "sonner";
@@ -759,108 +762,149 @@ const Profile = () => {
               </div>
             </Card>
 
-            {/* Bids History */}
-            <UserBidsHistory userId={id!} limit={5} />
+            {/* Points Card */}
+            <UserPointsCard userId={id!} />
+            
+            {/* Badges Section */}
+            <UserBadgesSection userId={id!} />
           </div>
 
-          {/* Listings & Reviews Section */}
+          {/* Main Content Section */}
           <div className="md:col-span-2 space-y-6">
-            {/* Listings Card */}
+            {/* Main Tabs Navigation */}
             <Card className="shadow-lg border-0">
-              <div className="p-6 border-b bg-gradient-to-r from-card to-card/80">
-                <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <Package className="h-6 w-6 text-primary" />
-                  إعلانات {isOwnProfile ? "الخاصة بك" : profile.full_name}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {listings.length} إعلان
-                </p>
-              </div>
+              <Tabs defaultValue="listings" dir="rtl" className="w-full">
+                <div className="border-b">
+                  <TabsList className="w-full justify-start p-0 h-auto bg-transparent rounded-none">
+                    <TabsTrigger 
+                      value="listings" 
+                      className="px-6 py-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    >
+                      <Package className="h-4 w-4 ml-2" />
+                      الإعلانات ({listings.length})
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="bids" 
+                      className="px-6 py-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    >
+                      <Gavel className="h-4 w-4 ml-2" />
+                      المزايدات
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="auctions" 
+                      className="px-6 py-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    >
+                      <TrendingUp className="h-4 w-4 ml-2" />
+                      المزادات
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="reviews" 
+                      className="px-6 py-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    >
+                      <Star className="h-4 w-4 ml-2" />
+                      التقييمات ({reviews.length})
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              <div className="p-6">
-                {listings.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                      <Package className="h-10 w-10 text-muted-foreground/50" />
-                    </div>
-                    <p className="text-lg font-medium text-muted-foreground">
-                      لا توجد إعلانات
-                    </p>
-                    <p className="text-sm text-muted-foreground/70 mt-1">
-                      {isOwnProfile ? "ابدأ بإضافة إعلانك الأول" : "لم يتم نشر أي إعلانات بعد"}
-                    </p>
-                    {isOwnProfile && (
-                      <Link to="/add-listing">
-                        <Button className="mt-6 bg-gradient-secondary hover:opacity-90">
-                          أضف إعلان جديد
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                ) : (
-                  <Tabs defaultValue="active" dir="rtl">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                      <TabsTrigger value="active">
-                        النشطة ({activeListings.length})
-                      </TabsTrigger>
-                      <TabsTrigger value="all">
-                        الكل ({listings.length})
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="active">
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {activeListings.map((listing) => (
-                          <ListingCard 
-                            key={listing.id} 
-                            id={listing.id}
-                            title={listing.title}
-                            price={listing.price}
-                            location={listing.location}
-                            time={new Date(listing.created_at).toLocaleDateString('en-US')}
-                            image={listing.images?.[0] || "/placeholder.svg"}
-                            category={listing.categories?.name || "غير محدد"}
-                          />
-                        ))}
+                {/* Listings Tab */}
+                <TabsContent value="listings" className="p-6 mt-0">
+                  {listings.length === 0 ? (
+                    <div className="text-center py-16">
+                      <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                        <Package className="h-10 w-10 text-muted-foreground/50" />
                       </div>
-                      {activeListings.length === 0 && (
-                        <div className="text-center py-12">
-                          <p className="text-muted-foreground">لا توجد إعلانات نشطة</p>
-                        </div>
+                      <p className="text-lg font-medium text-muted-foreground">
+                        لا توجد إعلانات
+                      </p>
+                      <p className="text-sm text-muted-foreground/70 mt-1">
+                        {isOwnProfile ? "ابدأ بإضافة إعلانك الأول" : "لم يتم نشر أي إعلانات بعد"}
+                      </p>
+                      {isOwnProfile && (
+                        <Link to="/add-listing">
+                          <Button className="mt-6 bg-gradient-primary hover:opacity-90">
+                            أضف إعلان جديد
+                          </Button>
+                        </Link>
                       )}
-                    </TabsContent>
+                    </div>
+                  ) : (
+                    <Tabs defaultValue="active" dir="rtl">
+                      <TabsList className="grid w-full grid-cols-2 mb-6">
+                        <TabsTrigger value="active">
+                          النشطة ({activeListings.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="all">
+                          الكل ({listings.length})
+                        </TabsTrigger>
+                      </TabsList>
 
-                    <TabsContent value="all">
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {listings.map((listing) => (
-                          <ListingCard 
-                            key={listing.id} 
-                            id={listing.id}
-                            title={listing.title}
-                            price={listing.price}
-                            location={listing.location}
-                            time={new Date(listing.created_at).toLocaleDateString('en-US')}
-                            image={listing.images?.[0] || "/placeholder.svg"}
-                            category={listing.categories?.name || "غير محدد"}
-                          />
-                        ))}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                )}
-              </div>
+                      <TabsContent value="active">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {activeListings.map((listing) => (
+                            <ListingCard 
+                              key={listing.id} 
+                              id={listing.id}
+                              title={listing.title}
+                              price={listing.price}
+                              location={listing.location}
+                              time={new Date(listing.created_at).toLocaleDateString('en-US')}
+                              image={listing.images?.[0] || "/placeholder.svg"}
+                              category={listing.categories?.name || "غير محدد"}
+                            />
+                          ))}
+                        </div>
+                        {activeListings.length === 0 && (
+                          <div className="text-center py-12">
+                            <p className="text-muted-foreground">لا توجد إعلانات نشطة</p>
+                          </div>
+                        )}
+                      </TabsContent>
+
+                      <TabsContent value="all">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {listings.map((listing) => (
+                            <ListingCard 
+                              key={listing.id} 
+                              id={listing.id}
+                              title={listing.title}
+                              price={listing.price}
+                              location={listing.location}
+                              time={new Date(listing.created_at).toLocaleDateString('en-US')}
+                              image={listing.images?.[0] || "/placeholder.svg"}
+                              category={listing.categories?.name || "غير محدد"}
+                            />
+                          ))}
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  )}
+                </TabsContent>
+
+                {/* Bids Tab */}
+                <TabsContent value="bids" className="p-6 mt-0">
+                  <UserBidsHistory userId={id!} limit={20} />
+                </TabsContent>
+
+                {/* Auctions Tab */}
+                <TabsContent value="auctions" className="p-6 mt-0">
+                  <UserAuctionsSection userId={id!} limit={12} />
+                </TabsContent>
+
+                {/* Reviews Tab */}
+                <TabsContent value="reviews" className="p-6 mt-0">
+                  <UserReviewsSection
+                    reviews={reviews}
+                    averageRating={averageRating}
+                    isOwnProfile={isOwnProfile}
+                    onReplyClick={(review) => {
+                      setSelectedReview(review);
+                      setIsReplyDialogOpen(true);
+                    }}
+                  />
+                </TabsContent>
+              </Tabs>
             </Card>
-
-            {/* Reviews Section - Using new component */}
-            <UserReviewsSection
-              reviews={reviews}
-              averageRating={averageRating}
-              isOwnProfile={isOwnProfile}
-              onReplyClick={(review) => {
-                setSelectedReview(review);
-                setIsReplyDialogOpen(true);
-              }}
-            />
           </div>
         </div>
 
