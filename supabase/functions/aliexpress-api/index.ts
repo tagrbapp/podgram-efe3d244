@@ -14,31 +14,46 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // AliExpress API Base URL
 const ALIEXPRESS_API_URL = 'https://api-sg.aliexpress.com/sync';
 
-// SHA-256 implementation using Web Crypto API
-async function sha256(message: string): Promise<string> {
+// HMAC-SHA256 implementation using Web Crypto API
+async function hmacSha256(message: string, secret: string): Promise<string> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const keyData = encoder.encode(secret);
+  const messageData = encoder.encode(message);
+  
+  // Import the secret key for HMAC
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  // Sign the message
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
+  
+  // Convert to hex string
+  const hashArray = Array.from(new Uint8Array(signature));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
-// Generate signature for AliExpress API using SHA-256
+// Generate signature for AliExpress API using HMAC-SHA256
 async function generateSignature(params: Record<string, string>, secret: string): Promise<string> {
   // Sort keys alphabetically (ASCII order) as required by AliExpress
   const sortedKeys = Object.keys(params).sort();
   
-  // Build sign string: secret + key1value1 + key2value2 + ... + secret
-  let signStr = secret;
+  // Build sign string: key1value1 + key2value2 + ... (without secret for HMAC)
+  let signStr = '';
   for (const key of sortedKeys) {
     signStr += key + params[key];
   }
-  signStr += secret;
   
   console.log('Sign string (first 100 chars):', signStr.substring(0, 100));
+  console.log('Full sign string length:', signStr.length);
   
-  const signature = await sha256(signStr);
-  console.log('Generated signature:', signature);
+  // Use HMAC-SHA256 with secret as the key
+  const signature = await hmacSha256(signStr, secret);
+  console.log('Generated HMAC-SHA256 signature:', signature);
   
   return signature;
 }
@@ -57,7 +72,7 @@ async function searchProducts(keywords: string, categoryId?: string, page = 1, p
     method: 'aliexpress.affiliate.product.query',
     format: 'json',
     v: '2.0',
-    sign_method: 'sha256',
+    sign_method: 'hmac-sha256',
     timestamp: getTimestamp(),
     keywords: keywords,
     page_no: page.toString(),
@@ -77,6 +92,8 @@ async function searchProducts(keywords: string, categoryId?: string, page = 1, p
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
   
+  console.log('Request URL:', `${ALIEXPRESS_API_URL}?${queryString.substring(0, 200)}...`);
+  
   const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
   const data = await response.json();
   
@@ -94,7 +111,7 @@ async function getProductDetails(productIds: string[]) {
     method: 'aliexpress.affiliate.productdetail.get',
     format: 'json',
     v: '2.0',
-    sign_method: 'sha256',
+    sign_method: 'hmac-sha256',
     timestamp: getTimestamp(),
     product_ids: productIds.join(','),
     target_currency: 'SAR',
