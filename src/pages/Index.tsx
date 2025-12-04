@@ -654,6 +654,13 @@ const Index = () => {
                     اكتشف أفضل المنتجات المستوردة بأسعار تنافسية
                   </p>
                 </div>
+                <a 
+                  href="/aliexpress-catalog" 
+                  className="hidden md:flex items-center gap-2 px-6 py-3 bg-[#FF6A00] text-white rounded-full font-semibold hover:bg-[#FF6A00]/90 transition-colors"
+                >
+                  عرض الكل
+                  <ShoppingCart className="w-4 h-4" />
+                </a>
               </div>
 
               {aliExpressLoading ? (
@@ -688,6 +695,17 @@ const Index = () => {
                   ))}
                 </div>
               )}
+
+              {/* Mobile View All Button */}
+              <div className="flex md:hidden justify-center mt-8">
+                <a 
+                  href="/aliexpress-catalog" 
+                  className="flex items-center gap-2 px-6 py-3 bg-[#FF6A00] text-white rounded-full font-semibold hover:bg-[#FF6A00]/90 transition-colors"
+                >
+                  عرض كل المنتجات
+                  <ShoppingCart className="w-4 h-4" />
+                </a>
+              </div>
             </div>
 
             {/* Decorative Elements */}

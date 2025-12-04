@@ -57,6 +57,7 @@ import DashboardSEO from "./pages/DashboardSEO";
 import DashboardEmailSettings from "./pages/DashboardEmailSettings";
 import DashboardAliexpress from "./pages/DashboardAliexpress";
 import AliExpressProductDetails from "./pages/AliExpressProductDetails";
+import AliExpressCatalog from "./pages/AliExpressCatalog";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -113,6 +114,7 @@ const App = () => (
           <Route path="/dashboard/email-settings" element={<DashboardEmailSettings />} />
             <Route path="/dashboard/aliexpress" element={<DashboardAliexpress />} />
           <Route path="/aliexpress-product/:id" element={<AliExpressProductDetails />} />
+          <Route path="/aliexpress-catalog" element={<AliExpressCatalog />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
