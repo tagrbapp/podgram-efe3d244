@@ -20,7 +20,6 @@ async function hmacSha256(message: string, secret: string): Promise<string> {
   const keyData = encoder.encode(secret);
   const messageData = encoder.encode(message);
   
-  // Import the secret key for HMAC
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
     keyData,
@@ -29,29 +28,20 @@ async function hmacSha256(message: string, secret: string): Promise<string> {
     ['sign']
   );
   
-  // Sign the message
   const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
-  
-  // Convert to hex string
   const hashArray = Array.from(new Uint8Array(signature));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
 // Generate signature for AliExpress API using HMAC-SHA256
 async function generateSignature(params: Record<string, string>, secret: string): Promise<string> {
-  // Sort keys alphabetically (ASCII order) as required by AliExpress
   const sortedKeys = Object.keys(params).sort();
-  
-  // Build sign string: key1value1 + key2value2 + ... (without secret for HMAC)
   let signStr = '';
   for (const key of sortedKeys) {
     signStr += key + params[key];
   }
   
   console.log('Sign string (first 100 chars):', signStr.substring(0, 100));
-  console.log('Full sign string length:', signStr.length);
-  
-  // Use HMAC-SHA256 with secret as the key
   const signature = await hmacSha256(signStr, secret);
   console.log('Generated HMAC-SHA256 signature:', signature);
   
@@ -63,27 +53,34 @@ function getTimestamp(): string {
   return Date.now().toString();
 }
 
-// Search products on AliExpress
+// Search products using Dropshipping API
 async function searchProducts(keywords: string, categoryId?: string, page = 1, pageSize = 20) {
-  console.log('Searching AliExpress products:', { keywords, categoryId, page, pageSize });
+  console.log('Searching AliExpress DS products:', { keywords, categoryId, page, pageSize });
   
+  // Try DS Feed API first
   const params: Record<string, string> = {
     app_key: ALIEXPRESS_APP_KEY!,
-    method: 'aliexpress.affiliate.product.query',
+    method: 'aliexpress.ds.recommend.feed.get',
     format: 'json',
     v: '2.0',
     sign_method: 'hmac-sha256',
     timestamp: getTimestamp(),
-    keywords: keywords,
-    page_no: page.toString(),
-    page_size: pageSize.toString(),
+    country: 'SA',
     target_currency: 'SAR',
     target_language: 'AR',
+    page_no: page.toString(),
+    page_size: pageSize.toString(),
     sort: 'SALE_PRICE_ASC',
   };
   
-  if (categoryId) {
+  // Add category filter if provided
+  if (categoryId && categoryId.length < 20) {
     params.category_ids = categoryId;
+  }
+  
+  // Add feed name for search
+  if (keywords) {
+    params.feed_name = keywords;
   }
   
   params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
@@ -92,28 +89,62 @@ async function searchProducts(keywords: string, categoryId?: string, page = 1, p
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
   
-  console.log('Request URL:', `${ALIEXPRESS_API_URL}?${queryString.substring(0, 200)}...`);
+  console.log('DS API Request URL:', `${ALIEXPRESS_API_URL}?${queryString.substring(0, 200)}...`);
   
   const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
   const data = await response.json();
   
-  console.log('AliExpress API response:', JSON.stringify(data).substring(0, 500));
+  console.log('AliExpress DS API response:', JSON.stringify(data).substring(0, 500));
+  
+  // If DS Feed API fails, try alternative method
+  if (data.error_response) {
+    console.log('DS Feed API failed, trying aliexpress.ds.product.get...');
+    return await searchProductsAlternative(keywords, categoryId, page, pageSize);
+  }
   
   return data;
 }
 
-// Get product details
-async function getProductDetails(productIds: string[]) {
-  console.log('Getting product details for:', productIds);
+// Alternative search using product query
+async function searchProductsAlternative(keywords: string, categoryId?: string, page = 1, pageSize = 20) {
+  console.log('Trying alternative DS product search...');
   
   const params: Record<string, string> = {
     app_key: ALIEXPRESS_APP_KEY!,
-    method: 'aliexpress.affiliate.productdetail.get',
+    method: 'aliexpress.postproduct.redefining.findaeproductbyidaliexpressorurl',
     format: 'json',
     v: '2.0',
     sign_method: 'hmac-sha256',
     timestamp: getTimestamp(),
-    product_ids: productIds.join(','),
+  };
+  
+  params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
+  
+  const queryString = Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+  
+  const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
+  const data = await response.json();
+  
+  console.log('Alternative API response:', JSON.stringify(data).substring(0, 500));
+  
+  return data;
+}
+
+// Get product details using DS API
+async function getProductDetails(productIds: string[]) {
+  console.log('Getting DS product details for:', productIds);
+  
+  const params: Record<string, string> = {
+    app_key: ALIEXPRESS_APP_KEY!,
+    method: 'aliexpress.ds.product.get',
+    format: 'json',
+    v: '2.0',
+    sign_method: 'hmac-sha256',
+    timestamp: getTimestamp(),
+    product_id: productIds[0], // DS API takes single product ID
+    ship_to_country: 'SA',
     target_currency: 'SAR',
     target_language: 'AR',
   };
@@ -127,13 +158,12 @@ async function getProductDetails(productIds: string[]) {
   const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
   const data = await response.json();
   
-  console.log('Product details response:', JSON.stringify(data).substring(0, 500));
+  console.log('DS Product details response:', JSON.stringify(data).substring(0, 500));
   
   return data;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -141,7 +171,6 @@ serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
-    // Get authorization header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       return new Response(
@@ -150,7 +179,6 @@ serve(async (req) => {
       );
     }
 
-    // Verify user is admin
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
@@ -161,7 +189,6 @@ serve(async (req) => {
       );
     }
 
-    // Check if user is admin
     const { data: roles } = await supabase
       .from('user_roles')
       .select('role')
@@ -195,7 +222,6 @@ serve(async (req) => {
         break;
 
       case 'import':
-        // Import product to database
         const { product, categoryId } = params;
         
         const { data: imported, error: importError } = await supabase
