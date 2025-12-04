@@ -7,10 +7,11 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
 import CategoryCard from "@/components/CategoryCard";
 import AliExpressProductCard from "@/components/AliExpressProductCard";
+import { CJProductCard } from "@/components/CJProductCard";
 import CategoriesStrip from "@/components/CategoriesStrip";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
-import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator, ShoppingCart } from "lucide-react";
+import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator, ShoppingCart, Truck } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Listing {
@@ -71,6 +72,21 @@ interface AliExpressProduct {
   currency: string | null;
 }
 
+interface CJProduct {
+  id: string;
+  cj_product_id: string;
+  title: string;
+  title_ar: string | null;
+  price: number;
+  original_price: number | null;
+  discount_percentage: number | null;
+  images: string[] | null;
+  product_url: string;
+  shipping_cost: number | null;
+  shipping_time: string | null;
+  is_active: boolean;
+}
+
 const Index = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
@@ -78,10 +94,12 @@ const Index = () => {
   const [filteredAuctions, setFilteredAuctions] = useState<Auction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [aliExpressProducts, setAliExpressProducts] = useState<AliExpressProduct[]>([]);
+  const [cjProducts, setCJProducts] = useState<CJProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [auctionsLoading, setAuctionsLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [aliExpressLoading, setAliExpressLoading] = useState(true);
+  const [cjLoading, setCJLoading] = useState(true);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [sectionVisibility, setSectionVisibility] = useState({
     hero: true,
@@ -90,6 +108,7 @@ const Index = () => {
     live_auctions: true,
     featured_listings: true,
     aliexpress_products: true,
+    cjdropshipping_products: true,
   });
   const [sectionSettings, setSectionSettings] = useState({
     hero: { items_limit: 12, background_color: "bg-gray-50" },
@@ -98,6 +117,7 @@ const Index = () => {
     live_auctions: { items_limit: 6, background_color: "bg-background" },
     featured_listings: { items_limit: 12, background_color: "bg-gray-50" },
     aliexpress_products: { items_limit: 8, background_color: "bg-background" },
+    cjdropshipping_products: { items_limit: 8, background_color: "bg-background" },
   });
 
   useEffect(() => {
@@ -108,6 +128,7 @@ const Index = () => {
         fetchAuctions(settings);
         fetchCategories(settings);
         fetchAliExpressProducts(settings);
+        fetchCJProducts(settings);
       }
     };
     initializeData();
@@ -285,6 +306,24 @@ const Index = () => {
       setAliExpressProducts(data);
     }
     setAliExpressLoading(false);
+  };
+
+  const fetchCJProducts = async (settings?: any) => {
+    setCJLoading(true);
+    const currentSettings = settings || sectionSettings;
+    const productLimit = currentSettings.cjdropshipping_products?.items_limit || 8;
+    
+    const { data } = await supabase
+      .from("cjdropshipping_products")
+      .select("*")
+      .eq("is_active", true)
+      .order("imported_at", { ascending: false })
+      .limit(productLimit);
+
+    if (data) {
+      setCJProducts(data);
+    }
+    setCJLoading(false);
   };
 
   const getCategoryIcon = (iconName: string) => {
@@ -710,6 +749,73 @@ const Index = () => {
 
             {/* Decorative Elements */}
             <div className="absolute top-0 left-0 w-96 h-96 bg-[#FF6A00]/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
+          </section>
+        )}
+
+        {/* CJdropshipping Products Section */}
+        {sectionVisibility.cjdropshipping_products && cjProducts.length > 0 && (
+          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-orange-500/5 to-background">
+            <div className="container mx-auto px-4">
+              {/* Section Header */}
+              <div className="flex items-center justify-between mb-12 animate-fade-in">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 rounded-full mb-2">
+                    <Truck className="w-5 h-5 text-orange-500" />
+                    <span className="text-sm font-semibold text-orange-500 uppercase tracking-wider">
+                      دروبشيبينغ
+                    </span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                    منتجات CJdropshipping
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    منتجات متنوعة بجودة عالية وشحن سريع
+                  </p>
+                </div>
+                <a 
+                  href="/cj-catalog" 
+                  className="hidden md:flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-full font-semibold hover:bg-orange-500/90 transition-colors"
+                >
+                  عرض الكل
+                  <Truck className="w-4 h-4" />
+                </a>
+              </div>
+
+              {cjLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-80 bg-card rounded-3xl animate-pulse shadow-card" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {cjProducts.map((product, index) => (
+                    <div 
+                      key={product.id} 
+                      className="animate-scale-in hover-lift"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <CJProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Mobile View All Button */}
+              <div className="flex md:hidden justify-center mt-8">
+                <a 
+                  href="/cj-catalog" 
+                  className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-full font-semibold hover:bg-orange-500/90 transition-colors"
+                >
+                  عرض كل المنتجات
+                  <Truck className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute top-0 left-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl -z-10" />
             <div className="absolute bottom-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
           </section>
         )}
