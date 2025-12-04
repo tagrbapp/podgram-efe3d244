@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import AliExpressProductCard from "@/components/AliExpressProductCard";
 import { 
   ExternalLink, 
   Star, 
@@ -18,7 +19,8 @@ import {
   ChevronLeft,
   ShoppingCart,
   Share2,
-  Heart
+  Heart,
+  Package
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -48,6 +50,7 @@ const AliExpressProductDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<AliExpressProduct | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<AliExpressProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -75,6 +78,42 @@ const AliExpressProductDetails = () => {
 
     setProduct(data);
     setLoading(false);
+    
+    // Fetch similar products
+    fetchSimilarProducts(data.id, data.category_id);
+  };
+
+  const fetchSimilarProducts = async (currentId: string, categoryId: string | null) => {
+    let query = supabase
+      .from("aliexpress_products")
+      .select(`*, categories (name)`)
+      .eq("is_active", true)
+      .neq("id", currentId)
+      .limit(4);
+    
+    // If product has a category, prioritize same category
+    if (categoryId) {
+      query = query.eq("category_id", categoryId);
+    }
+    
+    const { data } = await query.order("imported_at", { ascending: false });
+    
+    if (data && data.length > 0) {
+      setSimilarProducts(data);
+    } else if (categoryId) {
+      // If no products in same category, fetch any products
+      const { data: anyProducts } = await supabase
+        .from("aliexpress_products")
+        .select(`*, categories (name)`)
+        .eq("is_active", true)
+        .neq("id", currentId)
+        .order("imported_at", { ascending: false })
+        .limit(4);
+      
+      if (anyProducts) {
+        setSimilarProducts(anyProducts);
+      }
+    }
   };
 
   const handlePrevImage = () => {
@@ -362,6 +401,46 @@ const AliExpressProductDetails = () => {
             )}
           </div>
         </div>
+
+        {/* Similar Products Section */}
+        {similarProducts.length > 0 && (
+          <section className="mt-16 pt-12 border-t border-border">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-full bg-[#FF6A00]/10 flex items-center justify-center">
+                <Package className="w-6 h-6 text-[#FF6A00]" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">منتجات مشابهة</h2>
+                <p className="text-muted-foreground">اكتشف المزيد من المنتجات</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {similarProducts.map((similarProduct, index) => (
+                <div 
+                  key={similarProduct.id} 
+                  className="animate-scale-in hover-lift"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <AliExpressProductCard
+                    id={similarProduct.id}
+                    title={similarProduct.title}
+                    titleAr={similarProduct.title_ar || undefined}
+                    price={similarProduct.price}
+                    originalPrice={similarProduct.original_price || undefined}
+                    discountPercentage={similarProduct.discount_percentage || undefined}
+                    images={similarProduct.images || []}
+                    productUrl={similarProduct.product_url}
+                    sellerRating={similarProduct.seller_rating || undefined}
+                    shippingCost={similarProduct.shipping_cost || undefined}
+                    shippingTime={similarProduct.shipping_time || undefined}
+                    currency={similarProduct.currency || "SAR"}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       <Footer />
