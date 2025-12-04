@@ -758,6 +758,89 @@ export type Database = {
         }
         Relationships: []
       }
+      cjdropshipping_products: {
+        Row: {
+          category_id: string | null
+          cj_product_id: string
+          currency: string | null
+          description: string | null
+          description_ar: string | null
+          discount_percentage: number | null
+          id: string
+          images: string[] | null
+          imported_at: string | null
+          imported_by: string | null
+          is_active: boolean | null
+          original_price: number | null
+          price: number
+          product_url: string
+          seller_name: string | null
+          seller_rating: number | null
+          shipping_cost: number | null
+          shipping_time: string | null
+          stock_quantity: number | null
+          title: string
+          title_ar: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          cj_product_id: string
+          currency?: string | null
+          description?: string | null
+          description_ar?: string | null
+          discount_percentage?: number | null
+          id?: string
+          images?: string[] | null
+          imported_at?: string | null
+          imported_by?: string | null
+          is_active?: boolean | null
+          original_price?: number | null
+          price?: number
+          product_url: string
+          seller_name?: string | null
+          seller_rating?: number | null
+          shipping_cost?: number | null
+          shipping_time?: string | null
+          stock_quantity?: number | null
+          title: string
+          title_ar?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          cj_product_id?: string
+          currency?: string | null
+          description?: string | null
+          description_ar?: string | null
+          discount_percentage?: number | null
+          id?: string
+          images?: string[] | null
+          imported_at?: string | null
+          imported_by?: string | null
+          is_active?: boolean | null
+          original_price?: number | null
+          price?: number
+          product_url?: string
+          seller_name?: string | null
+          seller_rating?: number | null
+          shipping_cost?: number | null
+          shipping_time?: string | null
+          stock_quantity?: number | null
+          title?: string
+          title_ar?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cjdropshipping_products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           buyer_id: string
