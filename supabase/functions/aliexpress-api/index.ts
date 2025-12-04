@@ -53,38 +53,47 @@ function getTimestamp(): string {
   return Date.now().toString();
 }
 
-// Get available feed names
-async function getFeedNames() {
-  console.log('Getting available feed names...');
+// Search products using multiple API methods
+async function searchProducts(keywords: string, categoryId?: string, page = 1, pageSize = 20) {
+  console.log('Searching AliExpress products:', { keywords, categoryId, page, pageSize });
   
-  const params: Record<string, string> = {
-    app_key: ALIEXPRESS_APP_KEY!,
-    method: 'aliexpress.ds.feedname.get',
-    format: 'json',
-    v: '2.0',
-    sign_method: 'hmac-sha256',
-    timestamp: getTimestamp(),
-  };
+  // Try DS Recommend Feed first without specific feed_name (get all products)
+  const dsResult = await tryDSRecommendFeed(categoryId, page, pageSize);
   
-  params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
+  if (dsResult?.aliexpress_ds_recommend_feed_get_response?.result?.products?.product?.length > 0) {
+    console.log('Found products in DS Recommend Feed');
+    
+    // Filter by keywords if provided
+    if (keywords && keywords.trim()) {
+      const products = dsResult.aliexpress_ds_recommend_feed_get_response.result.products.product;
+      const lowerKeywords = keywords.toLowerCase();
+      const filteredProducts = products.filter((p: any) => 
+        p.product_title?.toLowerCase().includes(lowerKeywords) ||
+        p.second_level_category_name?.toLowerCase().includes(lowerKeywords)
+      );
+      dsResult.aliexpress_ds_recommend_feed_get_response.result.products.product = filteredProducts;
+      dsResult.aliexpress_ds_recommend_feed_get_response.result.current_record_count = filteredProducts.length;
+    }
+    
+    return dsResult;
+  }
   
-  const queryString = Object.entries(params)
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join('&');
+  // Try Affiliate Product Query if DS fails
+  console.log('DS Feed empty, trying Affiliate Product Query...');
+  const affiliateResult = await tryAffiliateProductQuery(keywords, categoryId, page, pageSize);
   
-  const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
-  const data = await response.json();
+  if (affiliateResult?.aliexpress_affiliate_product_query_response?.resp_result?.result?.products) {
+    console.log('Found products via Affiliate API');
+    return affiliateResult;
+  }
   
-  console.log('Feed names response:', JSON.stringify(data).substring(0, 500));
-  
-  return data;
+  // Return the error or empty result
+  console.log('No products found with any method');
+  return dsResult || affiliateResult || { error: 'لم يتم العثور على منتجات', products: [] };
 }
 
-// Search products using DS Feed API with proper feed names
-async function searchProducts(keywords: string, categoryId?: string, page = 1, pageSize = 20) {
-  console.log('Searching AliExpress DS products:', { keywords, categoryId, page, pageSize });
-  
-  // DS Feed API with proper feed name
+// Try DS Recommend Feed API
+async function tryDSRecommendFeed(categoryId?: string, page = 1, pageSize = 20) {
   const params: Record<string, string> = {
     app_key: ALIEXPRESS_APP_KEY!,
     method: 'aliexpress.ds.recommend.feed.get',
@@ -97,15 +106,9 @@ async function searchProducts(keywords: string, categoryId?: string, page = 1, p
     target_language: 'AR',
     page_no: page.toString(),
     page_size: pageSize.toString(),
-    sort: 'SALE_PRICE_ASC',
   };
   
-  // Use proper feed names - these are the standard DS Center feed names
-  // DS Center provides feeds like: DS_CHOICE, plus_tag, realtime_tag, etc.
-  // If keywords match a category, we'll filter later
-  params.feed_name = 'DS_HOT_PRODUCTS';
-  
-  // Add category filter if provided and it's an AliExpress category ID (numeric)
+  // Add category filter if provided and it's numeric
   if (categoryId && /^\d+$/.test(categoryId)) {
     params.category_ids = categoryId;
   }
@@ -116,65 +119,72 @@ async function searchProducts(keywords: string, categoryId?: string, page = 1, p
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
   
-  console.log('DS Feed API Request URL:', `${ALIEXPRESS_API_URL}?${queryString.substring(0, 250)}...`);
+  console.log('DS Feed API URL:', `${ALIEXPRESS_API_URL}?${queryString.substring(0, 200)}...`);
   
   const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
   const data = await response.json();
   
-  console.log('AliExpress DS Feed API response:', JSON.stringify(data).substring(0, 500));
-  
-  // If DS Feed API returns products, filter by keywords client-side if needed
-  if (data.aliexpress_ds_recommend_feed_get_response?.result?.products?.product) {
-    const products = data.aliexpress_ds_recommend_feed_get_response.result.products.product;
-    
-    // Filter by keywords if provided (case-insensitive)
-    if (keywords && keywords.trim()) {
-      const lowerKeywords = keywords.toLowerCase();
-      const filteredProducts = products.filter((p: any) => 
-        p.product_title?.toLowerCase().includes(lowerKeywords) ||
-        p.second_level_category_name?.toLowerCase().includes(lowerKeywords) ||
-        p.first_level_category_name?.toLowerCase().includes(lowerKeywords)
-      );
-      
-      data.aliexpress_ds_recommend_feed_get_response.result.products.product = filteredProducts;
-      data.aliexpress_ds_recommend_feed_get_response.result.current_record_count = filteredProducts.length;
-    }
-    
-    return data;
-  }
-  
-  // If DS Feed API fails, try getting categories or feed names
-  if (data.error_response) {
-    console.log('DS Feed API error:', data.error_response);
-    
-    // Try to get feed names first to understand what's available
-    const feedNamesResult = await getFeedNames();
-    console.log('Available feeds:', JSON.stringify(feedNamesResult).substring(0, 500));
-    
-    // Try with different feed name
-    return await tryAlternativeFeed(categoryId, page, pageSize);
-  }
+  console.log('DS Feed API response:', JSON.stringify(data).substring(0, 500));
   
   return data;
 }
 
-// Try alternative feed names
-async function tryAlternativeFeed(categoryId?: string, page = 1, pageSize = 20) {
-  console.log('Trying alternative feed...');
-  
-  // Try DS_CHOICE feed
+// Try Affiliate Product Query API
+async function tryAffiliateProductQuery(keywords: string, categoryId?: string, page = 1, pageSize = 20) {
   const params: Record<string, string> = {
     app_key: ALIEXPRESS_APP_KEY!,
-    method: 'aliexpress.ds.recommend.feed.get',
+    method: 'aliexpress.affiliate.product.query',
     format: 'json',
     v: '2.0',
     sign_method: 'hmac-sha256',
     timestamp: getTimestamp(),
-    country: 'SA',
     target_currency: 'SAR',
     target_language: 'AR',
     page_no: page.toString(),
     page_size: pageSize.toString(),
+  };
+  
+  if (keywords && keywords.trim()) {
+    params.keywords = keywords;
+  }
+  
+  // AliExpress category IDs are numeric, our internal IDs are UUIDs
+  if (categoryId && /^\d+$/.test(categoryId)) {
+    params.category_ids = categoryId;
+  }
+  
+  params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
+  
+  const queryString = Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
+  
+  console.log('Affiliate API URL:', `${ALIEXPRESS_API_URL}?${queryString.substring(0, 200)}...`);
+  
+  const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
+  const data = await response.json();
+  
+  console.log('Affiliate API response:', JSON.stringify(data).substring(0, 500));
+  
+  return data;
+}
+
+// Get product details by product ID or URL
+async function getProductDetails(productIds: string[]) {
+  console.log('Getting product details for:', productIds);
+  
+  // Try DS Product Get API
+  const params: Record<string, string> = {
+    app_key: ALIEXPRESS_APP_KEY!,
+    method: 'aliexpress.ds.product.get',
+    format: 'json',
+    v: '2.0',
+    sign_method: 'hmac-sha256',
+    timestamp: getTimestamp(),
+    product_id: productIds[0],
+    ship_to_country: 'SA',
+    target_currency: 'SAR',
+    target_language: 'AR',
   };
   
   params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
@@ -186,13 +196,13 @@ async function tryAlternativeFeed(categoryId?: string, page = 1, pageSize = 20) 
   const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
   const data = await response.json();
   
-  console.log('Alternative feed response:', JSON.stringify(data).substring(0, 500));
+  console.log('Product details response:', JSON.stringify(data).substring(0, 500));
   
   return data;
 }
 
 // Get AliExpress categories
-async function getCategories() {
+async function getAliExpressCategories() {
   console.log('Getting AliExpress categories...');
   
   const params: Record<string, string> = {
@@ -218,21 +228,18 @@ async function getCategories() {
   return data;
 }
 
-// Get product details using DS API
-async function getProductDetails(productIds: string[]) {
-  console.log('Getting DS product details for:', productIds);
+// Search product by URL
+async function searchByUrl(productUrl: string) {
+  console.log('Searching by URL:', productUrl);
   
   const params: Record<string, string> = {
     app_key: ALIEXPRESS_APP_KEY!,
-    method: 'aliexpress.ds.product.get',
+    method: 'aliexpress.postproduct.redefining.findaeproductbyidaliexpressorurl',
     format: 'json',
     v: '2.0',
     sign_method: 'hmac-sha256',
     timestamp: getTimestamp(),
-    product_id: productIds[0], // DS API takes single product ID
-    ship_to_country: 'SA',
-    target_currency: 'SAR',
-    target_language: 'AR',
+    product_id_or_url: productUrl,
   };
   
   params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
@@ -244,7 +251,7 @@ async function getProductDetails(productIds: string[]) {
   const response = await fetch(`${ALIEXPRESS_API_URL}?${queryString}`);
   const data = await response.json();
   
-  console.log('DS Product details response:', JSON.stringify(data).substring(0, 500));
+  console.log('Search by URL response:', JSON.stringify(data).substring(0, 500));
   
   return data;
 }
@@ -308,11 +315,11 @@ serve(async (req) => {
         break;
 
       case 'get_categories':
-        result = await getCategories();
+        result = await getAliExpressCategories();
         break;
 
-      case 'get_feeds':
-        result = await getFeedNames();
+      case 'search_by_url':
+        result = await searchByUrl(params.productUrl);
         break;
 
       case 'import':
@@ -325,12 +332,12 @@ serve(async (req) => {
             title: product.product_title,
             title_ar: product.product_title,
             description: product.product_detail_url,
-            price: parseFloat(product.target_sale_price || product.target_original_price),
-            original_price: parseFloat(product.target_original_price),
+            price: parseFloat(product.target_sale_price || product.target_original_price || product.sale_price || '0'),
+            original_price: parseFloat(product.target_original_price || product.original_price || '0'),
             discount_percentage: product.discount ? parseInt(product.discount) : null,
             currency: 'SAR',
             images: product.product_small_image_urls?.string || [product.product_main_image_url],
-            product_url: product.product_detail_url,
+            product_url: product.product_detail_url || product.promotion_link,
             category_id: categoryId,
             seller_name: product.shop_title,
             seller_rating: product.evaluate_rate ? parseFloat(product.evaluate_rate) : null,
