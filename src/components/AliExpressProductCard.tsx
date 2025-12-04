@@ -1,6 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Truck, Star, TrendingDown } from "lucide-react";
+import { Truck, Star, TrendingDown, Eye } from "lucide-react";
 
 interface AliExpressProductCardProps {
   id: string;
@@ -31,11 +32,19 @@ const AliExpressProductCard = ({
   shippingTime,
   currency = "SAR",
 }: AliExpressProductCardProps) => {
+  const navigate = useNavigate();
   const displayTitle = titleAr || title;
   const hasDiscount = discountPercentage && discountPercentage > 0;
 
+  const handleClick = () => {
+    navigate(`/aliexpress-product/${id}`);
+  };
+
   return (
-    <Card className="group overflow-hidden rounded-3xl border-0 bg-card shadow-card hover:shadow-elegant transition-all duration-300 hover:-translate-y-1">
+    <Card 
+      className="group overflow-hidden rounded-3xl border-0 bg-card shadow-card hover:shadow-elegant transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+      onClick={handleClick}
+    >
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden">
         <img
@@ -61,15 +70,10 @@ const AliExpressProductCard = ({
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Quick Action */}
-        <a
-          href={productUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-primary-foreground rounded-full font-semibold text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 flex items-center gap-2"
-        >
-          <ExternalLink className="w-4 h-4" />
-          عرض المنتج
-        </a>
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-primary-foreground rounded-full font-semibold text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 flex items-center gap-2">
+          <Eye className="w-4 h-4" />
+          عرض التفاصيل
+        </div>
       </div>
 
       <CardContent className="p-4 space-y-3">
