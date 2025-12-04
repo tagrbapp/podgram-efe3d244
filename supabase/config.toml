@@ -1,1 +1,19 @@
 project_id = "qznonedlmyiwtemvzyxs"
+
+[functions.aliexpress-api]
+verify_jwt = true
+
+[functions.cjdropshipping-api]
+verify_jwt = true
+
+[functions.create-notification-example]
+verify_jwt = false
+
+[functions.google-analytics]
+verify_jwt = true
+
+[functions.send-approval-email]
+verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = true

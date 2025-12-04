@@ -58,6 +58,9 @@ import DashboardEmailSettings from "./pages/DashboardEmailSettings";
 import DashboardAliexpress from "./pages/DashboardAliexpress";
 import AliExpressProductDetails from "./pages/AliExpressProductDetails";
 import AliExpressCatalog from "./pages/AliExpressCatalog";
+import DashboardCJdropshipping from "./pages/DashboardCJdropshipping";
+import CJProductDetails from "./pages/CJProductDetails";
+import CJCatalog from "./pages/CJCatalog";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -115,6 +118,9 @@ const App = () => (
             <Route path="/dashboard/aliexpress" element={<DashboardAliexpress />} />
           <Route path="/aliexpress-product/:id" element={<AliExpressProductDetails />} />
           <Route path="/aliexpress-catalog" element={<AliExpressCatalog />} />
+          <Route path="/dashboard/cjdropshipping" element={<DashboardCJdropshipping />} />
+          <Route path="/cj-product/:id" element={<CJProductDetails />} />
+          <Route path="/cj-catalog" element={<CJCatalog />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
