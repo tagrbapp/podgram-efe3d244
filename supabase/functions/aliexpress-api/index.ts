@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
+import { encode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,8 +16,18 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // AliExpress API Base URL
 const ALIEXPRESS_API_URL = 'https://api-sg.aliexpress.com/sync';
 
+// MD5 hash function
+async function md5(message: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest("MD5", data);
+  const hashArray = new Uint8Array(hashBuffer);
+  const hashHex = new TextDecoder().decode(encode(hashArray));
+  return hashHex.toUpperCase();
+}
+
 // Generate signature for AliExpress API
-function generateSignature(params: Record<string, string>, secret: string): string {
+async function generateSignature(params: Record<string, string>, secret: string): Promise<string> {
   const sortedKeys = Object.keys(params).sort();
   let signStr = secret;
   
@@ -24,17 +36,7 @@ function generateSignature(params: Record<string, string>, secret: string): stri
   }
   signStr += secret;
   
-  // MD5 hash
-  const encoder = new TextEncoder();
-  const data = encoder.encode(signStr);
-  
-  // Using Web Crypto API for MD5 (note: MD5 is deprecated but required by AliExpress)
-  let hash = '';
-  for (let i = 0; i < data.length; i++) {
-    hash += data[i].toString(16).padStart(2, '0');
-  }
-  
-  return hash.toUpperCase();
+  return await md5(signStr);
 }
 
 // Get current timestamp
@@ -65,7 +67,7 @@ async function searchProducts(keywords: string, categoryId?: string, page = 1, p
     params.category_ids = categoryId;
   }
   
-  params.sign = generateSignature(params, ALIEXPRESS_APP_SECRET!);
+  params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
   
   const queryString = Object.entries(params)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
@@ -95,7 +97,7 @@ async function getProductDetails(productIds: string[]) {
     target_language: 'AR',
   };
   
-  params.sign = generateSignature(params, ALIEXPRESS_APP_SECRET!);
+  params.sign = await generateSignature(params, ALIEXPRESS_APP_SECRET!);
   
   const queryString = Object.entries(params)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
