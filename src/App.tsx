@@ -110,7 +110,7 @@ const App = () => (
           <Route path="/dashboard/referral-stats" element={<DashboardReferralStats />} />
           <Route path="/dashboard/seo" element={<DashboardSEO />} />
           <Route path="/dashboard/email-settings" element={<DashboardEmailSettings />} />
-          <Route path="/dashboard/aliexpress" element={<DashboardAliexpress />} />
+            <Route path="/dashboard/aliexpress" element={<DashboardAliexpress />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
