@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Search, Package, Download, Trash2, ExternalLink, Loader2, ShoppingBag, Store, Star } from "lucide-react";
+import { Search, Package, Download, Trash2, ExternalLink, Loader2, ShoppingBag, Store, Star, Link2 } from "lucide-react";
 
 interface AliExpressProduct {
   product_id: string;
@@ -48,6 +48,9 @@ export default function DashboardAliexpress() {
   const [searchResults, setSearchResults] = useState<AliExpressProduct[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isSearching, setIsSearching] = useState(false);
+  const [productUrl, setProductUrl] = useState("");
+  const [urlProduct, setUrlProduct] = useState<AliExpressProduct | null>(null);
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch categories
@@ -121,6 +124,87 @@ export default function DashboardAliexpress() {
       toast.error(error.message || 'فشل في البحث');
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  // Fetch product by URL
+  const handleFetchByUrl = async () => {
+    if (!productUrl.trim()) {
+      toast.error('أدخل رابط المنتج');
+      return;
+    }
+
+    // Validate AliExpress URL
+    if (!productUrl.includes('aliexpress.com') && !productUrl.includes('aliexpress.ru')) {
+      toast.error('الرجاء إدخال رابط AliExpress صحيح');
+      return;
+    }
+
+    setIsLoadingUrl(true);
+    setUrlProduct(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('يجب تسجيل الدخول');
+        return;
+      }
+
+      // Extract product ID from URL
+      const productIdMatch = productUrl.match(/\/(\d+)\.html/) || productUrl.match(/item\/(\d+)/);
+      const productId = productIdMatch ? productIdMatch[1] : null;
+
+      if (productId) {
+        // Try to get product details directly
+        const response = await supabase.functions.invoke('aliexpress-api', {
+          body: {
+            action: 'get_details',
+            productIds: [productId]
+          }
+        });
+
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
+
+        const data = response.data;
+        console.log('Product details response:', data);
+
+        // Handle DS Product Get response
+        if (data?.aliexpress_ds_product_get_response?.result) {
+          const result = data.aliexpress_ds_product_get_response.result;
+          const product: AliExpressProduct = {
+            product_id: productId,
+            product_title: result.ae_item_base_info_dto?.subject || 'منتج AliExpress',
+            product_main_image_url: result.ae_multimedia_info_dto?.image_urls?.split(';')[0] || '',
+            target_sale_price: result.ae_item_sku_info_dtos?.ae_item_sku_info_dto?.[0]?.sku_price || '0',
+            target_original_price: result.ae_item_sku_info_dtos?.ae_item_sku_info_dto?.[0]?.sku_price || '0',
+            product_detail_url: productUrl,
+          };
+          setUrlProduct(product);
+          toast.success('تم جلب تفاصيل المنتج');
+        } else if (data?.error_response) {
+          // If DS API fails, create a basic product from URL
+          toast.info('تم إنشاء المنتج من الرابط - قد تحتاج لتعديل التفاصيل يدوياً');
+          const product: AliExpressProduct = {
+            product_id: productId,
+            product_title: `منتج AliExpress #${productId}`,
+            product_main_image_url: '',
+            target_sale_price: '0',
+            target_original_price: '0',
+            product_detail_url: productUrl,
+          };
+          setUrlProduct(product);
+        } else {
+          toast.error('تعذر جلب تفاصيل المنتج');
+        }
+      } else {
+        toast.error('تعذر استخراج رقم المنتج من الرابط');
+      }
+    } catch (error: any) {
+      console.error('Fetch URL error:', error);
+      toast.error(error.message || 'فشل في جلب المنتج');
+    } finally {
+      setIsLoadingUrl(false);
     }
   };
 
@@ -230,6 +314,101 @@ export default function DashboardAliexpress() {
               </TabsList>
 
               <TabsContent value="search" className="space-y-6">
+                {/* URL Import Card */}
+                <Card className="border-primary/30 shadow-sm bg-primary/5">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Link2 className="h-5 w-5 text-primary" />
+                      استيراد عبر الرابط
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                      <div className="md:col-span-10">
+                        <Label className="text-right block mb-2">رابط منتج AliExpress</Label>
+                        <Input
+                          placeholder="https://www.aliexpress.com/item/123456789.html"
+                          value={productUrl}
+                          onChange={(e) => setProductUrl(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleFetchByUrl()}
+                          className="text-right"
+                          dir="ltr"
+                        />
+                      </div>
+                      <div className="md:col-span-2 flex items-end">
+                        <Button 
+                          onClick={handleFetchByUrl} 
+                          disabled={isLoadingUrl} 
+                          className="w-full h-10"
+                          variant="secondary"
+                        >
+                          {isLoadingUrl ? (
+                            <>
+                              <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+                              جاري...
+                            </>
+                          ) : (
+                            <>
+                              <Link2 className="h-4 w-4 ml-2" />
+                              جلب
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* URL Product Preview */}
+                    {urlProduct && (
+                      <Card className="mt-4 border-border/50">
+                        <CardContent className="p-4">
+                          <div className="flex gap-4 items-start">
+                            {urlProduct.product_main_image_url ? (
+                              <img
+                                src={urlProduct.product_main_image_url}
+                                alt={urlProduct.product_title}
+                                className="w-24 h-24 object-cover rounded-lg border"
+                              />
+                            ) : (
+                              <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center">
+                                <Package className="h-8 w-8 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1 space-y-2 text-right">
+                              <h4 className="font-medium text-sm">{urlProduct.product_title}</h4>
+                              <p className="text-primary font-bold">
+                                {parseFloat(urlProduct.target_sale_price).toLocaleString('en-US')} ر.س
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                ID: {urlProduct.product_id}
+                              </p>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <ImportDialog 
+                                product={urlProduct} 
+                                categories={categories || []}
+                                onImport={(categoryId) => {
+                                  importMutation.mutate({ product: urlProduct, categoryId });
+                                  setUrlProduct(null);
+                                  setProductUrl("");
+                                }}
+                                isLoading={importMutation.isPending}
+                              />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => window.open(urlProduct.product_detail_url, '_blank')}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Search Card */}
                 <Card className="border-border/50 shadow-sm">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -286,6 +465,9 @@ export default function DashboardAliexpress() {
                         </Button>
                       </div>
                     </div>
+                    <p className="text-xs text-muted-foreground text-right">
+                      ⚠️ البحث بالكلمات يتطلب تفعيل Affiliate API. استخدم الاستيراد عبر الرابط للحصول على منتجات مباشرة.
+                    </p>
                   </CardContent>
                 </Card>
 
