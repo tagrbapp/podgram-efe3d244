@@ -46,7 +46,7 @@ interface ImportedProduct {
 export default function DashboardAliexpress() {
   const [searchKeywords, setSearchKeywords] = useState("");
   const [searchResults, setSearchResults] = useState<AliExpressProduct[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isSearching, setIsSearching] = useState(false);
   const queryClient = useQueryClient();
 
@@ -95,7 +95,7 @@ export default function DashboardAliexpress() {
         body: {
           action: 'search',
           keywords: searchKeywords,
-          categoryId: selectedCategory || undefined,
+          categoryId: selectedCategory === "all" ? undefined : selectedCategory || undefined,
           page: 1,
           pageSize: 20
         }
@@ -228,7 +228,7 @@ export default function DashboardAliexpress() {
                             <SelectValue placeholder="اختر فئة" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">جميع الفئات</SelectItem>
+                            <SelectItem value="all">جميع الفئات</SelectItem>
                             {categories?.map((cat) => (
                               <SelectItem key={cat.id} value={cat.id}>
                                 {cat.name}
