@@ -6,11 +6,11 @@ import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import AuctionCard from "@/components/AuctionCard";
 import CategoryCard from "@/components/CategoryCard";
-
+import AliExpressProductCard from "@/components/AliExpressProductCard";
 import CategoriesStrip from "@/components/CategoriesStrip";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
-import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator } from "lucide-react";
+import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator, ShoppingCart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Listing {
@@ -56,15 +56,32 @@ interface Category {
   listings_count: number;
 }
 
+interface AliExpressProduct {
+  id: string;
+  title: string;
+  title_ar: string | null;
+  price: number;
+  original_price: number | null;
+  discount_percentage: number | null;
+  images: string[] | null;
+  product_url: string;
+  seller_rating: number | null;
+  shipping_cost: number | null;
+  shipping_time: string | null;
+  currency: string | null;
+}
+
 const Index = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [filteredAuctions, setFilteredAuctions] = useState<Auction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [aliExpressProducts, setAliExpressProducts] = useState<AliExpressProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [auctionsLoading, setAuctionsLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [aliExpressLoading, setAliExpressLoading] = useState(true);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [sectionVisibility, setSectionVisibility] = useState({
     hero: true,
@@ -72,6 +89,7 @@ const Index = () => {
     categories: true,
     live_auctions: true,
     featured_listings: true,
+    aliexpress_products: true,
   });
   const [sectionSettings, setSectionSettings] = useState({
     hero: { items_limit: 12, background_color: "bg-gray-50" },
@@ -79,6 +97,7 @@ const Index = () => {
     categories: { items_limit: 8, background_color: "bg-muted/30" },
     live_auctions: { items_limit: 6, background_color: "bg-background" },
     featured_listings: { items_limit: 12, background_color: "bg-gray-50" },
+    aliexpress_products: { items_limit: 8, background_color: "bg-background" },
   });
 
   useEffect(() => {
@@ -88,6 +107,7 @@ const Index = () => {
         fetchListings(settings);
         fetchAuctions(settings);
         fetchCategories(settings);
+        fetchAliExpressProducts(settings);
       }
     };
     initializeData();
@@ -247,6 +267,24 @@ const Index = () => {
       setCategories(categoriesWithCounts);
     }
     setCategoriesLoading(false);
+  };
+
+  const fetchAliExpressProducts = async (settings?: any) => {
+    setAliExpressLoading(true);
+    const currentSettings = settings || sectionSettings;
+    const productLimit = currentSettings.aliexpress_products?.items_limit || 8;
+    
+    const { data } = await supabase
+      .from("aliexpress_products")
+      .select("*")
+      .eq("is_active", true)
+      .order("imported_at", { ascending: false })
+      .limit(productLimit);
+
+    if (data) {
+      setAliExpressProducts(data);
+    }
+    setAliExpressLoading(false);
   };
 
   const getCategoryIcon = (iconName: string) => {
@@ -593,6 +631,68 @@ const Index = () => {
 
             {/* Decorative Elements */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10" />
+          </section>
+        )}
+
+        {/* AliExpress Products Section */}
+        {sectionVisibility.aliexpress_products && aliExpressProducts.length > 0 && (
+          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-accent/5 to-background">
+            <div className="container mx-auto px-4">
+              {/* Section Header */}
+              <div className="flex items-center justify-between mb-12 animate-fade-in">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF6A00]/10 rounded-full mb-2">
+                    <ShoppingCart className="w-5 h-5 text-[#FF6A00]" />
+                    <span className="text-sm font-semibold text-[#FF6A00] uppercase tracking-wider">
+                      منتجات مستوردة
+                    </span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                    منتجات AliExpress
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    اكتشف أفضل المنتجات المستوردة بأسعار تنافسية
+                  </p>
+                </div>
+              </div>
+
+              {aliExpressLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-80 bg-card rounded-3xl animate-pulse shadow-card" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {aliExpressProducts.map((product, index) => (
+                    <div 
+                      key={product.id} 
+                      className="animate-scale-in hover-lift"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <AliExpressProductCard
+                        id={product.id}
+                        title={product.title}
+                        titleAr={product.title_ar || undefined}
+                        price={product.price}
+                        originalPrice={product.original_price || undefined}
+                        discountPercentage={product.discount_percentage || undefined}
+                        images={product.images || []}
+                        productUrl={product.product_url}
+                        sellerRating={product.seller_rating || undefined}
+                        shippingCost={product.shipping_cost || undefined}
+                        shippingTime={product.shipping_time || undefined}
+                        currency={product.currency || "SAR"}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute top-0 left-0 w-96 h-96 bg-[#FF6A00]/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
           </section>
         )}
       </main>
