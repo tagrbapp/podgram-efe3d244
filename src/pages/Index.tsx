@@ -8,10 +8,12 @@ import AuctionCard from "@/components/AuctionCard";
 import CategoryCard from "@/components/CategoryCard";
 import AliExpressProductCard from "@/components/AliExpressProductCard";
 import { CJProductCard } from "@/components/CJProductCard";
+import ShopifyProductCard from "@/components/ShopifyProductCard";
 import CategoriesStrip from "@/components/CategoriesStrip";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
-import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator, ShoppingCart, Truck } from "lucide-react";
+import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
+import { Gavel, TrendingUp, Package, Watch, Briefcase, Home, Car, ShoppingBag, Gem, Building2, Smartphone, Shirt, Dumbbell, Book, Refrigerator, ShoppingCart, Truck, Store } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Listing {
@@ -95,11 +97,13 @@ const Index = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [aliExpressProducts, setAliExpressProducts] = useState<AliExpressProduct[]>([]);
   const [cjProducts, setCJProducts] = useState<CJProduct[]>([]);
+  const [shopifyProducts, setShopifyProducts] = useState<ShopifyProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [auctionsLoading, setAuctionsLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [aliExpressLoading, setAliExpressLoading] = useState(true);
   const [cjLoading, setCJLoading] = useState(true);
+  const [shopifyLoading, setShopifyLoading] = useState(true);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [sectionVisibility, setSectionVisibility] = useState({
     hero: true,
@@ -109,6 +113,7 @@ const Index = () => {
     featured_listings: true,
     aliexpress_products: true,
     cjdropshipping_products: true,
+    shopify_products: true,
   });
   const [sectionSettings, setSectionSettings] = useState({
     hero: { items_limit: 12, background_color: "bg-gray-50" },
@@ -118,6 +123,7 @@ const Index = () => {
     featured_listings: { items_limit: 12, background_color: "bg-gray-50" },
     aliexpress_products: { items_limit: 8, background_color: "bg-background" },
     cjdropshipping_products: { items_limit: 8, background_color: "bg-background" },
+    shopify_products: { items_limit: 8, background_color: "bg-background" },
   });
 
   useEffect(() => {
@@ -129,6 +135,7 @@ const Index = () => {
         fetchCategories(settings);
         fetchAliExpressProducts(settings);
         fetchCJProducts(settings);
+        fetchShopifyProductsData(settings);
       }
     };
     initializeData();
@@ -324,6 +331,16 @@ const Index = () => {
       setCJProducts(data);
     }
     setCJLoading(false);
+  };
+
+  const fetchShopifyProductsData = async (settings?: any) => {
+    setShopifyLoading(true);
+    const currentSettings = settings || sectionSettings;
+    const productLimit = currentSettings.shopify_products?.items_limit || 8;
+    
+    const products = await fetchShopifyProducts(productLimit);
+    setShopifyProducts(products);
+    setShopifyLoading(false);
   };
 
   const getCategoryIcon = (iconName: string) => {
@@ -816,6 +833,60 @@ const Index = () => {
 
             {/* Decorative Elements */}
             <div className="absolute top-0 left-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl -z-10" />
+            <div className="absolute bottom-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
+          </section>
+        )}
+
+        {/* Shopify Products Section */}
+        {sectionVisibility.shopify_products && (
+          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-green-500/5 to-background">
+            <div className="container mx-auto px-4">
+              {/* Section Header */}
+              <div className="flex items-center justify-between mb-12 animate-fade-in">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-full mb-2">
+                    <Store className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-semibold text-green-600 uppercase tracking-wider">
+                      متجرنا
+                    </span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                    منتجات المتجر
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    تسوق من منتجاتنا المميزة بأفضل الأسعار
+                  </p>
+                </div>
+              </div>
+
+              {shopifyLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="h-80 bg-card rounded-3xl animate-pulse shadow-card" />
+                  ))}
+                </div>
+              ) : shopifyProducts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {shopifyProducts.map((product, index) => (
+                    <div 
+                      key={product.node.id} 
+                      className="animate-scale-in hover-lift"
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <ShopifyProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-lg text-muted-foreground">لا توجد منتجات متاحة حالياً</p>
+                </div>
+              )}
+            </div>
+
+            {/* Decorative Elements */}
+            <div className="absolute top-0 left-0 w-96 h-96 bg-green-500/5 rounded-full blur-3xl -z-10" />
             <div className="absolute bottom-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10" />
           </section>
         )}

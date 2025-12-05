@@ -61,6 +61,7 @@ import AliExpressCatalog from "./pages/AliExpressCatalog";
 import DashboardCJdropshipping from "./pages/DashboardCJdropshipping";
 import CJProductDetails from "./pages/CJProductDetails";
 import CJCatalog from "./pages/CJCatalog";
+import ShopifyProduct from "./pages/ShopifyProduct";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -121,6 +122,7 @@ const App = () => (
           <Route path="/dashboard/cjdropshipping" element={<DashboardCJdropshipping />} />
           <Route path="/cj-product/:id" element={<CJProductDetails />} />
           <Route path="/cj-catalog" element={<CJCatalog />} />
+          <Route path="/product/:handle" element={<ShopifyProduct />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
