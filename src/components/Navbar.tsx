@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, ShoppingCart, Heart } from "lucide-react";
+import { Menu, Heart } from "lucide-react";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -11,6 +11,7 @@ import type { User } from "@supabase/supabase-js";
 import TopBar from "@/components/TopBar";
 import SearchBar from "@/components/SearchBar";
 import podgramLogo from "@/assets/podgram-logo.png";
+import CartDrawer from "@/components/CartDrawer";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -126,9 +127,7 @@ const Navbar = () => {
                 <Menu className="h-5 w-5" />
               </Button>
 
-              <Button variant="ghost" size="icon" className="hover:bg-gray-100 transition-smooth">
-                <ShoppingCart className="h-5 w-5 text-gray-600" />
-              </Button>
+              <CartDrawer />
 
               <NotificationsDropdown userId={user?.id || null} />
 
