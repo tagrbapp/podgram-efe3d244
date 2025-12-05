@@ -54,11 +54,12 @@ import {
   BarChart3,
   Activity,
   Target,
-  Percent
+  Percent,
+  Calendar
 } from "lucide-react";
 import { toast } from "sonner";
 import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
-import { getProductAnalytics, getAnalyticsSummary, ProductAnalytics } from "@/lib/shopifyAnalytics";
+import { getProductAnalytics, getAnalyticsSummary, getTimeSeriesAnalytics, ProductAnalytics, TimeSeriesData } from "@/lib/shopifyAnalytics";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,6 +67,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Area, AreaChart, Legend } from "recharts";
 
 const DashboardShopifyProducts = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
@@ -80,6 +83,10 @@ const DashboardShopifyProducts = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "unavailable">("all");
   const [sortBy, setSortBy] = useState<"title" | "price" | "views">("views");
   const [activeTab, setActiveTab] = useState("products");
+  const [chartPeriod, setChartPeriod] = useState<"day" | "week" | "month">("day");
+  const [chartDays, setChartDays] = useState<number>(30);
+  const [chartData, setChartData] = useState<TimeSeriesData[]>([]);
+  const [chartLoading, setChartLoading] = useState(false);
   const [newProduct, setNewProduct] = useState({
     title: "",
     description: "",
@@ -91,7 +98,12 @@ const DashboardShopifyProducts = () => {
 
   useEffect(() => {
     loadData();
+    loadChartData();
   }, []);
+
+  useEffect(() => {
+    loadChartData();
+  }, [chartPeriod, chartDays]);
 
   useEffect(() => {
     filterAndSortProducts();
@@ -113,6 +125,18 @@ const DashboardShopifyProducts = () => {
       toast.error("فشل في تحميل البيانات");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadChartData = async () => {
+    setChartLoading(true);
+    try {
+      const data = await getTimeSeriesAnalytics(chartPeriod, chartDays);
+      setChartData(data);
+    } catch (error) {
+      console.error("Error loading chart data:", error);
+    } finally {
+      setChartLoading(false);
     }
   };
 
@@ -502,6 +526,155 @@ const DashboardShopifyProducts = () => {
                       </CardContent>
                     </Card>
                   </div>
+
+                  {/* Time Series Chart */}
+                  <Card className="border-border/50">
+                    <CardHeader>
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <CardTitle className="flex items-center gap-2">
+                          <TrendingUp className="h-5 w-5 text-primary" />
+                          الرسم البياني الزمني
+                        </CardTitle>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Select value={chartPeriod} onValueChange={(v: "day" | "week" | "month") => setChartPeriod(v)}>
+                            <SelectTrigger className="w-[120px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent align="end">
+                              <SelectItem value="day">يومي</SelectItem>
+                              <SelectItem value="week">أسبوعي</SelectItem>
+                              <SelectItem value="month">شهري</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Select value={String(chartDays)} onValueChange={(v) => setChartDays(Number(v))}>
+                            <SelectTrigger className="w-[140px]">
+                              <Calendar className="h-4 w-4 ml-2" />
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent align="end">
+                              <SelectItem value="7">آخر 7 أيام</SelectItem>
+                              <SelectItem value="30">آخر 30 يوم</SelectItem>
+                              <SelectItem value="90">آخر 3 أشهر</SelectItem>
+                              <SelectItem value="180">آخر 6 أشهر</SelectItem>
+                              <SelectItem value="365">آخر سنة</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {chartLoading ? (
+                        <div className="flex items-center justify-center h-[300px]">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      ) : chartData.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-[300px] text-center">
+                          <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground">لا توجد بيانات للفترة المحددة</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            جرب تغيير نطاق التاريخ أو انتظر حتى تتوفر بيانات جديدة
+                          </p>
+                        </div>
+                      ) : (
+                        <ChartContainer
+                          config={{
+                            views: {
+                              label: "الزيارات",
+                              color: "hsl(217, 91%, 60%)",
+                            },
+                            cartAdds: {
+                              label: "إضافات السلة",
+                              color: "hsl(25, 95%, 53%)",
+                            },
+                            purchases: {
+                              label: "المشتريات",
+                              color: "hsl(142, 71%, 45%)",
+                            },
+                          }}
+                          className="h-[300px] w-full"
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="fillViews" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="fillCartAdds" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="hsl(25, 95%, 53%)" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="hsl(25, 95%, 53%)" stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="fillPurchases" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" vertical={false} />
+                              <XAxis 
+                                dataKey="date" 
+                                tick={{ fontSize: 12 }} 
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={(value) => {
+                                  const date = new Date(value);
+                                  if (chartPeriod === 'month') {
+                                    return date.toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' });
+                                  }
+                                  return date.toLocaleDateString('ar-SA', { day: 'numeric', month: 'short' });
+                                }}
+                              />
+                              <YAxis 
+                                tick={{ fontSize: 12 }} 
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={(value) => value.toLocaleString('en-US')}
+                              />
+                              <ChartTooltip 
+                                content={<ChartTooltipContent />}
+                                labelFormatter={(value) => {
+                                  const date = new Date(value);
+                                  return date.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                                }}
+                              />
+                              <Legend 
+                                verticalAlign="top" 
+                                height={36}
+                                formatter={(value) => {
+                                  const labels: Record<string, string> = {
+                                    views: 'الزيارات',
+                                    cartAdds: 'إضافات السلة',
+                                    purchases: 'المشتريات'
+                                  };
+                                  return labels[value] || value;
+                                }}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="views"
+                                stroke="hsl(217, 91%, 60%)"
+                                fill="url(#fillViews)"
+                                strokeWidth={2}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="cartAdds"
+                                stroke="hsl(25, 95%, 53%)"
+                                fill="url(#fillCartAdds)"
+                                strokeWidth={2}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="purchases"
+                                stroke="hsl(142, 71%, 45%)"
+                                fill="url(#fillPurchases)"
+                                strokeWidth={2}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      )}
+                    </CardContent>
+                  </Card>
 
                   {/* Product Analytics Table */}
                   <Card className="border-border/50">
