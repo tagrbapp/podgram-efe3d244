@@ -10,6 +10,7 @@ import { fetchProductByHandle } from "@/lib/shopify";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
+import { trackProductEvent } from "@/lib/shopifyAnalytics";
 
 interface ProductData {
   id: string;
@@ -73,6 +74,15 @@ const ShopifyProduct = () => {
         setSelectedVariant(data.variants.edges[0].node.id);
       }
       setLoading(false);
+      
+      // Track product view
+      if (data) {
+        trackProductEvent({
+          product_id: data.id,
+          product_handle: handle,
+          event_type: 'view',
+        });
+      }
     };
     loadProduct();
   }, [handle]);

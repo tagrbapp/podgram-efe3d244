@@ -48,27 +48,38 @@ import {
   Eye,
   MoreVertical,
   Filter,
-  SortAsc
+  SortAsc,
+  ShoppingCart,
+  Users,
+  BarChart3,
+  Activity,
+  Target,
+  Percent
 } from "lucide-react";
 import { toast } from "sonner";
 import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
+import { getProductAnalytics, getAnalyticsSummary, ProductAnalytics } from "@/lib/shopifyAnalytics";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
 
 const DashboardShopifyProducts = () => {
   const [products, setProducts] = useState<ShopifyProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ShopifyProduct[]>([]);
+  const [analytics, setAnalytics] = useState<ProductAnalytics[]>([]);
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "unavailable">("all");
-  const [sortBy, setSortBy] = useState<"title" | "price" | "date">("title");
+  const [sortBy, setSortBy] = useState<"title" | "price" | "views">("views");
+  const [activeTab, setActiveTab] = useState("products");
   const [newProduct, setNewProduct] = useState({
     title: "",
     description: "",
@@ -79,30 +90,39 @@ const DashboardShopifyProducts = () => {
   });
 
   useEffect(() => {
-    loadProducts();
+    loadData();
   }, []);
 
   useEffect(() => {
     filterAndSortProducts();
-  }, [products, searchQuery, statusFilter, sortBy]);
+  }, [products, searchQuery, statusFilter, sortBy, analytics]);
 
-  const loadProducts = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const data = await fetchShopifyProducts(50);
-      setProducts(data);
+      const [productsData, analyticsData, summaryData] = await Promise.all([
+        fetchShopifyProducts(50),
+        getProductAnalytics(),
+        getAnalyticsSummary(),
+      ]);
+      setProducts(productsData);
+      setAnalytics(analyticsData);
+      setSummary(summaryData);
     } catch (error) {
-      console.error("Error loading products:", error);
-      toast.error("فشل في تحميل المنتجات");
+      console.error("Error loading data:", error);
+      toast.error("فشل في تحميل البيانات");
     } finally {
       setLoading(false);
     }
   };
 
+  const getAnalyticsForProduct = (productId: string) => {
+    return analytics.find(a => a.product_id === productId);
+  };
+
   const filterAndSortProducts = () => {
     let result = [...products];
 
-    // Search filter
     if (searchQuery) {
       result = result.filter(p => 
         p.node.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -110,7 +130,6 @@ const DashboardShopifyProducts = () => {
       );
     }
 
-    // Status filter
     if (statusFilter === "available") {
       result = result.filter(p => 
         p.node.variants?.edges?.some(v => v.node.availableForSale)
@@ -121,7 +140,6 @@ const DashboardShopifyProducts = () => {
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       if (sortBy === "title") {
         return a.node.title.localeCompare(b.node.title);
@@ -129,6 +147,10 @@ const DashboardShopifyProducts = () => {
         const priceA = parseFloat(a.node.priceRange?.minVariantPrice?.amount || "0");
         const priceB = parseFloat(b.node.priceRange?.minVariantPrice?.amount || "0");
         return priceB - priceA;
+      } else if (sortBy === "views") {
+        const viewsA = getAnalyticsForProduct(a.node.id)?.views_count || 0;
+        const viewsB = getAnalyticsForProduct(b.node.id)?.views_count || 0;
+        return viewsB - viewsA;
       }
       return 0;
     });
@@ -174,7 +196,7 @@ const DashboardShopifyProducts = () => {
     return price ? parseFloat(price.amount) : 0;
   };
 
-  const formatPrice = (price: number, currency: string = "SAR") => {
+  const formatPrice = (price: number) => {
     return `${price.toLocaleString("en-US")} ر.س`;
   };
 
@@ -213,7 +235,7 @@ const DashboardShopifyProducts = () => {
                           إدارة منتجات المتجر
                         </h1>
                         <p className="text-muted-foreground">
-                          عرض وإدارة منتجات متجر Shopify الخاص بك
+                          عرض وإدارة وتحليل منتجات متجر Shopify الخاص بك
                         </p>
                       </div>
                     </div>
@@ -221,7 +243,7 @@ const DashboardShopifyProducts = () => {
                   <div className="flex flex-wrap gap-3">
                     <Button 
                       variant="outline" 
-                      onClick={loadProducts} 
+                      onClick={loadData} 
                       disabled={loading}
                       className="gap-2 bg-background/50 backdrop-blur-sm hover:bg-background/80"
                     >
@@ -328,349 +350,631 @@ const DashboardShopifyProducts = () => {
 
           <div className="p-6">
             <div className="max-w-7xl mx-auto space-y-6">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-                  <CardContent className="p-6 relative">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">إجمالي المنتجات</p>
-                        <p className="text-3xl font-bold text-foreground mt-1">
-                          {products.length.toLocaleString("en-US")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">منتج في المتجر</p>
-                      </div>
-                      <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                        <Package className="h-6 w-6 text-primary" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Tabs */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
+                <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+                  <TabsTrigger value="products" className="gap-2">
+                    <Package className="h-4 w-4" />
+                    المنتجات
+                  </TabsTrigger>
+                  <TabsTrigger value="analytics" className="gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    التحليلات
+                  </TabsTrigger>
+                </TabsList>
 
-                <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent" />
-                  <CardContent className="p-6 relative">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">المتاحة للبيع</p>
-                        <p className="text-3xl font-bold text-green-600 mt-1">
-                          {getAvailableCount().toLocaleString("en-US")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {products.length > 0 ? `${Math.round((getAvailableCount() / products.length) * 100)}% من المنتجات` : '0%'}
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-xl bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
-                        <ShoppingBag className="h-6 w-6 text-green-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent" />
-                  <CardContent className="p-6 relative">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">غير متاحة</p>
-                        <p className="text-3xl font-bold text-orange-600 mt-1">
-                          {(products.length - getAvailableCount()).toLocaleString("en-US")}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">تحتاج مراجعة</p>
-                      </div>
-                      <div className="p-3 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
-                        <TrendingUp className="h-6 w-6 text-orange-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
-                  <CardContent className="p-6 relative">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">إجمالي القيمة</p>
-                        <p className="text-2xl font-bold text-blue-600 mt-1">
-                          {formatPrice(getTotalValue())}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">قيمة المخزون</p>
-                      </div>
-                      <div className="p-3 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                        <DollarSign className="h-6 w-6 text-blue-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Filters and Search */}
-              <Card className="border-border/50">
-                <CardContent className="p-4">
-                  <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-                    <div className="relative flex-1 w-full lg:max-w-md">
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="البحث في المنتجات..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pr-10 text-right"
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-3 items-center">
-                      <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-                        <SelectTrigger className="w-[140px]">
-                          <Filter className="h-4 w-4 ml-2" />
-                          <SelectValue placeholder="الحالة" />
-                        </SelectTrigger>
-                        <SelectContent align="start">
-                          <SelectItem value="all">الكل</SelectItem>
-                          <SelectItem value="available">متاح</SelectItem>
-                          <SelectItem value="unavailable">غير متاح</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
-                        <SelectTrigger className="w-[140px]">
-                          <SortAsc className="h-4 w-4 ml-2" />
-                          <SelectValue placeholder="ترتيب" />
-                        </SelectTrigger>
-                        <SelectContent align="start">
-                          <SelectItem value="title">الاسم</SelectItem>
-                          <SelectItem value="price">السعر</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <div className="flex gap-1 p-1 bg-muted rounded-lg">
-                        <Button
-                          variant={viewMode === "grid" ? "default" : "ghost"}
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setViewMode("grid")}
-                        >
-                          <Grid3X3 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant={viewMode === "list" ? "default" : "ghost"}
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setViewMode("list")}
-                        >
-                          <List className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Products Display */}
-              {loading ? (
-                <div className="flex items-center justify-center py-20">
-                  <div className="text-center space-y-4">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-                    <p className="text-muted-foreground">جاري تحميل المنتجات...</p>
-                  </div>
-                </div>
-              ) : filteredProducts.length === 0 ? (
-                <Card className="border-dashed border-2">
-                  <CardContent className="py-16">
-                    <div className="text-center space-y-4">
-                      <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                        <Package className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-foreground">لا توجد منتجات</h3>
-                        <p className="text-muted-foreground mt-1">
-                          {searchQuery || statusFilter !== "all" 
-                            ? "لا توجد نتائج مطابقة للبحث" 
-                            : "أضف منتجات جديدة من خلال الزر أعلاه"}
-                        </p>
-                      </div>
-                      {(searchQuery || statusFilter !== "all") && (
-                        <Button 
-                          variant="outline" 
-                          onClick={() => { setSearchQuery(""); setStatusFilter("all"); }}
-                        >
-                          إعادة تعيين الفلاتر
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : viewMode === "grid" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredProducts.map((product) => (
-                    <Card 
-                      key={product.node.id} 
-                      className="group overflow-hidden border-border/50 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
-                    >
-                      <div className="relative aspect-square overflow-hidden bg-muted">
-                        <img
-                          src={getProductImage(product)}
-                          alt={product.node.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 right-3">
-                          {isProductAvailable(product) ? (
-                            <Badge className="bg-green-500/90 hover:bg-green-500 shadow-lg">
-                              متاح
-                            </Badge>
-                          ) : (
-                            <Badge variant="destructive" className="shadow-lg">
-                              غير متاح
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="absolute bottom-3 left-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                          <Button
-                            size="sm"
-                            className="flex-1 shadow-lg"
-                            onClick={() => window.open(`/product/${product.node.handle}`, "_blank")}
-                          >
-                            <Eye className="h-4 w-4 ml-1" />
-                            عرض
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="sm" variant="secondary" className="shadow-lg">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                              <DropdownMenuItem onClick={() => toast.info("لتعديل المنتج، يرجى طلب ذلك من خلال المحادثة")}>
-                                <Pencil className="h-4 w-4 ml-2" />
-                                تعديل
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="text-destructive"
-                                onClick={() => handleDeleteProduct(product.node.id)}
-                              >
-                                <Trash2 className="h-4 w-4 ml-2" />
-                                حذف
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                          {product.node.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1 h-10">
-                          {product.node.description || "لا يوجد وصف"}
-                        </p>
-                        <div className="mt-3 flex items-center justify-between">
-                          <span className="text-lg font-bold text-primary">
-                            {formatPrice(getProductPrice(product))}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {product.node.variants?.edges?.length || 0} متغير
-                          </span>
+                <TabsContent value="analytics" className="mt-6 space-y-6">
+                  {/* Analytics Summary Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">إجمالي الزيارات</p>
+                            <p className="text-3xl font-bold text-blue-600 mt-1">
+                              {(summary?.totalViews || 0).toLocaleString("en-US")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">زيارة للمنتجات</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                            <Eye className="h-6 w-6 text-blue-600" />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card className="border-border/50">
-                  <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                      <Table dir="rtl">
-                        <TableHeader>
-                          <TableRow className="bg-muted/50">
-                            <TableHead className="text-right w-20">الصورة</TableHead>
-                            <TableHead className="text-right">اسم المنتج</TableHead>
-                            <TableHead className="text-right">الوصف</TableHead>
-                            <TableHead className="text-right">السعر</TableHead>
-                            <TableHead className="text-right">المتغيرات</TableHead>
-                            <TableHead className="text-right">الحالة</TableHead>
-                            <TableHead className="text-right w-32">الإجراءات</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredProducts.map((product) => (
-                            <TableRow key={product.node.id} className="hover:bg-muted/50">
-                              <TableCell>
-                                <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted">
-                                  <img
-                                    src={getProductImage(product)}
-                                    alt={product.node.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              </TableCell>
-                              <TableCell className="font-medium text-right">
-                                <span className="hover:text-primary cursor-pointer transition-colors">
-                                  {product.node.title}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-right max-w-xs">
-                                <span className="text-muted-foreground text-sm line-clamp-2">
-                                  {product.node.description || "لا يوجد وصف"}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-right font-semibold text-primary">
-                                {formatPrice(getProductPrice(product))}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <Badge variant="outline">
-                                  {product.node.variants?.edges?.length || 0}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {isProductAvailable(product) ? (
-                                  <Badge className="bg-green-500/90">متاح</Badge>
-                                ) : (
-                                  <Badge variant="destructive">غير متاح</Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2 justify-start">
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => window.open(`/product/${product.node.handle}`, "_blank")}
-                                    title="عرض المنتج"
-                                  >
-                                    <ExternalLink className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => toast.info("لتعديل المنتج، يرجى طلب ذلك من خلال المحادثة")}
-                                    title="تعديل"
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => handleDeleteProduct(product.node.id)}
-                                    title="حذف"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
 
-              {/* Results count */}
-              {!loading && filteredProducts.length > 0 && (
-                <div className="text-center text-sm text-muted-foreground">
-                  عرض {filteredProducts.length.toLocaleString("en-US")} من {products.length.toLocaleString("en-US")} منتج
-                </div>
-              )}
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">إضافات للسلة</p>
+                            <p className="text-3xl font-bold text-orange-600 mt-1">
+                              {(summary?.totalCartAdds || 0).toLocaleString("en-US")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">منتج تمت إضافته</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                            <ShoppingCart className="h-6 w-6 text-orange-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">المشتريات</p>
+                            <p className="text-3xl font-bold text-green-600 mt-1">
+                              {(summary?.totalPurchases || 0).toLocaleString("en-US")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {summary?.totalUnitsSold || 0} وحدة مباعة
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
+                            <ShoppingBag className="h-6 w-6 text-green-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">الإيرادات</p>
+                            <p className="text-2xl font-bold text-purple-600 mt-1">
+                              {formatPrice(summary?.totalRevenue || 0)}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">إجمالي المبيعات</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
+                            <DollarSign className="h-6 w-6 text-purple-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Conversion Stats */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <Card className="border-border/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Users className="h-4 w-4 text-primary" />
+                          الزوار الفريدين
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-2xl font-bold text-foreground">
+                          {(summary?.uniqueViewers || 0).toLocaleString("en-US")}
+                        </p>
+                        <p className="text-xs text-muted-foreground">مستخدم شاهد المنتجات</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-border/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Target className="h-4 w-4 text-primary" />
+                          معدل التحويل للسلة
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <p className="text-2xl font-bold text-foreground">
+                            {summary?.totalViews > 0 
+                              ? ((summary?.totalCartAdds / summary?.totalViews) * 100).toFixed(1)
+                              : '0.0'}%
+                          </p>
+                          <Progress 
+                            value={summary?.totalViews > 0 
+                              ? (summary?.totalCartAdds / summary?.totalViews) * 100
+                              : 0} 
+                            className="h-2"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-border/50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Percent className="h-4 w-4 text-primary" />
+                          معدل التحويل للشراء
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <p className="text-2xl font-bold text-foreground">
+                            {summary?.conversionRate || '0.00'}%
+                          </p>
+                          <Progress 
+                            value={parseFloat(summary?.conversionRate || '0')} 
+                            className="h-2"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Product Analytics Table */}
+                  <Card className="border-border/50">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-primary" />
+                        تحليلات المنتجات التفصيلية
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {analytics.length === 0 ? (
+                        <div className="text-center py-12">
+                          <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-muted-foreground">لا توجد بيانات تحليلية بعد</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            ستظهر التحليلات عندما يبدأ المستخدمون في زيارة المنتجات
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <Table dir="rtl">
+                            <TableHeader>
+                              <TableRow className="bg-muted/50">
+                                <TableHead className="text-right">المنتج</TableHead>
+                                <TableHead className="text-right">الزيارات</TableHead>
+                                <TableHead className="text-right">الزوار الفريدين</TableHead>
+                                <TableHead className="text-right">إضافات السلة</TableHead>
+                                <TableHead className="text-right">المشتريات</TableHead>
+                                <TableHead className="text-right">الوحدات المباعة</TableHead>
+                                <TableHead className="text-right">الإيرادات</TableHead>
+                                <TableHead className="text-right">معدل التحويل</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {analytics.map((item) => (
+                                <TableRow key={item.id} className="hover:bg-muted/50">
+                                  <TableCell className="font-medium">
+                                    <span className="text-foreground">{item.product_handle}</span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/30">
+                                      {item.views_count.toLocaleString("en-US")}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>{item.unique_viewers.toLocaleString("en-US")}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/30">
+                                      {item.cart_adds_count.toLocaleString("en-US")}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                                      {item.purchases_count.toLocaleString("en-US")}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>{item.units_sold.toLocaleString("en-US")}</TableCell>
+                                  <TableCell className="font-semibold text-primary">
+                                    {formatPrice(parseFloat(String(item.revenue || 0)))}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm">
+                                        {item.views_count > 0 
+                                          ? ((item.purchases_count / item.views_count) * 100).toFixed(1)
+                                          : '0.0'}%
+                                      </span>
+                                      <Progress 
+                                        value={item.views_count > 0 
+                                          ? (item.purchases_count / item.views_count) * 100
+                                          : 0} 
+                                        className="h-2 w-16"
+                                      />
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="products" className="mt-6 space-y-6">
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">إجمالي المنتجات</p>
+                            <p className="text-3xl font-bold text-foreground mt-1">
+                              {products.length.toLocaleString("en-US")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">منتج في المتجر</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                            <Package className="h-6 w-6 text-primary" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">المتاحة للبيع</p>
+                            <p className="text-3xl font-bold text-green-600 mt-1">
+                              {getAvailableCount().toLocaleString("en-US")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {products.length > 0 ? `${Math.round((getAvailableCount() / products.length) * 100)}% من المنتجات` : '0%'}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-green-500/10 group-hover:bg-green-500/20 transition-colors">
+                            <ShoppingBag className="h-6 w-6 text-green-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">غير متاحة</p>
+                            <p className="text-3xl font-bold text-orange-600 mt-1">
+                              {(products.length - getAvailableCount()).toLocaleString("en-US")}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">تحتاج مراجعة</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                            <TrendingUp className="h-6 w-6 text-orange-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300 group">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+                      <CardContent className="p-6 relative">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-muted-foreground">إجمالي القيمة</p>
+                            <p className="text-2xl font-bold text-blue-600 mt-1">
+                              {formatPrice(getTotalValue())}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">قيمة المخزون</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                            <DollarSign className="h-6 w-6 text-blue-600" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Filters and Search */}
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                        <div className="relative flex-1 w-full lg:max-w-md">
+                          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            placeholder="البحث في المنتجات..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pr-10 text-right"
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-3 items-center">
+                          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                            <SelectTrigger className="w-[140px]">
+                              <Filter className="h-4 w-4 ml-2" />
+                              <SelectValue placeholder="الحالة" />
+                            </SelectTrigger>
+                            <SelectContent align="start">
+                              <SelectItem value="all">الكل</SelectItem>
+                              <SelectItem value="available">متاح</SelectItem>
+                              <SelectItem value="unavailable">غير متاح</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+                            <SelectTrigger className="w-[140px]">
+                              <SortAsc className="h-4 w-4 ml-2" />
+                              <SelectValue placeholder="ترتيب" />
+                            </SelectTrigger>
+                            <SelectContent align="start">
+                              <SelectItem value="views">الأكثر زيارة</SelectItem>
+                              <SelectItem value="title">الاسم</SelectItem>
+                              <SelectItem value="price">السعر</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                            <Button
+                              variant={viewMode === "grid" ? "default" : "ghost"}
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setViewMode("grid")}
+                            >
+                              <Grid3X3 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant={viewMode === "list" ? "default" : "ghost"}
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setViewMode("list")}
+                            >
+                              <List className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Products Display */}
+                  {loading ? (
+                    <div className="flex items-center justify-center py-20">
+                      <div className="text-center space-y-4">
+                        <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                        <p className="text-muted-foreground">جاري تحميل المنتجات...</p>
+                      </div>
+                    </div>
+                  ) : filteredProducts.length === 0 ? (
+                    <Card className="border-dashed border-2">
+                      <CardContent className="py-16">
+                        <div className="text-center space-y-4">
+                          <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                            <Package className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground">لا توجد منتجات</h3>
+                            <p className="text-muted-foreground mt-1">
+                              {searchQuery || statusFilter !== "all" 
+                                ? "لا توجد نتائج مطابقة للبحث" 
+                                : "أضف منتجات جديدة من خلال الزر أعلاه"}
+                            </p>
+                          </div>
+                          {(searchQuery || statusFilter !== "all") && (
+                            <Button 
+                              variant="outline" 
+                              onClick={() => { setSearchQuery(""); setStatusFilter("all"); }}
+                            >
+                              إعادة تعيين الفلاتر
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : viewMode === "grid" ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {filteredProducts.map((product) => {
+                        const productAnalytics = getAnalyticsForProduct(product.node.id);
+                        return (
+                          <Card 
+                            key={product.node.id} 
+                            className="group overflow-hidden border-border/50 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+                          >
+                            <div className="relative aspect-square overflow-hidden bg-muted">
+                              <img
+                                src={getProductImage(product)}
+                                alt={product.node.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute top-3 right-3">
+                                {isProductAvailable(product) ? (
+                                  <Badge className="bg-green-500/90 hover:bg-green-500 shadow-lg">
+                                    متاح
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="destructive" className="shadow-lg">
+                                    غير متاح
+                                  </Badge>
+                                )}
+                              </div>
+                              {/* Analytics overlay */}
+                              {productAnalytics && (
+                                <div className="absolute top-3 left-3 flex flex-col gap-1">
+                                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs">
+                                    <Eye className="h-3 w-3 ml-1" />
+                                    {productAnalytics.views_count}
+                                  </Badge>
+                                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs">
+                                    <ShoppingCart className="h-3 w-3 ml-1" />
+                                    {productAnalytics.cart_adds_count}
+                                  </Badge>
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                              <div className="absolute bottom-3 left-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                                <Button
+                                  size="sm"
+                                  className="flex-1 shadow-lg"
+                                  onClick={() => window.open(`/product/${product.node.handle}`, "_blank")}
+                                >
+                                  <Eye className="h-4 w-4 ml-1" />
+                                  عرض
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="sm" variant="secondary" className="shadow-lg">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start">
+                                    <DropdownMenuItem onClick={() => toast.info("لتعديل المنتج، يرجى طلب ذلك من خلال المحادثة")}>
+                                      <Pencil className="h-4 w-4 ml-2" />
+                                      تعديل
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      className="text-destructive"
+                                      onClick={() => handleDeleteProduct(product.node.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 ml-2" />
+                                      حذف
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                            <CardContent className="p-4">
+                              <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                                {product.node.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground line-clamp-2 mt-1 h-10">
+                                {product.node.description || "لا يوجد وصف"}
+                              </p>
+                              <div className="mt-3 flex items-center justify-between">
+                                <span className="text-lg font-bold text-primary">
+                                  {formatPrice(getProductPrice(product))}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {product.node.variants?.edges?.length || 0} متغير
+                                </span>
+                              </div>
+                              {/* Mini analytics */}
+                              {productAnalytics && (
+                                <div className="mt-3 pt-3 border-t border-border/50 grid grid-cols-3 gap-2 text-center">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">زيارات</p>
+                                    <p className="text-sm font-semibold text-blue-600">{productAnalytics.views_count}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">سلة</p>
+                                    <p className="text-sm font-semibold text-orange-600">{productAnalytics.cart_adds_count}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">مبيعات</p>
+                                    <p className="text-sm font-semibold text-green-600">{productAnalytics.purchases_count}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <Card className="border-border/50">
+                      <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                          <Table dir="rtl">
+                            <TableHeader>
+                              <TableRow className="bg-muted/50">
+                                <TableHead className="text-right w-20">الصورة</TableHead>
+                                <TableHead className="text-right">اسم المنتج</TableHead>
+                                <TableHead className="text-right">السعر</TableHead>
+                                <TableHead className="text-right">الزيارات</TableHead>
+                                <TableHead className="text-right">السلة</TableHead>
+                                <TableHead className="text-right">المبيعات</TableHead>
+                                <TableHead className="text-right">الحالة</TableHead>
+                                <TableHead className="text-right w-32">الإجراءات</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filteredProducts.map((product) => {
+                                const productAnalytics = getAnalyticsForProduct(product.node.id);
+                                return (
+                                  <TableRow key={product.node.id} className="hover:bg-muted/50">
+                                    <TableCell>
+                                      <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted">
+                                        <img
+                                          src={getProductImage(product)}
+                                          alt={product.node.title}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium text-right">
+                                      <span className="hover:text-primary cursor-pointer transition-colors">
+                                        {product.node.title}
+                                      </span>
+                                    </TableCell>
+                                    <TableCell className="text-right font-semibold text-primary">
+                                      {formatPrice(getProductPrice(product))}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Badge variant="outline" className="bg-blue-500/10 text-blue-600">
+                                        {productAnalytics?.views_count || 0}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Badge variant="outline" className="bg-orange-500/10 text-orange-600">
+                                        {productAnalytics?.cart_adds_count || 0}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Badge variant="outline" className="bg-green-500/10 text-green-600">
+                                        {productAnalytics?.purchases_count || 0}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {isProductAvailable(product) ? (
+                                        <Badge className="bg-green-500/90">متاح</Badge>
+                                      ) : (
+                                        <Badge variant="destructive">غير متاح</Badge>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-2 justify-start">
+                                        <Button
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-8 w-8"
+                                          onClick={() => window.open(`/product/${product.node.handle}`, "_blank")}
+                                          title="عرض المنتج"
+                                        >
+                                          <ExternalLink className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="icon"
+                                          className="h-8 w-8"
+                                          onClick={() => toast.info("لتعديل المنتج، يرجى طلب ذلك من خلال المحادثة")}
+                                          title="تعديل"
+                                        >
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="destructive"
+                                          size="icon"
+                                          className="h-8 w-8"
+                                          onClick={() => handleDeleteProduct(product.node.id)}
+                                          title="حذف"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Results count */}
+                  {!loading && filteredProducts.length > 0 && (
+                    <div className="text-center text-sm text-muted-foreground">
+                      عرض {filteredProducts.length.toLocaleString("en-US")} من {products.length.toLocaleString("en-US")} منتج
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </main>

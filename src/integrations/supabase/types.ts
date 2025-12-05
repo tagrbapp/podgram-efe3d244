@@ -1736,6 +1736,90 @@ export type Database = {
           },
         ]
       }
+      shopify_product_analytics: {
+        Row: {
+          cart_adds_count: number | null
+          created_at: string
+          id: string
+          product_handle: string
+          product_id: string
+          product_title: string | null
+          purchases_count: number | null
+          revenue: number | null
+          unique_cart_adders: number | null
+          unique_viewers: number | null
+          units_sold: number | null
+          updated_at: string
+          views_count: number | null
+        }
+        Insert: {
+          cart_adds_count?: number | null
+          created_at?: string
+          id?: string
+          product_handle: string
+          product_id: string
+          product_title?: string | null
+          purchases_count?: number | null
+          revenue?: number | null
+          unique_cart_adders?: number | null
+          unique_viewers?: number | null
+          units_sold?: number | null
+          updated_at?: string
+          views_count?: number | null
+        }
+        Update: {
+          cart_adds_count?: number | null
+          created_at?: string
+          id?: string
+          product_handle?: string
+          product_id?: string
+          product_title?: string | null
+          purchases_count?: number | null
+          revenue?: number | null
+          unique_cart_adders?: number | null
+          unique_viewers?: number | null
+          units_sold?: number | null
+          updated_at?: string
+          views_count?: number | null
+        }
+        Relationships: []
+      }
+      shopify_product_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          price: number | null
+          product_handle: string
+          product_id: string
+          quantity: number | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          price?: number | null
+          product_handle: string
+          product_id: string
+          quantity?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          price?: number | null
+          product_handle?: string
+          product_id?: string
+          quantity?: number | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       test_bidder_stats: {
         Row: {
           created_at: string | null
