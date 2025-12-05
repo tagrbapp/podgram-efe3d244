@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import ListingCard from "@/components/ListingCard";
 import AuctionCard from "@/components/AuctionCard";
+import ShopifyProductCard from "@/components/ShopifyProductCard";
 import CollectionTagsFilter from "@/components/CollectionTagsFilter";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -12,12 +13,13 @@ import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { SlidersHorizontal, X, GitCompare } from "lucide-react";
+import { SlidersHorizontal, X, GitCompare, Store } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import ProductComparisonDialog from "@/components/ProductComparisonDialog";
 import { Separator } from "@/components/ui/separator";
+import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
 
 interface Listing {
   id: string;
@@ -73,11 +75,13 @@ const Catalog = () => {
   const [searchParams] = useSearchParams();
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [shopifyProducts, setShopifyProducts] = useState<ShopifyProduct[]>([]);
+  const [shopifyLoading, setShopifyLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [sortBy, setSortBy] = useState<"newest" | "price-asc" | "price-desc">("newest");
-  const [activeTab, setActiveTab] = useState<"active" | "ended">("active");
+  const [activeTab, setActiveTab] = useState<"active" | "ended" | "shopify">("active");
   const [compareProducts, setCompareProducts] = useState<Listing[]>([]);
   const [compareDialogOpen, setCompareDialogOpen] = useState(false);
   
@@ -89,7 +93,52 @@ const Catalog = () => {
   useEffect(() => {
     fetchCategories();
     fetchItems();
+    loadShopifyProducts();
   }, [searchParams, selectedCategories, priceRange, sortBy, activeTab]);
+
+  const loadShopifyProducts = async () => {
+    setShopifyLoading(true);
+    try {
+      const products = await fetchShopifyProducts(50);
+      let filtered = [...products];
+      
+      // Apply price filter
+      filtered = filtered.filter(p => {
+        const price = parseFloat(p.node.priceRange?.minVariantPrice?.amount || "0");
+        return price >= priceRange[0] && price <= priceRange[1];
+      });
+      
+      // Apply search filter
+      const searchQuery = searchParams.get("q");
+      if (searchQuery) {
+        filtered = filtered.filter(p => 
+          p.node.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.node.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      // Apply sort
+      if (sortBy === "price-asc") {
+        filtered.sort((a, b) => {
+          const priceA = parseFloat(a.node.priceRange?.minVariantPrice?.amount || "0");
+          const priceB = parseFloat(b.node.priceRange?.minVariantPrice?.amount || "0");
+          return priceA - priceB;
+        });
+      } else if (sortBy === "price-desc") {
+        filtered.sort((a, b) => {
+          const priceA = parseFloat(a.node.priceRange?.minVariantPrice?.amount || "0");
+          const priceB = parseFloat(b.node.priceRange?.minVariantPrice?.amount || "0");
+          return priceB - priceA;
+        });
+      }
+      
+      setShopifyProducts(filtered);
+    } catch (error) {
+      console.error("Error loading Shopify products:", error);
+    } finally {
+      setShopifyLoading(false);
+    }
+  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -456,10 +505,14 @@ const Catalog = () => {
 
           {/* Products Grid */}
           <main className="md:col-span-3">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "ended")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "ended" | "shopify")} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="active">النشطة</TabsTrigger>
                 <TabsTrigger value="ended">المنتهية</TabsTrigger>
+                <TabsTrigger value="shopify" className="gap-2">
+                  <Store className="h-4 w-4" />
+                  منتجات المتجر
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="active" className="mt-0">
@@ -564,6 +617,27 @@ const Catalog = () => {
                           />
                         )}
                       </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="shopify" className="mt-0">
+                {shopifyLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(9)].map((_, i) => (
+                      <Skeleton key={i} className="h-80 rounded-2xl" />
+                    ))}
+                  </div>
+                ) : shopifyProducts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground text-lg">لا توجد منتجات في المتجر</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {shopifyProducts.map((product) => (
+                      <ShopifyProductCard key={product.node.id} product={product} />
                     ))}
                   </div>
                 )}
