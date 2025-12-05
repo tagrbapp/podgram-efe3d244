@@ -133,3 +133,66 @@ export const getRecentEvents = async (limit: number = 50) => {
     return [];
   }
 };
+
+export interface TimeSeriesData {
+  date: string;
+  views: number;
+  cartAdds: number;
+  purchases: number;
+}
+
+export const getTimeSeriesAnalytics = async (
+  period: 'day' | 'week' | 'month' = 'day',
+  days: number = 30
+): Promise<TimeSeriesData[]> => {
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const { data, error } = await supabase
+      .from('shopify_product_events')
+      .select('created_at, event_type')
+      .gte('created_at', startDate.toISOString())
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching time series:', error);
+      return [];
+    }
+
+    const events = data || [];
+    const groupedData: { [key: string]: TimeSeriesData } = {};
+
+    events.forEach(event => {
+      const date = new Date(event.created_at);
+      let key: string;
+
+      if (period === 'day') {
+        key = date.toISOString().split('T')[0];
+      } else if (period === 'week') {
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay());
+        key = weekStart.toISOString().split('T')[0];
+      } else {
+        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      if (!groupedData[key]) {
+        groupedData[key] = { date: key, views: 0, cartAdds: 0, purchases: 0 };
+      }
+
+      if (event.event_type === 'view') {
+        groupedData[key].views++;
+      } else if (event.event_type === 'cart_add') {
+        groupedData[key].cartAdds++;
+      } else if (event.event_type === 'purchase') {
+        groupedData[key].purchases++;
+      }
+    });
+
+    return Object.values(groupedData).sort((a, b) => a.date.localeCompare(b.date));
+  } catch (error) {
+    console.error('Error fetching time series:', error);
+    return [];
+  }
+};
