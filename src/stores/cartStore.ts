@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ShopifyProduct, createStorefrontCheckout } from '@/lib/shopify';
+import { trackProductEvent } from '@/lib/shopifyAnalytics';
 
 export interface CartItem {
   product: ShopifyProduct;
@@ -44,6 +45,15 @@ export const useCartStore = create<CartStore>()(
       addItem: (item) => {
         const { items } = get();
         const existingItem = items.find(i => i.variantId === item.variantId);
+        
+        // Track cart add event
+        trackProductEvent({
+          product_id: item.product.node.id,
+          product_handle: item.product.node.handle,
+          event_type: 'cart_add',
+          quantity: item.quantity,
+          price: parseFloat(item.price.amount),
+        });
         
         if (existingItem) {
           set({
