@@ -1856,6 +1856,42 @@ export type Database = {
         }
         Relationships: []
       }
+      static_pages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean
+          meta_description: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          meta_description?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          meta_description?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       test_bidder_stats: {
         Row: {
           created_at: string | null
