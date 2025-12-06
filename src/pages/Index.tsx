@@ -857,6 +857,13 @@ const Index = () => {
                     تسوق من منتجاتنا المميزة بأفضل الأسعار
                   </p>
                 </div>
+                <a 
+                  href="/catalog?tab=shopify" 
+                  className="hidden md:flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-full font-semibold hover:bg-green-600/90 transition-colors"
+                >
+                  عرض الكل
+                  <Store className="w-4 h-4" />
+                </a>
               </div>
 
               {shopifyLoading ? (
@@ -883,6 +890,17 @@ const Index = () => {
                   <p className="text-lg text-muted-foreground">لا توجد منتجات متاحة حالياً</p>
                 </div>
               )}
+
+              {/* Mobile View All Button */}
+              <div className="flex md:hidden justify-center mt-8">
+                <a 
+                  href="/catalog?tab=shopify" 
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-full font-semibold hover:bg-green-600/90 transition-colors"
+                >
+                  عرض كل المنتجات
+                  <Store className="w-4 h-4" />
+                </a>
+              </div>
             </div>
 
             {/* Decorative Elements */}
