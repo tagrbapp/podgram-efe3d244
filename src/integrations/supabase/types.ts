@@ -1820,6 +1820,42 @@ export type Database = {
         }
         Relationships: []
       }
+      shopify_product_translations: {
+        Row: {
+          created_at: string
+          description_ar: string | null
+          description_original: string | null
+          id: string
+          product_handle: string
+          product_id: string | null
+          title_ar: string | null
+          title_original: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_ar?: string | null
+          description_original?: string | null
+          id?: string
+          product_handle: string
+          product_id?: string | null
+          title_ar?: string | null
+          title_original?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_ar?: string | null
+          description_original?: string | null
+          id?: string
+          product_handle?: string
+          product_id?: string | null
+          title_ar?: string | null
+          title_original?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       test_bidder_stats: {
         Row: {
           created_at: string | null

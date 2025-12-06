@@ -30,6 +30,7 @@ import SEO from "@/components/SEO";
 import { trackProductEvent } from "@/lib/shopifyAnalytics";
 import ShopifyProductCard from "@/components/ShopifyProductCard";
 import ImageLightbox from "@/components/ImageLightbox";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VariantImage {
   url: string;
@@ -100,10 +101,28 @@ const ShopifyProduct = () => {
   
   const addItem = useCartStore(state => state.addItem);
 
-  // Translate product content
-  const translateProduct = async (title: string, description: string) => {
+  // Load or translate product content
+  const loadOrTranslateProduct = async (productHandle: string, title: string, description: string, productId: string) => {
     setTranslating(true);
     try {
+      // First, check if translation exists in database
+      const { data: existingTranslation, error: fetchError } = await supabase
+        .from('shopify_product_translations')
+        .select('*')
+        .eq('product_handle', productHandle)
+        .single();
+      
+      if (existingTranslation && !fetchError) {
+        // Use existing translation
+        setTranslation({
+          title_ar: existingTranslation.title_ar || '',
+          description_ar: existingTranslation.description_ar || ''
+        });
+        setTranslating(false);
+        return;
+      }
+      
+      // No translation exists, call AI to translate
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/translate-text`, {
         method: 'POST',
         headers: {
@@ -116,6 +135,18 @@ const ShopifyProduct = () => {
       if (response.ok) {
         const data = await response.json();
         setTranslation(data);
+        
+        // Save translation to database for future use
+        await supabase
+          .from('shopify_product_translations')
+          .insert({
+            product_handle: productHandle,
+            product_id: productId,
+            title_original: title,
+            title_ar: data.title_ar,
+            description_original: description,
+            description_ar: data.description_ar
+          });
       }
     } catch (error) {
       console.error('Translation error:', error);
@@ -156,9 +187,9 @@ const ShopifyProduct = () => {
           event_type: 'view',
         });
         
-        // Translate product
+        // Load or translate product
         if (data.title || data.description) {
-          translateProduct(data.title || '', data.description || '');
+          loadOrTranslateProduct(handle, data.title || '', data.description || '', data.id);
         }
       }
     };
