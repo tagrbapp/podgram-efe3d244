@@ -55,18 +55,21 @@ import {
   Activity,
   Target,
   Percent,
-  Calendar
+  Calendar,
+  Languages,
+  CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
 import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
 import { getProductAnalytics, getAnalyticsSummary, getTimeSeriesAnalytics, ProductAnalytics, TimeSeriesData } from "@/lib/shopifyAnalytics";
+import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Progress } from "@/components/ui/progress";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Area, AreaChart, Legend } from "recharts";
 
@@ -87,6 +90,9 @@ const DashboardShopifyProducts = () => {
   const [chartDays, setChartDays] = useState<number>(30);
   const [chartData, setChartData] = useState<TimeSeriesData[]>([]);
   const [chartLoading, setChartLoading] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationProgress, setTranslationProgress] = useState(0);
+  const [translatedCount, setTranslatedCount] = useState(0);
   const [newProduct, setNewProduct] = useState({
     title: "",
     description: "",
@@ -108,6 +114,81 @@ const DashboardShopifyProducts = () => {
   useEffect(() => {
     filterAndSortProducts();
   }, [products, searchQuery, statusFilter, sortBy, analytics]);
+
+  useEffect(() => {
+    checkTranslatedProducts();
+  }, [products]);
+
+  const checkTranslatedProducts = async () => {
+    if (products.length === 0) return;
+    
+    const handles = products.map(p => p.node.handle);
+    const { data } = await supabase
+      .from('shopify_product_translations')
+      .select('product_handle')
+      .in('product_handle', handles);
+    
+    setTranslatedCount(data?.length || 0);
+  };
+
+  const translateAllProducts = async () => {
+    if (products.length === 0) {
+      toast.error("لا توجد منتجات للترجمة");
+      return;
+    }
+
+    setIsTranslating(true);
+    setTranslationProgress(0);
+
+    const handles = products.map(p => p.node.handle);
+    const { data: existingTranslations } = await supabase
+      .from('shopify_product_translations')
+      .select('product_handle')
+      .in('product_handle', handles);
+
+    const translatedHandles = new Set(existingTranslations?.map(t => t.product_handle) || []);
+    const productsToTranslate = products.filter(p => !translatedHandles.has(p.node.handle));
+
+    if (productsToTranslate.length === 0) {
+      toast.success("جميع المنتجات مترجمة بالفعل!");
+      setIsTranslating(false);
+      return;
+    }
+
+    toast.info(`جاري ترجمة ${productsToTranslate.length} منتج...`);
+
+    let completed = 0;
+    for (const product of productsToTranslate) {
+      try {
+        const { data: funcData, error: funcError } = await supabase.functions.invoke('translate-text', {
+          body: { 
+            title: product.node.title, 
+            description: product.node.description || '' 
+          }
+        });
+
+        if (!funcError && funcData && !funcData.error) {
+          await supabase.from('shopify_product_translations').insert({
+            product_handle: product.node.handle,
+            product_id: product.node.id,
+            title_original: product.node.title,
+            title_ar: funcData.title_ar,
+            description_original: product.node.description || '',
+            description_ar: funcData.description_ar
+          });
+        }
+      } catch (error) {
+        console.error(`Error translating ${product.node.handle}:`, error);
+      }
+
+      completed++;
+      setTranslationProgress(Math.round((completed / productsToTranslate.length) * 100));
+    }
+
+    await checkTranslatedProducts();
+    setIsTranslating(false);
+    toast.success(`تم ترجمة ${completed} منتج بنجاح!`);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -273,6 +354,30 @@ const DashboardShopifyProducts = () => {
                     >
                       <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                       تحديث
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={translateAllProducts} 
+                      disabled={isTranslating || loading}
+                      className="gap-2 bg-background/50 backdrop-blur-sm hover:bg-background/80"
+                    >
+                      {isTranslating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          جاري الترجمة... {translationProgress}%
+                        </>
+                      ) : (
+                        <>
+                          <Languages className="h-4 w-4" />
+                          ترجمة الكل للعربية
+                          {translatedCount > 0 && (
+                            <Badge variant="secondary" className="mr-1">
+                              <CheckCircle2 className="h-3 w-3 ml-1" />
+                              {translatedCount}/{products.length}
+                            </Badge>
+                          )}
+                        </>
+                      )}
                     </Button>
                     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                       <DialogTrigger asChild>
