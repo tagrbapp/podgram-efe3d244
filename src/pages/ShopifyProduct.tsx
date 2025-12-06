@@ -31,6 +31,11 @@ import { trackProductEvent } from "@/lib/shopifyAnalytics";
 import ShopifyProductCard from "@/components/ShopifyProductCard";
 import ImageLightbox from "@/components/ImageLightbox";
 
+interface VariantImage {
+  url: string;
+  altText: string | null;
+}
+
 interface ProductData {
   id: string;
   title: string;
@@ -55,6 +60,7 @@ interface ProductData {
       node: {
         id: string;
         title: string;
+        image?: VariantImage | null;
         price: {
           amount: string;
           currencyCode: string;
@@ -73,6 +79,11 @@ interface ProductData {
   }>;
 }
 
+interface TranslatedContent {
+  title_ar: string;
+  description_ar: string;
+}
+
 const ShopifyProduct = () => {
   const { handle } = useParams<{ handle: string }>();
   const [product, setProduct] = useState<ProductData | null>(null);
@@ -84,13 +95,40 @@ const ShopifyProduct = () => {
   const [relatedProducts, setRelatedProducts] = useState<ShopifyProductType[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [translation, setTranslation] = useState<TranslatedContent | null>(null);
+  const [translating, setTranslating] = useState(false);
   
   const addItem = useCartStore(state => state.addItem);
+
+  // Translate product content
+  const translateProduct = async (title: string, description: string) => {
+    setTranslating(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/translate-text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+        },
+        body: JSON.stringify({ title, description })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setTranslation(data);
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+    } finally {
+      setTranslating(false);
+    }
+  };
 
   useEffect(() => {
     const loadProduct = async () => {
       if (!handle) return;
       setLoading(true);
+      setTranslation(null);
       const data = await fetchProductByHandle(handle);
       setProduct(data);
       
@@ -117,13 +155,18 @@ const ShopifyProduct = () => {
           product_handle: handle,
           event_type: 'view',
         });
+        
+        // Translate product
+        if (data.title || data.description) {
+          translateProduct(data.title || '', data.description || '');
+        }
       }
     };
     loadProduct();
     window.scrollTo(0, 0);
   }, [handle]);
 
-  // Update selected variant when options change
+  // Update selected variant and image when options change
   useEffect(() => {
     if (!product) return;
     
@@ -133,6 +176,20 @@ const ShopifyProduct = () => {
     
     if (matchingVariant) {
       setSelectedVariant(matchingVariant.node.id);
+      
+      // Update image to variant image if available
+      if (matchingVariant.node.image?.url) {
+        const variantImageUrl = matchingVariant.node.image.url;
+        const imageIndex = product.images.edges.findIndex(
+          img => img.node.url === variantImageUrl
+        );
+        if (imageIndex !== -1) {
+          setSelectedImage(imageIndex);
+        } else {
+          // If variant image not in main images, set to first
+          setSelectedImage(0);
+        }
+      }
     }
   }, [selectedOptions, product]);
 
@@ -344,10 +401,23 @@ const ShopifyProduct = () => {
             {/* Title & Actions */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2 leading-tight">
+                {/* Arabic Title */}
+                {translation?.title_ar && (
+                  <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2 leading-tight">
+                    {translation.title_ar}
+                  </h1>
+                )}
+                {/* English Title */}
+                <p className={`${translation?.title_ar ? 'text-lg text-muted-foreground' : 'text-3xl lg:text-4xl font-bold text-foreground mb-2 leading-tight'}`}>
                   {product.title}
-                </h1>
-                <div className="flex items-center gap-2 text-muted-foreground">
+                </p>
+                {translating && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                    <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    جاري الترجمة...
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-muted-foreground mt-2">
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map(star => (
                       <Star key={star} className="h-4 w-4 fill-amber-400 text-amber-400" />
@@ -393,11 +463,18 @@ const ShopifyProduct = () => {
             <Separator />
 
             {/* Description */}
-            {product.description && (
-              <div className="prose prose-sm max-w-none">
-                <p className="text-muted-foreground leading-relaxed text-base">
-                  {product.description}
-                </p>
+            {(product.description || translation?.description_ar) && (
+              <div className="space-y-3">
+                {translation?.description_ar && (
+                  <p className="text-foreground leading-relaxed text-base">
+                    {translation.description_ar}
+                  </p>
+                )}
+                {product.description && (
+                  <p className={`leading-relaxed text-base ${translation?.description_ar ? 'text-muted-foreground text-sm' : 'text-muted-foreground'}`}>
+                    {product.description}
+                  </p>
+                )}
               </div>
             )}
 
