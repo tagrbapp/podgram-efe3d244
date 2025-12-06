@@ -1,10 +1,10 @@
 import { ShopifyProduct } from "@/lib/shopify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Package } from "lucide-react";
+import { ShoppingCart, Package, Pencil } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,29 +17,47 @@ interface Translation {
   description_ar: string | null;
 }
 
+const USD_TO_SAR_RATE = 3.75;
+
 const ShopifyProductCard = ({ product }: ShopifyProductCardProps) => {
   const addItem = useCartStore(state => state.addItem);
+  const navigate = useNavigate();
   const { node } = product;
   const [translation, setTranslation] = useState<Translation | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const image = node.images?.edges?.[0]?.node;
   const price = node.priceRange?.minVariantPrice;
   const firstVariant = node.variants?.edges?.[0]?.node;
 
   useEffect(() => {
-    const fetchTranslation = async () => {
-      const { data } = await supabase
+    const fetchData = async () => {
+      // Fetch translation
+      const { data: translationData } = await supabase
         .from('shopify_product_translations')
         .select('title_ar, description_ar')
         .eq('product_handle', node.handle)
         .maybeSingle();
       
-      if (data) {
-        setTranslation(data);
+      if (translationData) {
+        setTranslation(translationData);
+      }
+
+      // Check if user is admin
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        setIsAdmin(!!roleData);
       }
     };
     
-    fetchTranslation();
+    fetchData();
   }, [node.handle]);
 
   const displayTitle = translation?.title_ar || node.title;
@@ -69,13 +87,33 @@ const ShopifyProductCard = ({ product }: ShopifyProductCardProps) => {
     });
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate('/dashboard/shopify-products');
+  };
+
   const formatPrice = (amount: string) => {
     return parseFloat(amount).toLocaleString('en-US');
   };
 
+  const priceInUSD = price ? parseFloat(price.amount) : 0;
+  const priceInSAR = priceInUSD * USD_TO_SAR_RATE;
+
   return (
     <Link to={`/product/${node.handle}`}>
-      <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full">
+      <Card className="group overflow-hidden border-border/50 bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full relative">
+        {isAdmin && (
+          <Button
+            onClick={handleEdit}
+            size="icon"
+            variant="secondary"
+            className="absolute top-2 left-2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
+        
         <div className="aspect-square relative overflow-hidden bg-muted">
           {image?.url ? (
             <img
@@ -112,10 +150,17 @@ const ShopifyProductCard = ({ product }: ShopifyProductCardProps) => {
             </p>
           )}
           
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-1">
             <span className="text-lg font-bold text-primary">
-              {price ? `${formatPrice(price.amount)} ر.س` : 'السعر غير متوفر'}
+              {price ? `${formatPrice(price.amount)} ${price.currencyCode === 'SAR' ? 'ر.س' : '$'}` : 'السعر غير متوفر'}
             </span>
+            
+            {isAdmin && price && (
+              <div className="text-xs text-muted-foreground border-t border-border/50 pt-1 mt-1">
+                <span className="block">${formatPrice(priceInUSD.toFixed(2))} USD</span>
+                <span className="block">{formatPrice(priceInSAR.toFixed(2))} ر.س</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
