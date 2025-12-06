@@ -126,6 +126,10 @@ const PRODUCT_BY_HANDLE_QUERY = `
           node {
             id
             title
+            image {
+              url
+              altText
+            }
             price {
               amount
               currencyCode
