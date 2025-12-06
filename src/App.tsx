@@ -63,6 +63,8 @@ import CJProductDetails from "./pages/CJProductDetails";
 import CJCatalog from "./pages/CJCatalog";
 import ShopifyProduct from "./pages/ShopifyProduct";
 import DashboardShopifyProducts from "./pages/DashboardShopifyProducts";
+import StaticPage from "./pages/StaticPage";
+import DashboardStaticPages from "./pages/DashboardStaticPages";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -125,6 +127,7 @@ const App = () => (
           <Route path="/cj-catalog" element={<CJCatalog />} />
           <Route path="/product/:handle" element={<ShopifyProduct />} />
           <Route path="/dashboard/shopify-products" element={<DashboardShopifyProducts />} />
+          <Route path="/dashboard/static-pages" element={<DashboardStaticPages />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
@@ -134,6 +137,14 @@ const App = () => (
           <Route path="/dashboard/notification-templates" element={<DashboardNotificationTemplates />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/listing/:id" element={<ListingDetails />} />
+          {/* Static Pages - must be before catch-all */}
+          <Route path="/about" element={<StaticPage />} />
+          <Route path="/help" element={<StaticPage />} />
+          <Route path="/how-to-sell" element={<StaticPage />} />
+          <Route path="/how-to-buy" element={<StaticPage />} />
+          <Route path="/safety" element={<StaticPage />} />
+          <Route path="/contact" element={<StaticPage />} />
+          <Route path="/cookies" element={<StaticPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
           </Routes>

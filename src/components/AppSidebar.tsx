@@ -62,6 +62,7 @@ const adminItems = [
   { title: "منتجات AliExpress", url: "/dashboard/aliexpress", icon: ShoppingBag, showBadge: false },
   { title: "منتجات CJdropshipping", url: "/dashboard/cjdropshipping", icon: Truck, showBadge: false },
   { title: "منتجات المتجر (Shopify)", url: "/dashboard/shopify-products", icon: Store, showBadge: false },
+  { title: "إدارة الصفحات الفرعية", url: "/dashboard/static-pages", icon: FileText, showBadge: false },
 ];
 
 export function AppSidebar() {
