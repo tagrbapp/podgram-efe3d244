@@ -5,18 +5,45 @@ import { ShoppingCart, Package } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ShopifyProductCardProps {
   product: ShopifyProduct;
 }
 
+interface Translation {
+  title_ar: string | null;
+  description_ar: string | null;
+}
+
 const ShopifyProductCard = ({ product }: ShopifyProductCardProps) => {
   const addItem = useCartStore(state => state.addItem);
   const { node } = product;
+  const [translation, setTranslation] = useState<Translation | null>(null);
   
   const image = node.images?.edges?.[0]?.node;
   const price = node.priceRange?.minVariantPrice;
   const firstVariant = node.variants?.edges?.[0]?.node;
+
+  useEffect(() => {
+    const fetchTranslation = async () => {
+      const { data } = await supabase
+        .from('shopify_product_translations')
+        .select('title_ar, description_ar')
+        .eq('product_handle', node.handle)
+        .maybeSingle();
+      
+      if (data) {
+        setTranslation(data);
+      }
+    };
+    
+    fetchTranslation();
+  }, [node.handle]);
+
+  const displayTitle = translation?.title_ar || node.title;
+  const displayDescription = translation?.description_ar || node.description;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -76,12 +103,12 @@ const ShopifyProductCard = ({ product }: ShopifyProductCardProps) => {
         
         <CardContent className="p-4 text-right" dir="rtl">
           <h3 className="font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
-            {node.title}
+            {displayTitle}
           </h3>
           
-          {node.description && (
+          {displayDescription && (
             <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-              {node.description}
+              {displayDescription}
             </p>
           )}
           
