@@ -352,6 +352,7 @@ export type Database = {
           description: string | null
           end_time: string
           highest_bidder_id: string | null
+          homepage_image: string | null
           id: string
           images: string[] | null
           invited_bidders: string[] | null
@@ -380,6 +381,7 @@ export type Database = {
           description?: string | null
           end_time: string
           highest_bidder_id?: string | null
+          homepage_image?: string | null
           id?: string
           images?: string[] | null
           invited_bidders?: string[] | null
@@ -408,6 +410,7 @@ export type Database = {
           description?: string | null
           end_time?: string
           highest_bidder_id?: string | null
+          homepage_image?: string | null
           id?: string
           images?: string[] | null
           invited_bidders?: string[] | null

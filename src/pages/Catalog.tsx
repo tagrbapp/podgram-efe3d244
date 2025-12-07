@@ -52,6 +52,7 @@ interface Auction {
   end_time: string;
   status: string;
   images: string[] | null;
+  homepage_image: string | null;
   season?: string;
   condition?: string;
   condition_rating?: number;
@@ -206,6 +207,7 @@ const Catalog = () => {
         end_time,
         status,
         images,
+        homepage_image,
         season,
         condition,
         condition_rating,
@@ -569,6 +571,7 @@ const Catalog = () => {
                             startingPrice={item.starting_price}
                             endTime={item.end_time}
                             image={item.images?.[0] || "/placeholder.svg"}
+                            homepageImage={item.homepage_image}
                             category={item.category?.name || "غير محدد"}
                             status={item.status}
                             totalBids={item.total_bids}
@@ -615,6 +618,7 @@ const Catalog = () => {
                             startingPrice={item.starting_price}
                             endTime={item.end_time}
                             image={item.images?.[0] || "/placeholder.svg"}
+                            homepageImage={item.homepage_image}
                             category={item.category?.name || "غير محدد"}
                             status={item.status}
                             totalBids={item.total_bids}

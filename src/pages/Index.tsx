@@ -37,6 +37,7 @@ interface Auction {
   title: string;
   description: string | null;
   images: string[] | null;
+  homepage_image: string | null;
   category_id: string | null;
   starting_price: number;
   current_bid: number | null;
@@ -541,6 +542,7 @@ const Index = () => {
                               startingPrice={auction.starting_price}
                               endTime={auction.end_time}
                               image={auction.images?.[0] || "/placeholder.svg"}
+                              homepageImage={auction.homepage_image}
                               category={auction.categories?.name || "غير محدد"}
                               status={auction.status}
                               totalBids={auction.bid_count}
@@ -588,6 +590,7 @@ const Index = () => {
                               startingPrice={auction.starting_price}
                               endTime={auction.end_time}
                               image={auction.images?.[0] || "/placeholder.svg"}
+                              homepageImage={auction.homepage_image}
                               category={auction.categories?.name || "غير محدد"}
                               status={auction.status}
                               totalBids={auction.bid_count}

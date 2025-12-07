@@ -18,6 +18,7 @@ interface AuctionCardProps {
   startingPrice: number;
   endTime: string;
   image: string;
+  homepageImage?: string | null;
   category: string;
   status: string;
   totalBids: number;
@@ -37,6 +38,7 @@ const AuctionCard = ({
   startingPrice,
   endTime,
   image,
+  homepageImage,
   category,
   status,
   totalBids,
@@ -49,6 +51,9 @@ const AuctionCard = ({
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  // Use homepage image if available, otherwise fall back to first image
+  const displayImage = homepageImage || image;
 
   useEffect(() => {
     checkFavoriteStatus();
@@ -117,7 +122,7 @@ const AuctionCard = ({
       {/* Image Container */}
       <div className="relative aspect-[4/5] overflow-hidden bg-muted/20">
         <img
-          src={image}
+          src={displayImage}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />

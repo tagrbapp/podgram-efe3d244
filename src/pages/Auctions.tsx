@@ -18,6 +18,7 @@ interface Auction {
   title: string;
   description: string | null;
   images: string[] | null;
+  homepage_image: string | null;
   starting_price: number;
   current_bid: number | null;
   end_time: string;
@@ -292,6 +293,7 @@ const Auctions = () => {
                     startingPrice={auction.starting_price}
                     endTime={auction.end_time}
                     image={auction.images?.[0] || "/placeholder.svg"}
+                    homepageImage={auction.homepage_image}
                     category={auction.categories?.name || "عام"}
                     status={auction.status}
                     totalBids={auction.bid_count}
