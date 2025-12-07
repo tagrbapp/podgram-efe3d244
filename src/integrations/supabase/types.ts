@@ -305,6 +305,41 @@ export type Database = {
           },
         ]
       }
+      auction_views: {
+        Row: {
+          auction_id: string
+          created_at: string | null
+          id: string
+          user_id: string | null
+          view_date: string
+          views_count: number | null
+        }
+        Insert: {
+          auction_id: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          view_date?: string
+          views_count?: number | null
+        }
+        Update: {
+          auction_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          view_date?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_views_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auctions: {
         Row: {
           bid_increment: number
@@ -332,6 +367,7 @@ export type Database = {
           title: string | null
           updated_at: string | null
           user_id: string | null
+          views: number | null
         }
         Insert: {
           bid_increment?: number
@@ -359,6 +395,7 @@ export type Database = {
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
+          views?: number | null
         }
         Update: {
           bid_increment?: number
@@ -386,6 +423,7 @@ export type Database = {
           title?: string | null
           updated_at?: string | null
           user_id?: string | null
+          views?: number | null
         }
         Relationships: [
           {
@@ -2279,6 +2317,14 @@ export type Database = {
           revenue: number
         }[]
       }
+      get_auction_views_analytics: {
+        Args: { _auction_id: string; _days?: number }
+        Returns: {
+          total_views: number
+          unique_viewers: number
+          view_date: string
+        }[]
+      }
       get_notification_from_template: {
         Args: { _template_key: string; _variables?: Json }
         Returns: {
@@ -2295,6 +2341,10 @@ export type Database = {
         }[]
       }
       get_total_sales: { Args: { seller_uuid: string }; Returns: number }
+      get_user_auctions_analytics: {
+        Args: { _days?: number; _user_id: string }
+        Returns: Json
+      }
       get_views_by_period: {
         Args: { end_date: string; seller_uuid: string; start_date: string }
         Returns: {
