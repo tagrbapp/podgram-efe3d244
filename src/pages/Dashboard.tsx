@@ -40,6 +40,7 @@ interface Auction {
   end_time: string;
   created_at: string;
   images: string[] | null;
+  views: number | null;
   categories: {
     name: string;
   } | null;
@@ -144,6 +145,7 @@ const Dashboard = () => {
         end_time,
         created_at,
         images,
+        views,
         categories (
           name
         )
@@ -283,7 +285,7 @@ const Dashboard = () => {
 
           <main className="p-6 space-y-6">
             {/* الإحصائيات */}
-            <DashboardStats listings={listings} />
+            <DashboardStats listings={listings} auctions={auctions} />
 
             {/* التبويب الرئيسي */}
             <Tabs value={activeSection} onValueChange={(v) => setActiveSection(v as "listings" | "auctions")} dir="rtl">
