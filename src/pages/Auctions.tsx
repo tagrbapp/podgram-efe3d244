@@ -287,6 +287,7 @@ const Auctions = () => {
                     id={auction.id}
                     listingId={auction.listing_id || ""}
                     title={auction.title}
+                    description={auction.description || undefined}
                     currentBid={auction.current_bid}
                     startingPrice={auction.starting_price}
                     endTime={auction.end_time}
