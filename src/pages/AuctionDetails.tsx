@@ -44,6 +44,7 @@ interface Auction {
   title: string;
   description: string | null;
   images: string[] | null;
+  homepage_image: string | null;
   category_id: string | null;
   starting_price: number;
   current_bid: number | null;
@@ -353,6 +354,7 @@ const AuctionDetails = () => {
               <AdminAuctionImageUpload
                 auctionId={auction.id}
                 existingImages={auction.images || []}
+                homepageImage={auction.homepage_image}
                 onImagesUpdated={fetchAuctionDetails}
               />
             )}

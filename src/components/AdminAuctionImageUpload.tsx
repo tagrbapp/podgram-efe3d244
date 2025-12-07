@@ -3,29 +3,32 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ImagePlus, X, Upload, Loader2 } from "lucide-react";
+import { ImagePlus, X, Upload, Loader2, Home, FileImage, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminAuctionImageUploadProps {
   auctionId: string;
   existingImages: string[];
+  homepageImage: string | null;
   onImagesUpdated: () => void;
 }
 
 export const AdminAuctionImageUpload = ({
   auctionId,
   existingImages,
+  homepageImage,
   onImagesUpdated,
 }: AdminAuctionImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+  const [uploadType, setUploadType] = useState<"both" | "homepage" | "detail">("both");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    // Create preview URLs
     const newPreviews = files.map((file) => URL.createObjectURL(file));
     setPreviewImages((prev) => [...prev, ...newPreviews]);
     setFilesToUpload((prev) => [...prev, ...files]);
@@ -67,18 +70,33 @@ export const AdminAuctionImageUpload = ({
         uploadedUrls.push(urlData.publicUrl);
       }
 
-      // Update auction with new images
-      const newImages = [...existingImages, ...uploadedUrls];
+      // Prepare update based on upload type
+      const updateData: Record<string, any> = {};
+
+      if (uploadType === "both") {
+        // Add to detail images
+        updateData.images = [...existingImages, ...uploadedUrls];
+        // Set first as homepage if no homepage image exists
+        if (!homepageImage) {
+          updateData.homepage_image = uploadedUrls[0];
+        }
+      } else if (uploadType === "homepage") {
+        // Only update homepage image (use first uploaded)
+        updateData.homepage_image = uploadedUrls[0];
+      } else if (uploadType === "detail") {
+        // Only add to detail images
+        updateData.images = [...existingImages, ...uploadedUrls];
+      }
+
       const { error: updateError } = await supabase
         .from("auctions")
-        .update({ images: newImages })
+        .update(updateData)
         .eq("id", auctionId);
 
       if (updateError) throw updateError;
 
       toast.success(`تم رفع ${uploadedUrls.length} صورة بنجاح`);
       
-      // Cleanup
       previewImages.forEach((url) => URL.revokeObjectURL(url));
       setPreviewImages([]);
       setFilesToUpload([]);
@@ -95,17 +113,41 @@ export const AdminAuctionImageUpload = ({
     }
   };
 
+  const setAsHomepageImage = async (imageUrl: string) => {
+    try {
+      const { error } = await supabase
+        .from("auctions")
+        .update({ homepage_image: imageUrl })
+        .eq("id", auctionId);
+
+      if (error) throw error;
+
+      toast.success("تم تعيين الصورة كصورة رئيسية");
+      onImagesUpdated();
+    } catch (error) {
+      console.error("Error setting homepage image:", error);
+      toast.error("فشل تعيين الصورة الرئيسية");
+    }
+  };
+
   const removeExistingImage = async (imageUrl: string) => {
-    if (existingImages.length <= 1) {
+    if (existingImages.length <= 1 && !homepageImage) {
       toast.error("لا يمكن حذف آخر صورة");
       return;
     }
 
     try {
       const newImages = existingImages.filter((img) => img !== imageUrl);
+      const updateData: Record<string, any> = { images: newImages };
+      
+      // If removing the homepage image, clear it
+      if (homepageImage === imageUrl) {
+        updateData.homepage_image = newImages[0] || null;
+      }
+
       const { error } = await supabase
         .from("auctions")
-        .update({ images: newImages })
+        .update(updateData)
         .eq("id", auctionId);
 
       if (error) throw error;
@@ -115,6 +157,23 @@ export const AdminAuctionImageUpload = ({
     } catch (error) {
       console.error("Error removing image:", error);
       toast.error("فشل حذف الصورة");
+    }
+  };
+
+  const removeHomepageImage = async () => {
+    try {
+      const { error } = await supabase
+        .from("auctions")
+        .update({ homepage_image: null })
+        .eq("id", auctionId);
+
+      if (error) throw error;
+
+      toast.success("تم إزالة الصورة الرئيسية");
+      onImagesUpdated();
+    } catch (error) {
+      console.error("Error removing homepage image:", error);
+      toast.error("فشل إزالة الصورة الرئيسية");
     }
   };
 
@@ -128,24 +187,71 @@ export const AdminAuctionImageUpload = ({
           </h3>
         </div>
 
-        {/* Existing Images */}
+        {/* Homepage Image Section */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Home className="h-4 w-4 text-primary" />
+            <p className="text-sm font-medium">صورة الرئيسية (الكارد):</p>
+          </div>
+          {homepageImage ? (
+            <div className="relative group w-32">
+              <img
+                src={homepageImage}
+                alt="صورة الرئيسية"
+                className="w-full h-20 object-cover rounded-lg border-2 border-primary"
+              />
+              <Badge className="absolute top-1 right-1 text-xs" variant="default">
+                <Star className="h-3 w-3 ml-1" />
+                رئيسية
+              </Badge>
+              <button
+                onClick={removeHomepageImage}
+                className="absolute -top-2 -left-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">لم يتم تعيين صورة رئيسية - سيتم استخدام أول صورة من صفحة العرض</p>
+          )}
+        </div>
+
+        {/* Detail Images Section */}
         {existingImages.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">الصور الحالية:</p>
+            <div className="flex items-center gap-2">
+              <FileImage className="h-4 w-4 text-muted-foreground" />
+              <p className="text-sm font-medium">صور صفحة العرض:</p>
+            </div>
             <div className="grid grid-cols-4 gap-2">
               {existingImages.map((image, index) => (
                 <div key={index} className="relative group">
                   <img
                     src={image}
                     alt={`صورة ${index + 1}`}
-                    className="w-full h-20 object-cover rounded-lg"
+                    className={`w-full h-20 object-cover rounded-lg ${homepageImage === image ? 'border-2 border-primary' : ''}`}
                   />
-                  <button
-                    onClick={() => removeExistingImage(image)}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+                  {homepageImage === image && (
+                    <Badge className="absolute top-1 right-1 text-xs" variant="default">
+                      <Star className="h-3 w-3" />
+                    </Badge>
+                  )}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => setAsHomepageImage(image)}
+                      className="bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/80"
+                      title="تعيين كصورة رئيسية"
+                    >
+                      <Home className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => removeExistingImage(image)}
+                      className="bg-destructive text-destructive-foreground rounded-full p-1.5 hover:bg-destructive/80"
+                      title="حذف"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -162,7 +268,7 @@ export const AdminAuctionImageUpload = ({
                   <img
                     src={preview}
                     alt={`معاينة ${index + 1}`}
-                    className="w-full h-20 object-cover rounded-lg border-2 border-primary/50"
+                    className="w-full h-20 object-cover rounded-lg border-2 border-dashed border-primary/50"
                   />
                   <button
                     onClick={() => removePreviewImage(index)}
@@ -176,13 +282,42 @@ export const AdminAuctionImageUpload = ({
           </div>
         )}
 
+        {/* Upload Type Selection */}
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant={uploadType === "both" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUploadType("both")}
+          >
+            <Home className="h-4 w-4 ml-1" />
+            <FileImage className="h-4 w-4 ml-2" />
+            الكل
+          </Button>
+          <Button
+            variant={uploadType === "homepage" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUploadType("homepage")}
+          >
+            <Home className="h-4 w-4 ml-2" />
+            للرئيسية فقط
+          </Button>
+          <Button
+            variant={uploadType === "detail" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setUploadType("detail")}
+          >
+            <FileImage className="h-4 w-4 ml-2" />
+            للعرض فقط
+          </Button>
+        </div>
+
         {/* Upload Controls */}
         <div className="flex gap-2">
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            multiple
+            multiple={uploadType !== "homepage"}
             onChange={handleFileSelect}
             className="hidden"
           />
@@ -215,6 +350,10 @@ export const AdminAuctionImageUpload = ({
             </Button>
           )}
         </div>
+
+        <p className="text-xs text-muted-foreground">
+          💡 في حال رفع صورة واحدة فقط، ستُستخدم للرئيسية وصفحة العرض معاً
+        </p>
       </div>
     </Card>
   );
