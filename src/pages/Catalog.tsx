@@ -46,6 +46,7 @@ interface Auction {
   id: string;
   listing_id: string | null;
   title: string | null;
+  description: string | null;
   starting_price: number;
   current_bid: number | null;
   end_time: string;
@@ -199,6 +200,7 @@ const Catalog = () => {
         id,
         listing_id,
         title,
+        description,
         starting_price,
         current_bid,
         end_time,
@@ -560,8 +562,9 @@ const Catalog = () => {
                         ) : (
                           <AuctionCard
                             id={item.id}
-                            listingId={item.listing_id}
+                            listingId={item.listing_id || ""}
                             title={item.title || "مزاد"}
+                            description={item.description || undefined}
                             currentBid={item.current_bid || 0}
                             startingPrice={item.starting_price}
                             endTime={item.end_time}
@@ -605,8 +608,9 @@ const Catalog = () => {
                         ) : (
                           <AuctionCard
                             id={item.id}
-                            listingId={item.listing_id}
+                            listingId={item.listing_id || ""}
                             title={item.title || "مزاد"}
+                            description={item.description || undefined}
                             currentBid={item.current_bid || 0}
                             startingPrice={item.starting_price}
                             endTime={item.end_time}

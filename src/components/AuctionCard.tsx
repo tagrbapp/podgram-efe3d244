@@ -13,6 +13,7 @@ interface AuctionCardProps {
   id: string;
   listingId: string;
   title: string;
+  description?: string;
   currentBid: number | null;
   startingPrice: number;
   endTime: string;
@@ -31,6 +32,7 @@ const AuctionCard = ({
   id,
   listingId,
   title,
+  description,
   currentBid,
   startingPrice,
   endTime,
@@ -179,9 +181,11 @@ const AuctionCard = ({
             {title}
           </h3>
           
-          <p className="text-xs text-muted-foreground">
-            مزادات • صيف 2024
-          </p>
+          {description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">
+              {description}
+            </p>
+          )}
         </div>
 
         {/* Price Section */}

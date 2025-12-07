@@ -35,6 +35,7 @@ interface Auction {
   id: string;
   listing_id: string | null;
   title: string;
+  description: string | null;
   images: string[] | null;
   category_id: string | null;
   starting_price: number;
@@ -535,6 +536,7 @@ const Index = () => {
                               id={auction.id}
                               listingId={auction.listing_id || ""}
                               title={auction.title}
+                              description={auction.description || undefined}
                               currentBid={auction.current_bid}
                               startingPrice={auction.starting_price}
                               endTime={auction.end_time}
@@ -581,6 +583,7 @@ const Index = () => {
                               id={auction.id}
                               listingId={auction.listing_id || ""}
                               title={auction.title}
+                              description={auction.description || undefined}
                               currentBid={auction.current_bid}
                               startingPrice={auction.starting_price}
                               endTime={auction.end_time}
