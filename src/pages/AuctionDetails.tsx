@@ -25,6 +25,7 @@ import SEO from "@/components/SEO";
 import AuctionSchema from "@/components/AuctionSchema";
 import AuctionExtendedAlert from "@/components/AuctionExtendedAlert";
 import { AuctionAdminAnalytics } from "@/components/AuctionAdminAnalytics";
+import { AdminAuctionImageUpload } from "@/components/AdminAuctionImageUpload";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -347,6 +348,16 @@ const AuctionDetails = () => {
           {/* Main Content - Right Side */}
           <div className="lg:col-span-2 space-y-6">
             {/* Enhanced Images with gradient overlay */}
+            {/* Admin Image Upload */}
+            {isAdmin && (
+              <AdminAuctionImageUpload
+                auctionId={auction.id}
+                existingImages={auction.images || []}
+                onImagesUpdated={fetchAuctionDetails}
+              />
+            )}
+
+            {/* Images */}
             {auction.images && auction.images.length > 0 ? (
               <Card className="overflow-hidden border-2 border-border/50 shadow-xl">
                 <div className="grid grid-cols-1 gap-4 p-6">
