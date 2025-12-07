@@ -24,6 +24,7 @@ import { AuctionReportDialog } from "@/components/AuctionReportDialog";
 import SEO from "@/components/SEO";
 import AuctionSchema from "@/components/AuctionSchema";
 import AuctionExtendedAlert from "@/components/AuctionExtendedAlert";
+import { AuctionAdminAnalytics } from "@/components/AuctionAdminAnalytics";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -455,6 +456,15 @@ const AuctionDetails = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Admin Analytics Section */}
+            {isAdmin && (
+              <AuctionAdminAnalytics 
+                auctionId={auction.id}
+                auction={auction}
+                bids={bids}
+              />
+            )}
 
             {/* Bids History */}
             <Card className="p-6">
