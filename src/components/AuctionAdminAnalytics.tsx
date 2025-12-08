@@ -319,12 +319,12 @@ export const AuctionAdminAnalytics = ({ auctionId, auction, bids }: AuctionAdmin
         ))}
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs defaultValue="overview" className="w-full" dir="rtl">
         <TabsList className="grid w-full grid-cols-4 mb-6">
-          <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
-          <TabsTrigger value="traffic">مصادر الزيارات</TabsTrigger>
-          <TabsTrigger value="bidding">تحليل المزايدات</TabsTrigger>
           <TabsTrigger value="performance">الأداء</TabsTrigger>
+          <TabsTrigger value="bidding">تحليل المزايدات</TabsTrigger>
+          <TabsTrigger value="traffic">مصادر الزيارات</TabsTrigger>
+          <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
