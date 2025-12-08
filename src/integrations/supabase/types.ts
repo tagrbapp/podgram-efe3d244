@@ -741,37 +741,55 @@ export type Database = {
       }
       carousel_slides: {
         Row: {
+          badge_text: string | null
           bg_color: string
           created_at: string
+          cta_primary_link: string | null
+          cta_primary_text: string | null
+          cta_secondary_link: string | null
+          cta_secondary_text: string | null
           description: string | null
           display_order: number
           id: string
           image_url: string | null
           is_active: boolean
+          stats: Json | null
           subtitle: string | null
           title: string
           updated_at: string
         }
         Insert: {
+          badge_text?: string | null
           bg_color?: string
           created_at?: string
+          cta_primary_link?: string | null
+          cta_primary_text?: string | null
+          cta_secondary_link?: string | null
+          cta_secondary_text?: string | null
           description?: string | null
           display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean
+          stats?: Json | null
           subtitle?: string | null
           title: string
           updated_at?: string
         }
         Update: {
+          badge_text?: string | null
           bg_color?: string
           created_at?: string
+          cta_primary_link?: string | null
+          cta_primary_text?: string | null
+          cta_secondary_link?: string | null
+          cta_secondary_text?: string | null
           description?: string | null
           display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean
+          stats?: Json | null
           subtitle?: string | null
           title?: string
           updated_at?: string
