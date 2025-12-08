@@ -39,6 +39,16 @@ interface CarouselSlide {
   cta_secondary_text: string | null;
   cta_secondary_link: string | null;
   stats: unknown;
+  title_color: string | null;
+  subtitle_color: string | null;
+  description_color: string | null;
+  floating_image_url: string | null;
+  show_floating_card: boolean | null;
+  cta_primary_bg_color: string | null;
+  cta_primary_text_color: string | null;
+  cta_secondary_bg_color: string | null;
+  cta_secondary_text_color: string | null;
+  cta_secondary_border_color: string | null;
 }
 
 interface FormData {
@@ -54,6 +64,16 @@ interface FormData {
   cta_secondary_text: string;
   cta_secondary_link: string;
   stats: StatItem[];
+  title_color: string;
+  subtitle_color: string;
+  description_color: string;
+  floating_image_url: string;
+  show_floating_card: boolean;
+  cta_primary_bg_color: string;
+  cta_primary_text_color: string;
+  cta_secondary_bg_color: string;
+  cta_secondary_text_color: string;
+  cta_secondary_border_color: string;
 }
 
 const defaultFormData: FormData = {
@@ -72,7 +92,17 @@ const defaultFormData: FormData = {
     { value: "+500", label: "مزاد نشط" },
     { value: "+10K", label: "مستخدم مسجل" },
     { value: "+2M", label: "ريال قيمة المبيعات" }
-  ]
+  ],
+  title_color: "#1a1a1a",
+  subtitle_color: "#06b6d4",
+  description_color: "#6b7280",
+  floating_image_url: "",
+  show_floating_card: false,
+  cta_primary_bg_color: "#0891b2",
+  cta_primary_text_color: "#ffffff",
+  cta_secondary_bg_color: "transparent",
+  cta_secondary_text_color: "#1a1a1a",
+  cta_secondary_border_color: "#1a1a1a"
 };
 
 const colorPresets = [
@@ -250,6 +280,16 @@ export default function DashboardHeroCarousel() {
       cta_secondary_text: slide.cta_secondary_text || "",
       cta_secondary_link: slide.cta_secondary_link || "",
       stats: parseStats(slide.stats),
+      title_color: slide.title_color || "#1a1a1a",
+      subtitle_color: slide.subtitle_color || "#06b6d4",
+      description_color: slide.description_color || "#6b7280",
+      floating_image_url: slide.floating_image_url || "",
+      show_floating_card: slide.show_floating_card || false,
+      cta_primary_bg_color: slide.cta_primary_bg_color || "#0891b2",
+      cta_primary_text_color: slide.cta_primary_text_color || "#ffffff",
+      cta_secondary_bg_color: slide.cta_secondary_bg_color || "transparent",
+      cta_secondary_text_color: slide.cta_secondary_text_color || "#1a1a1a",
+      cta_secondary_border_color: slide.cta_secondary_border_color || "#1a1a1a",
     });
     setActiveTab("content");
     setIsDialogOpen(true);
@@ -587,6 +627,106 @@ export default function DashboardHeroCarousel() {
 
                         <Card>
                           <CardHeader>
+                            <CardTitle className="text-base">ألوان النصوص</CardTitle>
+                            <CardDescription>تخصيص ألوان العنوان والنصوص</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-3 gap-4">
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  لون العنوان الرئيسي
+                                  <div 
+                                    className="w-4 h-4 rounded-full border"
+                                    style={{ backgroundColor: formData.title_color }}
+                                  />
+                                </Label>
+                                <Input
+                                  type="color"
+                                  value={formData.title_color}
+                                  onChange={(e) => setFormData({ ...formData, title_color: e.target.value })}
+                                  className="mt-2 h-10 cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  لون العنوان الفرعي
+                                  <div 
+                                    className="w-4 h-4 rounded-full border"
+                                    style={{ backgroundColor: formData.subtitle_color }}
+                                  />
+                                </Label>
+                                <Input
+                                  type="color"
+                                  value={formData.subtitle_color}
+                                  onChange={(e) => setFormData({ ...formData, subtitle_color: e.target.value })}
+                                  className="mt-2 h-10 cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  لون الوصف
+                                  <div 
+                                    className="w-4 h-4 rounded-full border"
+                                    style={{ backgroundColor: formData.description_color }}
+                                  />
+                                </Label>
+                                <Input
+                                  type="color"
+                                  value={formData.description_color}
+                                  onChange={(e) => setFormData({ ...formData, description_color: e.target.value })}
+                                  className="mt-2 h-10 cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                            <div className="p-4 bg-muted/50 rounded-lg">
+                              <p className="text-sm text-muted-foreground mb-2">معاينة النصوص:</p>
+                              <p style={{ color: formData.title_color }} className="text-2xl font-bold">العنوان الرئيسي</p>
+                              <p style={{ color: formData.subtitle_color }} className="text-xl">العنوان الفرعي</p>
+                              <p style={{ color: formData.description_color }} className="text-sm">نص الوصف التوضيحي</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base">البطاقة العائمة</CardTitle>
+                            <CardDescription>صورة المنتج أو البطاقة التي تظهر على الجانب</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between p-4 border rounded-lg">
+                              <Label htmlFor="show_floating_card">إظهار البطاقة العائمة</Label>
+                              <Switch
+                                id="show_floating_card"
+                                checked={formData.show_floating_card}
+                                onCheckedChange={(checked) => setFormData({ ...formData, show_floating_card: checked })}
+                              />
+                            </div>
+                            {formData.show_floating_card && (
+                              <div>
+                                <Label>رابط صورة البطاقة العائمة</Label>
+                                <Input
+                                  value={formData.floating_image_url}
+                                  onChange={(e) => setFormData({ ...formData, floating_image_url: e.target.value })}
+                                  placeholder="https://example.com/image.png"
+                                  className="mt-2"
+                                  dir="ltr"
+                                />
+                                {formData.floating_image_url && (
+                                  <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                                    <img
+                                      src={formData.floating_image_url}
+                                      alt="Floating card preview"
+                                      className="max-h-32 mx-auto rounded-lg shadow-lg"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader>
                             <CardTitle className="text-base">لون الخلفية التدريجي</CardTitle>
                             <CardDescription>اختر أحد الألوان الجاهزة أو أدخل لونًا مخصصًا</CardDescription>
                           </CardHeader>
@@ -629,12 +769,19 @@ export default function DashboardHeroCarousel() {
                                 <CardTitle className="text-base">الزر الرئيسي</CardTitle>
                                 <CardDescription>الزر الأول والأكثر بروزًا</CardDescription>
                               </div>
-                              <Button className="bg-white text-primary hover:bg-white/90 shadow-lg">
+                              <button
+                                type="button"
+                                className="px-6 py-2 rounded-full font-medium shadow-lg transition-all"
+                                style={{
+                                  backgroundColor: formData.cta_primary_bg_color,
+                                  color: formData.cta_primary_text_color
+                                }}
+                              >
                                 {formData.cta_primary_text || "سجّل الآن مجاناً"}
-                              </Button>
+                              </button>
                             </div>
                           </CardHeader>
-                          <CardContent>
+                          <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label>نص الزر</Label>
@@ -656,10 +803,39 @@ export default function DashboardHeroCarousel() {
                                 />
                               </div>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-                              <Palette className="w-3 h-3" />
-                              الزر يظهر بخلفية بيضاء ونص بلون الموقع الأساسي
-                            </p>
+                            <Separator />
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  لون خلفية الزر
+                                  <div 
+                                    className="w-4 h-4 rounded-full border"
+                                    style={{ backgroundColor: formData.cta_primary_bg_color }}
+                                  />
+                                </Label>
+                                <Input
+                                  type="color"
+                                  value={formData.cta_primary_bg_color}
+                                  onChange={(e) => setFormData({ ...formData, cta_primary_bg_color: e.target.value })}
+                                  className="mt-2 h-10 cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  لون نص الزر
+                                  <div 
+                                    className="w-4 h-4 rounded-full border"
+                                    style={{ backgroundColor: formData.cta_primary_text_color }}
+                                  />
+                                </Label>
+                                <Input
+                                  type="color"
+                                  value={formData.cta_primary_text_color}
+                                  onChange={(e) => setFormData({ ...formData, cta_primary_text_color: e.target.value })}
+                                  className="mt-2 h-10 cursor-pointer"
+                                />
+                              </div>
+                            </div>
                           </CardContent>
                         </Card>
 
@@ -670,12 +846,20 @@ export default function DashboardHeroCarousel() {
                                 <CardTitle className="text-base">الزر الثانوي</CardTitle>
                                 <CardDescription>زر إضافي بتصميم شفاف</CardDescription>
                               </div>
-                              <Button variant="outline" className="border-2 border-white text-foreground bg-white/10 hover:bg-white/20">
+                              <button
+                                type="button"
+                                className="px-6 py-2 rounded-full font-medium border-2 transition-all"
+                                style={{
+                                  backgroundColor: formData.cta_secondary_bg_color === 'transparent' ? 'transparent' : formData.cta_secondary_bg_color,
+                                  color: formData.cta_secondary_text_color,
+                                  borderColor: formData.cta_secondary_border_color
+                                }}
+                              >
                                 {formData.cta_secondary_text || "تصفح المزادات"}
-                              </Button>
+                              </button>
                             </div>
                           </CardHeader>
-                          <CardContent>
+                          <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label>نص الزر</Label>
@@ -697,10 +881,53 @@ export default function DashboardHeroCarousel() {
                                 />
                               </div>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-                              <Palette className="w-3 h-3" />
-                              الزر يظهر بخلفية شفافة مع حدود بيضاء
-                            </p>
+                            <Separator />
+                            <div className="grid grid-cols-3 gap-4">
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  لون النص
+                                  <div 
+                                    className="w-4 h-4 rounded-full border"
+                                    style={{ backgroundColor: formData.cta_secondary_text_color }}
+                                  />
+                                </Label>
+                                <Input
+                                  type="color"
+                                  value={formData.cta_secondary_text_color}
+                                  onChange={(e) => setFormData({ ...formData, cta_secondary_text_color: e.target.value })}
+                                  className="mt-2 h-10 cursor-pointer"
+                                />
+                              </div>
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  لون الحدود
+                                  <div 
+                                    className="w-4 h-4 rounded-full border"
+                                    style={{ backgroundColor: formData.cta_secondary_border_color }}
+                                  />
+                                </Label>
+                                <Input
+                                  type="color"
+                                  value={formData.cta_secondary_border_color}
+                                  onChange={(e) => setFormData({ ...formData, cta_secondary_border_color: e.target.value })}
+                                  className="mt-2 h-10 cursor-pointer"
+                                />
+                              </div>
+                              <div className="flex items-center justify-center">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setFormData({ 
+                                    ...formData, 
+                                    cta_secondary_bg_color: 'transparent' 
+                                  })}
+                                  className="mt-6"
+                                >
+                                  خلفية شفافة
+                                </Button>
+                              </div>
+                            </div>
                           </CardContent>
                         </Card>
                       </TabsContent>
