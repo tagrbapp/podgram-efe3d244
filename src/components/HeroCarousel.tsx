@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, Pause, Play, UserPlus, Home, Gavel } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play, UserPlus, Gavel } from "lucide-react";
 import { Link } from "react-router-dom";
 import BrandLogos from "./BrandLogos";
 import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import heroGreenBanner from "@/assets/hero-green-banner.jpg";
+
+interface StatItem {
+  value: string;
+  label: string;
+}
 
 interface CarouselSlide {
   id: string;
@@ -16,6 +21,12 @@ interface CarouselSlide {
   image_url: string | null;
   bg_color: string;
   display_order: number;
+  badge_text: string | null;
+  cta_primary_text: string | null;
+  cta_primary_link: string | null;
+  cta_secondary_text: string | null;
+  cta_secondary_link: string | null;
+  stats: unknown;
 }
 
 export default function HeroCarousel() {
@@ -80,11 +91,24 @@ export default function HeroCarousel() {
     setIsAutoplayActive((prev) => !prev);
   }, []);
 
+  const parseStats = (stats: unknown): StatItem[] => {
+    if (!stats) return [];
+    if (Array.isArray(stats)) return stats as StatItem[];
+    if (typeof stats === 'string') {
+      try {
+        return JSON.parse(stats);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   if (isLoading || slides.length === 0) {
     return (
-      <div className="relative overflow-hidden rounded-3xl h-[500px] bg-gradient-to-br from-[hsl(var(--qultura-green))] to-[hsl(159,58%,47%)] animate-pulse">
+      <div className="relative overflow-hidden rounded-3xl h-[550px] bg-gradient-to-br from-primary to-primary/70 animate-pulse">
         <div className="flex items-center justify-center h-full">
-          <p className="text-white text-lg">جاري التحميل...</p>
+          <p className="text-primary-foreground text-lg">جاري التحميل...</p>
         </div>
       </div>
     );
@@ -92,86 +116,101 @@ export default function HeroCarousel() {
 
   return (
     <div 
-      className="relative overflow-hidden rounded-3xl" 
+      className="relative overflow-hidden rounded-3xl shadow-2xl" 
       ref={emblaRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex">
-        {slides.map((slide) => (
-          <div key={slide.id} className="flex-[0_0_100%] min-w-0">
+        {slides.map((slide) => {
+          const stats = parseStats(slide.stats);
+          
+          return (
+            <div key={slide.id} className="flex-[0_0_100%] min-w-0">
               <div className={`relative overflow-hidden h-[550px] bg-gradient-to-br ${slide.bg_color}`}>
-              {/* Background Image with Overlay */}
-              <img
-                src={slide.image_url || heroGreenBanner}
-                alt={slide.title}
-                className="absolute inset-0 w-full h-full object-cover opacity-20"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-              
-              {/* Content */}
-              <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8 animate-fade-in">
-                {/* Badge */}
-                <div className="mb-6 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
-                  <span className="text-white text-sm font-medium">🏆 منصة المزادات الأولى في المملكة</span>
-                </div>
+                {/* Background Image with Overlay */}
+                <img
+                  src={slide.image_url || heroGreenBanner}
+                  alt={slide.title}
+                  className="absolute inset-0 w-full h-full object-cover opacity-20"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
                 
-                <p className="text-xl text-white/95 mb-4 max-w-2xl">{slide.description}</p>
-                <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
-                  {slide.title}
-                </h2>
-                <p className="text-2xl md:text-3xl text-white/90 mb-8 font-light">
-                  {slide.subtitle}
-                </p>
-                
-                {/* CTA Buttons */}
-                <div className="flex flex-wrap gap-4 justify-center mb-8">
-                  <Link to="/auth">
-                    <Button 
-                      size="lg" 
-                      className="bg-white text-primary hover:bg-white/90 font-bold px-8 py-6 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105"
-                    >
-                      <UserPlus className="ml-2 h-5 w-5" />
-                      سجّل الآن مجاناً
-                    </Button>
-                  </Link>
-                  <Link to="/auctions">
-                    <Button 
-                      size="lg" 
-                      variant="outline"
-                      className="border-2 border-white text-white hover:bg-white/20 font-bold px-8 py-6 text-lg rounded-full backdrop-blur-sm transition-all hover:scale-105"
-                    >
-                      <Gavel className="ml-2 h-5 w-5" />
-                      تصفح المزادات
-                    </Button>
-                  </Link>
-                </div>
-                
-                {/* Stats */}
-                <div className="flex flex-wrap gap-8 justify-center text-white/90">
-                  <div className="text-center">
-                    <p className="text-3xl font-bold">+500</p>
-                    <p className="text-sm opacity-80">مزاد نشط</p>
+                {/* Content */}
+                <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8 animate-fade-in">
+                  {/* Badge */}
+                  {slide.badge_text && (
+                    <div className="mb-6 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                      <span className="text-white text-sm font-medium">{slide.badge_text}</span>
+                    </div>
+                  )}
+                  
+                  {slide.description && (
+                    <p className="text-xl text-white/95 mb-4 max-w-2xl">{slide.description}</p>
+                  )}
+                  
+                  <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
+                    {slide.title}
+                  </h2>
+                  
+                  {slide.subtitle && (
+                    <p className="text-2xl md:text-3xl text-white/90 mb-8 font-light">
+                      {slide.subtitle}
+                    </p>
+                  )}
+                  
+                  {/* CTA Buttons */}
+                  <div className="flex flex-wrap gap-4 justify-center mb-8">
+                    {slide.cta_primary_text && slide.cta_primary_link && (
+                      <Link to={slide.cta_primary_link}>
+                        <Button 
+                          size="lg" 
+                          className="bg-white text-primary hover:bg-white/90 font-bold px-8 py-6 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                        >
+                          <UserPlus className="ml-2 h-5 w-5" />
+                          {slide.cta_primary_text}
+                        </Button>
+                      </Link>
+                    )}
+                    {slide.cta_secondary_text && slide.cta_secondary_link && (
+                      <Link to={slide.cta_secondary_link}>
+                        <Button 
+                          size="lg" 
+                          variant="outline"
+                          className="border-2 border-white text-white hover:bg-white/20 font-bold px-8 py-6 text-lg rounded-full backdrop-blur-sm transition-all hover:scale-105"
+                        >
+                          <Gavel className="ml-2 h-5 w-5" />
+                          {slide.cta_secondary_text}
+                        </Button>
+                      </Link>
+                    )}
                   </div>
-                  <div className="w-px bg-white/30 hidden sm:block" />
-                  <div className="text-center">
-                    <p className="text-3xl font-bold">+10K</p>
-                    <p className="text-sm opacity-80">مستخدم مسجل</p>
+                  
+                  {/* Stats */}
+                  {stats.length > 0 && (
+                    <div className="flex flex-wrap gap-8 justify-center text-white/90">
+                      {stats.map((stat, index) => (
+                        <div key={index} className="flex items-center gap-8">
+                          <div className="text-center">
+                            <p className="text-3xl font-bold">{stat.value}</p>
+                            <p className="text-sm opacity-80">{stat.label}</p>
+                          </div>
+                          {index < stats.length - 1 && (
+                            <div className="w-px h-12 bg-white/30 hidden sm:block" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className="mt-6">
+                    <BrandLogos />
                   </div>
-                  <div className="w-px bg-white/30 hidden sm:block" />
-                  <div className="text-center">
-                    <p className="text-3xl font-bold">+2M</p>
-                    <p className="text-sm opacity-80">ريال قيمة المبيعات</p>
-                  </div>
-                </div>
-                
-                <div className="mt-6">
-                  <BrandLogos />
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Navigation Arrows */}
@@ -180,14 +219,14 @@ export default function HeroCarousel() {
         className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-all hover:scale-110 z-20"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-6 h-6 text-gray-800" />
+        <ChevronLeft className="w-6 h-6 text-foreground" />
       </button>
       <button
         onClick={scrollNext}
         className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition-all hover:scale-110 z-20"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-6 h-6 text-gray-800" />
+        <ChevronRight className="w-6 h-6 text-foreground" />
       </button>
 
       {/* Autoplay Control Button */}
@@ -197,9 +236,9 @@ export default function HeroCarousel() {
         aria-label={isAutoplayActive ? "إيقاف الانتقال التلقائي" : "تشغيل الانتقال التلقائي"}
       >
         {isAutoplayActive ? (
-          <Pause className="w-5 h-5 text-gray-800" />
+          <Pause className="w-5 h-5 text-foreground" />
         ) : (
-          <Play className="w-5 h-5 text-gray-800" />
+          <Play className="w-5 h-5 text-foreground" />
         )}
       </button>
 
