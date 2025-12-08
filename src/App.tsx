@@ -65,6 +65,7 @@ import ShopifyProduct from "./pages/ShopifyProduct";
 import DashboardShopifyProducts from "./pages/DashboardShopifyProducts";
 import StaticPage from "./pages/StaticPage";
 import DashboardStaticPages from "./pages/DashboardStaticPages";
+import DashboardPromotionalBanners from "./pages/DashboardPromotionalBanners";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -128,6 +129,7 @@ const App = () => (
           <Route path="/product/:handle" element={<ShopifyProduct />} />
           <Route path="/dashboard/shopify-products" element={<DashboardShopifyProducts />} />
           <Route path="/dashboard/static-pages" element={<DashboardStaticPages />} />
+          <Route path="/dashboard/promotional-banners" element={<DashboardPromotionalBanners />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />
