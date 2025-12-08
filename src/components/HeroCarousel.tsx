@@ -107,22 +107,77 @@ export default function HeroCarousel() {
   // Convert Tailwind gradient class to CSS style
   const getBackgroundStyle = (bgColor: string): React.CSSProperties => {
     const gradientMap: Record<string, string> = {
+      // Primary colors
       'from-primary to-primary/70': 'linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.7))',
+      // Emerald/Teal
       'from-emerald-500 to-teal-600': 'linear-gradient(to bottom right, #10b981, #0d9488)',
+      'from-cyan-500 to-teal-600': 'linear-gradient(to bottom right, #06b6d4, #0d9488)',
+      'from-teal-500 to-emerald-600': 'linear-gradient(to bottom right, #14b8a6, #059669)',
+      // Blue
       'from-blue-500 to-indigo-600': 'linear-gradient(to bottom right, #3b82f6, #4f46e5)',
-      'from-purple-500 to-pink-600': 'linear-gradient(to bottom right, #a855f7, #db2777)',
-      'from-amber-500 to-orange-600': 'linear-gradient(to bottom right, #f59e0b, #ea580c)',
-      'from-rose-500 to-red-600': 'linear-gradient(to bottom right, #f43f5e, #dc2626)',
+      'from-blue-600 to-blue-800': 'linear-gradient(to bottom right, #2563eb, #1e40af)',
+      'from-blue-500 to-blue-700': 'linear-gradient(to bottom right, #3b82f6, #1d4ed8)',
       'from-cyan-500 to-blue-600': 'linear-gradient(to bottom right, #06b6d4, #2563eb)',
-      'from-green-500 to-emerald-600': 'linear-gradient(to bottom right, #22c55e, #059669)',
+      'from-indigo-500 to-blue-600': 'linear-gradient(to bottom right, #6366f1, #2563eb)',
+      // Purple/Pink
+      'from-purple-500 to-pink-600': 'linear-gradient(to bottom right, #a855f7, #db2777)',
       'from-violet-500 to-purple-600': 'linear-gradient(to bottom right, #8b5cf6, #9333ea)',
+      'from-fuchsia-500 to-purple-600': 'linear-gradient(to bottom right, #d946ef, #9333ea)',
+      // Orange/Amber
+      'from-amber-500 to-orange-600': 'linear-gradient(to bottom right, #f59e0b, #ea580c)',
+      'from-orange-500 to-red-600': 'linear-gradient(to bottom right, #f97316, #dc2626)',
+      // Red/Rose
+      'from-rose-500 to-red-600': 'linear-gradient(to bottom right, #f43f5e, #dc2626)',
+      'from-red-500 to-rose-600': 'linear-gradient(to bottom right, #ef4444, #e11d48)',
+      // Green
+      'from-green-500 to-emerald-600': 'linear-gradient(to bottom right, #22c55e, #059669)',
+      'from-green-600 to-green-800': 'linear-gradient(to bottom right, #16a34a, #166534)',
+      // Dark
       'from-slate-700 to-slate-900': 'linear-gradient(to bottom right, #334155, #0f172a)',
       'from-zinc-700 to-zinc-900': 'linear-gradient(to bottom right, #3f3f46, #18181b)',
+      'from-gray-700 to-gray-900': 'linear-gradient(to bottom right, #374151, #111827)',
     };
     
-    return {
-      background: gradientMap[bgColor] || 'linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.7))'
-    };
+    // Check if exact match exists
+    if (gradientMap[bgColor]) {
+      return { background: gradientMap[bgColor] };
+    }
+    
+    // Parse Tailwind gradient format dynamically
+    const fromMatch = bgColor.match(/from-([a-z]+)-(\d+)/);
+    const toMatch = bgColor.match(/to-([a-z]+)-(\d+)/);
+    
+    if (fromMatch && toMatch) {
+      const tailwindColors: Record<string, Record<string, string>> = {
+        cyan: { '500': '#06b6d4', '600': '#0891b2', '700': '#0e7490' },
+        teal: { '500': '#14b8a6', '600': '#0d9488', '700': '#0f766e' },
+        blue: { '500': '#3b82f6', '600': '#2563eb', '700': '#1d4ed8', '800': '#1e40af' },
+        indigo: { '500': '#6366f1', '600': '#4f46e5', '700': '#4338ca' },
+        purple: { '500': '#a855f7', '600': '#9333ea', '700': '#7e22ce' },
+        pink: { '500': '#ec4899', '600': '#db2777', '700': '#be185d' },
+        emerald: { '500': '#10b981', '600': '#059669', '700': '#047857' },
+        green: { '500': '#22c55e', '600': '#16a34a', '700': '#15803d', '800': '#166534' },
+        amber: { '500': '#f59e0b', '600': '#d97706', '700': '#b45309' },
+        orange: { '500': '#f97316', '600': '#ea580c', '700': '#c2410c' },
+        red: { '500': '#ef4444', '600': '#dc2626', '700': '#b91c1c' },
+        rose: { '500': '#f43f5e', '600': '#e11d48', '700': '#be123c' },
+        violet: { '500': '#8b5cf6', '600': '#7c3aed', '700': '#6d28d9' },
+        fuchsia: { '500': '#d946ef', '600': '#c026d3', '700': '#a21caf' },
+        slate: { '700': '#334155', '800': '#1e293b', '900': '#0f172a' },
+        zinc: { '700': '#3f3f46', '800': '#27272a', '900': '#18181b' },
+        gray: { '700': '#374151', '800': '#1f2937', '900': '#111827' },
+      };
+      
+      const fromColor = tailwindColors[fromMatch[1]]?.[fromMatch[2]];
+      const toColor = tailwindColors[toMatch[1]]?.[toMatch[2]];
+      
+      if (fromColor && toColor) {
+        return { background: `linear-gradient(to bottom right, ${fromColor}, ${toColor})` };
+      }
+    }
+    
+    // Default fallback
+    return { background: 'linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.7))' };
   };
 
   if (isLoading || slides.length === 0) {
