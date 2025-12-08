@@ -6,7 +6,8 @@ export const signUp = async (
   password: string, 
   fullName: string, 
   referralCode?: string,
-  membershipType?: "merchant" | "consumer"
+  membershipType?: "merchant" | "consumer",
+  selectedPlanId?: string
 ) => {
   const redirectUrl = `${window.location.origin}/`;
   
@@ -19,6 +20,7 @@ export const signUp = async (
         full_name: fullName,
         referral_code: referralCode || '',
         membership_type: membershipType || 'consumer',
+        selected_plan_id: selectedPlanId || null,
       },
     },
   });
