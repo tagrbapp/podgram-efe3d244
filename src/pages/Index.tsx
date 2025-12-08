@@ -10,6 +10,7 @@ import AliExpressProductCard from "@/components/AliExpressProductCard";
 import { CJProductCard } from "@/components/CJProductCard";
 import ShopifyProductCard from "@/components/ShopifyProductCard";
 import CategoriesStrip from "@/components/CategoriesStrip";
+import PromotionalBanners from "@/components/PromotionalBanners";
 import SEO from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchShopifyProducts, ShopifyProduct } from "@/lib/shopify";
@@ -418,6 +419,11 @@ const Index = () => {
                   <AnnouncementBanner />
                 </div>
               )}
+
+              {/* Promotional Banners */}
+              <div className="mt-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                <PromotionalBanners />
+              </div>
             </div>
 
             {/* Decorative Elements */}
