@@ -104,6 +104,27 @@ export default function HeroCarousel() {
     return [];
   };
 
+  // Convert Tailwind gradient class to CSS style
+  const getBackgroundStyle = (bgColor: string): React.CSSProperties => {
+    const gradientMap: Record<string, string> = {
+      'from-primary to-primary/70': 'linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.7))',
+      'from-emerald-500 to-teal-600': 'linear-gradient(to bottom right, #10b981, #0d9488)',
+      'from-blue-500 to-indigo-600': 'linear-gradient(to bottom right, #3b82f6, #4f46e5)',
+      'from-purple-500 to-pink-600': 'linear-gradient(to bottom right, #a855f7, #db2777)',
+      'from-amber-500 to-orange-600': 'linear-gradient(to bottom right, #f59e0b, #ea580c)',
+      'from-rose-500 to-red-600': 'linear-gradient(to bottom right, #f43f5e, #dc2626)',
+      'from-cyan-500 to-blue-600': 'linear-gradient(to bottom right, #06b6d4, #2563eb)',
+      'from-green-500 to-emerald-600': 'linear-gradient(to bottom right, #22c55e, #059669)',
+      'from-violet-500 to-purple-600': 'linear-gradient(to bottom right, #8b5cf6, #9333ea)',
+      'from-slate-700 to-slate-900': 'linear-gradient(to bottom right, #334155, #0f172a)',
+      'from-zinc-700 to-zinc-900': 'linear-gradient(to bottom right, #3f3f46, #18181b)',
+    };
+    
+    return {
+      background: gradientMap[bgColor] || 'linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.7))'
+    };
+  };
+
   if (isLoading || slides.length === 0) {
     return (
       <div className="relative overflow-hidden rounded-3xl h-[550px] bg-gradient-to-br from-primary to-primary/70 animate-pulse">
@@ -127,7 +148,10 @@ export default function HeroCarousel() {
           
           return (
             <div key={slide.id} className="flex-[0_0_100%] min-w-0">
-              <div className={`relative overflow-hidden h-[550px] bg-gradient-to-br ${slide.bg_color}`}>
+              <div 
+                className="relative overflow-hidden h-[550px]"
+                style={getBackgroundStyle(slide.bg_color)}
+              >
                 {/* Background Image with Overlay */}
                 <img
                   src={slide.image_url || heroGreenBanner}
