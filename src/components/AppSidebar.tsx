@@ -1,4 +1,4 @@
-import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp, ChevronDown, Palette, Calculator, Award, BarChart3, UserPlus, Search, Mail, Bell, ShoppingBag, Truck, Store, LayoutGrid } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, Package, TrendingUp, FileText, MessageCircle, LogOut, Shield, Trophy, BarChart, Gavel, TestTube, Megaphone, Image, UserCheck, Home, Users, FolderTree, ChevronUp, ChevronDown, Palette, Calculator, Award, BarChart3, UserPlus, Search, Mail, Bell, ShoppingBag, Truck, Store, LayoutGrid, CreditCard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ const mainItems = [
   { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard, showBadge: false },
   { title: "إعلاناتي", url: "/dashboard/listings", icon: Package, showBadge: false },
   { title: "المزادات", url: "/dashboard/auctions", icon: Gavel, showBadge: false },
+  { title: "إدارة الاشتراك", url: "/dashboard/subscription", icon: CreditCard, showBadge: false },
   { title: "دعوة الأصدقاء", url: "/dashboard/referral", icon: UserPlus, showBadge: false },
   { title: "إحصائيات المزادات", url: "/dashboard/auction-analytics", icon: BarChart, showBadge: false },
   { title: "ملفي كمزايد", url: "/dashboard/bidder-profile", icon: Trophy, showBadge: false },
