@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getSession } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, UserX, Eye } from "lucide-react";
+import { Search, UserX, Eye, Crown, CreditCard, Users, TrendingUp } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -47,6 +47,14 @@ const DashboardAdmin = () => {
     blockedUsers: 0,
   });
   const [searchTerm, setSearchTerm] = useState("");
+  const [subscriptionStats, setSubscriptionStats] = useState<any>({
+    totalMerchants: 0,
+    activeSubscriptions: 0,
+    totalCommissions: 0,
+    pendingCommissions: 0,
+  });
+  const [plans, setPlans] = useState<any[]>([]);
+  const [memberSubscriptions, setMemberSubscriptions] = useState<any[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -153,6 +161,38 @@ const DashboardAdmin = () => {
       } else {
         setActions(actionsData || []);
       }
+
+      // Load subscription stats and plans
+      const [
+        { data: plansData },
+        { data: subscriptionsData },
+        { count: merchantsCount },
+        { count: activeSubsCount },
+        { data: commissionsData },
+      ] = await Promise.all([
+        supabase.from("merchant_plans").select("*").eq("is_active", true).order("display_order"),
+        supabase.from("merchant_subscriptions").select(`
+          *,
+          profiles:user_id (id, full_name, avatar_url, membership_type),
+          merchant_plans:plan_id (name, name_en, price, commission_rate, auctions_per_day)
+        `).order("created_at", { ascending: false }),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).eq("membership_type", "merchant"),
+        supabase.from("merchant_subscriptions").select("*", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("merchant_commissions").select("commission_amount, status"),
+      ]);
+
+      setPlans(plansData || []);
+      setMemberSubscriptions(subscriptionsData || []);
+
+      const totalCommissions = (commissionsData || []).reduce((sum, c) => sum + Number(c.commission_amount), 0);
+      const pendingCommissions = (commissionsData || []).filter(c => c.status === "pending").reduce((sum, c) => sum + Number(c.commission_amount), 0);
+
+      setSubscriptionStats({
+        totalMerchants: merchantsCount || 0,
+        activeSubscriptions: activeSubsCount || 0,
+        totalCommissions,
+        pendingCommissions,
+      });
     } catch (error) {
       console.error("Error loading admin data:", error);
       toast.error("فشل تحميل البيانات");
@@ -308,9 +348,50 @@ const DashboardAdmin = () => {
           <main className="p-6 space-y-6">
       <AdminStats {...stats} />
 
+      {/* Subscription Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">إجمالي التجار</CardTitle>
+            <Crown className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{subscriptionStats.totalMerchants.toLocaleString("en-US")}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">الاشتراكات النشطة</CardTitle>
+            <Users className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{subscriptionStats.activeSubscriptions.toLocaleString("en-US")}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">إجمالي العمولات</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{subscriptionStats.totalCommissions.toLocaleString("en-US")} ر.س</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">العمولات المعلقة</CardTitle>
+            <CreditCard className="h-4 w-4 text-yellow-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{subscriptionStats.pendingCommissions.toLocaleString("en-US")} ر.س</div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="users" className="w-full" dir="rtl">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="actions">سجل الإجراءات</TabsTrigger>
+          <TabsTrigger value="subscriptions">الباقات</TabsTrigger>
           <TabsTrigger value="auctions">المزادات</TabsTrigger>
           <TabsTrigger value="listings">الإعلانات</TabsTrigger>
           <TabsTrigger value="users">المستخدمون</TabsTrigger>
@@ -537,6 +618,121 @@ const DashboardAdmin = () => {
               </TableBody>
             </Table>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="subscriptions" className="space-y-6">
+          {/* Plans Overview */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">الباقات المتاحة</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {plans.map((plan) => (
+                <Card key={plan.id} className="relative">
+                  {plan.is_popular && (
+                    <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary">الأكثر شعبية</Badge>
+                  )}
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Crown className="h-5 w-5 text-primary" />
+                      {plan.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className="text-2xl font-bold">{plan.price.toLocaleString("en-US")} ر.س<span className="text-sm text-muted-foreground">/شهر</span></p>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p>نسبة العمولة: {plan.commission_rate}%</p>
+                      <p>المزادات اليومية: {plan.auctions_per_day}</p>
+                      {plan.max_active_auctions && <p>الحد الأقصى للمزادات النشطة: {plan.max_active_auctions}</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Members Subscriptions */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">اشتراكات الأعضاء</h3>
+            <Card>
+              <Table dir="rtl">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">العضو</TableHead>
+                    <TableHead className="text-right">الباقة</TableHead>
+                    <TableHead className="text-right">السعر</TableHead>
+                    <TableHead className="text-right">نسبة العمولة</TableHead>
+                    <TableHead className="text-right">الحالة</TableHead>
+                    <TableHead className="text-right">تاريخ البدء</TableHead>
+                    <TableHead className="text-right">تاريخ الانتهاء</TableHead>
+                    <TableHead className="text-right">الإجراءات</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {memberSubscriptions.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={sub.profiles?.avatar_url} />
+                            <AvatarFallback>{sub.profiles?.full_name?.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{sub.profiles?.full_name}</p>
+                            <Badge variant="outline" className="text-xs">{sub.profiles?.membership_type === "merchant" ? "تاجر" : "مستهلك"}</Badge>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-4 w-4 text-primary" />
+                          {sub.merchant_plans?.name}
+                        </div>
+                      </TableCell>
+                      <TableCell>{sub.merchant_plans?.price?.toLocaleString("en-US")} ر.س</TableCell>
+                      <TableCell>{sub.merchant_plans?.commission_rate}%</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          sub.status === "active" ? "default" : 
+                          sub.status === "pending" ? "secondary" : 
+                          sub.status === "suspended" ? "destructive" : "outline"
+                        }>
+                          {sub.status === "active" ? "نشط" : 
+                           sub.status === "pending" ? "قيد الانتظار" : 
+                           sub.status === "suspended" ? "موقوف" : 
+                           sub.status === "expired" ? "منتهي" : sub.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {sub.started_at ? format(new Date(sub.started_at), "PP", { locale: ar }) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {sub.expires_at ? format(new Date(sub.expires_at), "PP", { locale: ar }) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">الإجراءات</Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="bg-popover border border-border z-50">
+                            <DropdownMenuItem onClick={() => navigate(`/profile/${sub.profiles?.id}`)}>
+                              <Eye className="ml-2 h-4 w-4" />
+                              عرض الملف الشخصي
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {memberSubscriptions.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        لا توجد اشتراكات حالياً
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="actions">
