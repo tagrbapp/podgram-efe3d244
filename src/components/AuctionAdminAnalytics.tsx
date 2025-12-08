@@ -5,15 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Eye, Users, Gavel, TrendingUp, Clock, Calendar, 
-  BarChart3, DollarSign, Activity, Target, ArrowUp, ArrowDown,
-  Globe, Search, Share2, MousePointerClick, Percent, Timer,
-  Smartphone, Monitor, Laptop
+  BarChart3, DollarSign, Activity, Target, ArrowDown,
+  MousePointerClick, Percent, Timer
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInHours, differenceInMinutes } from "date-fns";
 import { ar } from "date-fns/locale";
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell
+  XAxis, YAxis, CartesianGrid, Tooltip, 
+  ResponsiveContainer, AreaChart, Area, BarChart, Bar
 } from "recharts";
 
 interface AuctionAdminAnalyticsProps {
@@ -151,34 +150,17 @@ export const AuctionAdminAnalytics = ({ auctionId, auction, bids }: AuctionAdmin
       ) / (totalBids - 1)
     : 0;
 
-  // بيانات مصادر الزيارات (محاكاة - يمكن ربطها بـ Google Analytics لاحقاً)
-  const trafficSources = [
-    { name: "بحث مباشر", value: Math.floor(totalViews * 0.35), color: "hsl(var(--primary))" },
-    { name: "Google", value: Math.floor(totalViews * 0.28), color: "#4285F4" },
-    { name: "وسائل التواصل", value: Math.floor(totalViews * 0.22), color: "#E1306C" },
-    { name: "روابط خارجية", value: Math.floor(totalViews * 0.10), color: "#00B86B" },
-    { name: "أخرى", value: Math.floor(totalViews * 0.05), color: "#9CA3AF" },
-  ];
+  // حساب الزوار الفريدين من بيانات المزاد
+  const uniqueViewers = viewsAnalytics.reduce((sum, v) => sum + Number(v.unique_viewers || 0), 0);
 
-  // بيانات الأجهزة
-  const deviceData = [
-    { name: "الجوال", value: Math.floor(totalViews * 0.65), icon: Smartphone },
-    { name: "سطح المكتب", value: Math.floor(totalViews * 0.28), icon: Monitor },
-    { name: "التابلت", value: Math.floor(totalViews * 0.07), icon: Laptop },
-  ];
-
-  // بيانات المشاهدات اليومية
+  // بيانات المشاهدات اليومية - البيانات الحقيقية فقط من قاعدة البيانات
   const viewsChartData = viewsAnalytics.length > 0 
     ? viewsAnalytics.map(v => ({
         date: format(new Date(v.view_date), "MM/dd"),
         views: Number(v.total_views),
         unique: Number(v.unique_viewers),
-      }))
-    : Array.from({ length: 7 }, (_, i) => ({
-        date: format(new Date(Date.now() - i * 24 * 60 * 60 * 1000), "MM/dd"),
-        views: Math.floor(Math.random() * 50) + 10,
-        unique: Math.floor(Math.random() * 30) + 5,
-      })).reverse();
+      })).reverse()
+    : [];
 
   // تحليل أوقات الذروة للمزايدات
   const peakHours = bids.reduce((acc, bid) => {
@@ -250,8 +232,8 @@ export const AuctionAdminAnalytics = ({ auctionId, auction, bids }: AuctionAdmin
     },
     {
       title: "الزوار الفريدين",
-      value: viewsAnalytics.reduce((sum, v) => sum + Number(v.unique_viewers || 0), 0).toLocaleString("en-US"),
-      icon: Globe,
+      value: uniqueViewers.toLocaleString("en-US"),
+      icon: Users,
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
     },
@@ -331,48 +313,54 @@ export const AuctionAdminAnalytics = ({ auctionId, auction, bids }: AuctionAdmin
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* رسم بياني للمشاهدات اليومية */}
             <div className="bg-background rounded-xl p-4 border border-border/50">
-              <h4 className="font-semibold mb-4 flex items-center gap-2">
+              <h4 className="font-semibold mb-4 flex items-center gap-2 text-right">
                 <Eye className="h-4 w-4 text-primary" />
-                المشاهدات اليومية
+                المشاهدات اليومية لهذا المزاد
               </h4>
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={viewsChartData}>
-                  <defs>
-                    <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                      direction: 'rtl'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="views" 
-                    name="المشاهدات"
-                    stroke="hsl(var(--primary))" 
-                    fill="url(#colorViews)"
-                    strokeWidth={2}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="unique" 
-                    name="الزوار الفريدين"
-                    stroke="hsl(var(--accent))" 
-                    fill="transparent"
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {viewsChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <AreaChart data={viewsChartData}>
+                    <defs>
+                      <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        direction: 'rtl'
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="views" 
+                      name="المشاهدات"
+                      stroke="hsl(var(--primary))" 
+                      fill="url(#colorViews)"
+                      strokeWidth={2}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="unique" 
+                      name="الزوار الفريدين"
+                      stroke="hsl(var(--accent))" 
+                      fill="transparent"
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  لا توجد بيانات مشاهدات لهذا المزاد بعد
+                </div>
+              )}
             </div>
 
             {/* رسم بياني للمزايدات */}
@@ -421,109 +409,69 @@ export const AuctionAdminAnalytics = ({ auctionId, auction, bids }: AuctionAdmin
         </TabsContent>
 
         <TabsContent value="traffic">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* مصادر الزيارات */}
+          <div className="grid grid-cols-1 gap-6">
+            {/* إحصائيات المشاهدات لهذا المزاد */}
             <div className="bg-background rounded-xl p-4 border border-border/50">
-              <h4 className="font-semibold mb-4 flex items-center gap-2">
-                <Globe className="h-4 w-4 text-primary" />
-                مصادر الزيارات
+              <h4 className="font-semibold mb-4 flex items-center gap-2 text-right">
+                <Eye className="h-4 w-4 text-primary" />
+                تفاصيل المشاهدات لهذا المزاد
               </h4>
-              <div className="flex items-center gap-4">
-                <ResponsiveContainer width="50%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={trafficSources}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={40}
-                      outerRadius={70}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {trafficSources.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="flex-1 space-y-2">
-                  {trafficSources.map((source, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: source.color }}
-                        />
-                        <span>{source.name}</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <Eye className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+                  <p className="text-2xl font-bold text-blue-600">{totalViews.toLocaleString("en-US")}</p>
+                  <p className="text-xs text-blue-600">إجمالي المشاهدات</p>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <Users className="w-6 h-6 mx-auto mb-2 text-green-600" />
+                  <p className="text-2xl font-bold text-green-600">{uniqueViewers.toLocaleString("en-US")}</p>
+                  <p className="text-xs text-green-600">الزوار الفريدين</p>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <MousePointerClick className="w-6 h-6 mx-auto mb-2 text-purple-600" />
+                  <p className="text-2xl font-bold text-purple-600">{conversionRate}%</p>
+                  <p className="text-xs text-purple-600">معدل التحويل للمزايدة</p>
+                </div>
+                <div className="text-center p-4 bg-orange-50 rounded-lg">
+                  <Activity className="w-6 h-6 mx-auto mb-2 text-orange-600" />
+                  <p className="text-2xl font-bold text-orange-600">{engagementRate}x</p>
+                  <p className="text-xs text-orange-600">معدل المشاركة</p>
+                </div>
+              </div>
+            </div>
+
+            {/* تفاصيل المشاهدات اليومية */}
+            <div className="bg-background rounded-xl p-4 border border-border/50">
+              <h4 className="font-semibold mb-4 flex items-center gap-2 text-right">
+                <Calendar className="h-4 w-4 text-primary" />
+                سجل المشاهدات اليومية
+              </h4>
+              {viewsAnalytics.length > 0 ? (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {viewsAnalytics.map((day, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{format(new Date(day.view_date), "yyyy/MM/dd")}</span>
                       </div>
-                      <span className="font-medium">{source.value.toLocaleString("en-US")}</span>
+                      <div className="flex items-center gap-4">
+                        <div className="text-left">
+                          <span className="text-sm text-muted-foreground">مشاهدات: </span>
+                          <span className="font-bold">{Number(day.total_views).toLocaleString("en-US")}</span>
+                        </div>
+                        <div className="text-left">
+                          <span className="text-sm text-muted-foreground">زوار فريدين: </span>
+                          <span className="font-bold text-primary">{Number(day.unique_viewers).toLocaleString("en-US")}</span>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-
-            {/* الأجهزة */}
-            <div className="bg-background rounded-xl p-4 border border-border/50">
-              <h4 className="font-semibold mb-4 flex items-center gap-2">
-                <Smartphone className="h-4 w-4 text-primary" />
-                أنواع الأجهزة
-              </h4>
-              <div className="space-y-4">
-                {deviceData.map((device, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <device.icon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{device.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{device.value.toLocaleString("en-US")}</span>
-                        <span className="text-xs text-muted-foreground">
-                          ({totalViews > 0 ? ((device.value / totalViews) * 100).toFixed(0) : 0}%)
-                        </span>
-                      </div>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full transition-all"
-                        style={{ width: `${totalViews > 0 ? (device.value / totalViews) * 100 : 0}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* إحصائيات محركات البحث */}
-            <div className="bg-background rounded-xl p-4 border border-border/50 lg:col-span-2">
-              <h4 className="font-semibold mb-4 flex items-center gap-2">
-                <Search className="h-4 w-4 text-primary" />
-                التحويلات من محركات البحث
-              </h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <img src="https://www.google.com/favicon.ico" alt="Google" className="w-6 h-6 mx-auto mb-2" />
-                  <p className="text-lg font-bold">{Math.floor(totalViews * 0.28).toLocaleString("en-US")}</p>
-                  <p className="text-xs text-muted-foreground">Google</p>
+              ) : (
+                <div className="h-[150px] flex items-center justify-center text-muted-foreground">
+                  لا توجد بيانات مشاهدات مسجلة لهذا المزاد بعد
                 </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <img src="https://www.bing.com/favicon.ico" alt="Bing" className="w-6 h-6 mx-auto mb-2" />
-                  <p className="text-lg font-bold">{Math.floor(totalViews * 0.05).toLocaleString("en-US")}</p>
-                  <p className="text-xs text-muted-foreground">Bing</p>
-                </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <img src="https://www.yahoo.com/favicon.ico" alt="Yahoo" className="w-6 h-6 mx-auto mb-2" />
-                  <p className="text-lg font-bold">{Math.floor(totalViews * 0.02).toLocaleString("en-US")}</p>
-                  <p className="text-xs text-muted-foreground">Yahoo</p>
-                </div>
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <Share2 className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-lg font-bold">{Math.floor(totalViews * 0.65).toLocaleString("en-US")}</p>
-                  <p className="text-xs text-muted-foreground">مباشر</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </TabsContent>
