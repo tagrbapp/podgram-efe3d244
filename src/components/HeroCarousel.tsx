@@ -191,13 +191,15 @@ export default function HeroCarousel() {
                 className="relative overflow-hidden h-[550px]"
                 style={getBackgroundStyle(slide.bg_color)}
               >
-                {/* Background Image with Overlay */}
-                <img
-                  src={slide.image_url || heroGreenBanner}
-                  alt={slide.title}
-                  className="absolute inset-0 w-full h-full object-cover opacity-20"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                {/* Background Image with Overlay - only show if image_url exists */}
+                {slide.image_url && (
+                  <img
+                    src={slide.image_url}
+                    alt={slide.title}
+                    className="absolute inset-0 w-full h-full object-cover opacity-20"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10" />
                 
                 {/* Floating Card */}
                 {slide.show_floating_card && slide.floating_image_url && (
