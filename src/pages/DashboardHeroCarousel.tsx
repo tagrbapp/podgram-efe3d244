@@ -448,11 +448,17 @@ export default function DashboardHeroCarousel() {
 
                       <TabsContent value="cta">
                         <div className="space-y-6">
-                          <div className="p-4 border rounded-lg space-y-4">
-                            <h3 className="font-semibold flex items-center gap-2">
-                              <LinkIcon className="w-4 h-4" />
-                              الزر الرئيسي
-                            </h3>
+                          <div className="p-4 border rounded-lg space-y-4 bg-muted/30">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold flex items-center gap-2">
+                                <LinkIcon className="w-4 h-4" />
+                                الزر الرئيسي
+                              </h3>
+                              {/* معاينة الزر الرئيسي */}
+                              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                                {formData.cta_primary_text || "سجّل الآن مجاناً"}
+                              </Button>
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="cta_primary_text">نص الزر</Label>
@@ -473,13 +479,22 @@ export default function DashboardHeroCarousel() {
                                 />
                               </div>
                             </div>
+                            <p className="text-xs text-muted-foreground">
+                              الزر الرئيسي يظهر بلون الموقع الأساسي (Primary) مع خلفية ملونة
+                            </p>
                           </div>
 
-                          <div className="p-4 border rounded-lg space-y-4">
-                            <h3 className="font-semibold flex items-center gap-2">
-                              <LinkIcon className="w-4 h-4" />
-                              الزر الثانوي
-                            </h3>
+                          <div className="p-4 border rounded-lg space-y-4 bg-muted/30">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold flex items-center gap-2">
+                                <LinkIcon className="w-4 h-4" />
+                                الزر الثانوي
+                              </h3>
+                              {/* معاينة الزر الثانوي */}
+                              <Button size="sm" variant="outline" className="border-white/30 bg-white/10 text-foreground hover:bg-white/20">
+                                {formData.cta_secondary_text || "تصفح المزادات"}
+                              </Button>
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="cta_secondary_text">نص الزر</Label>
@@ -500,6 +515,9 @@ export default function DashboardHeroCarousel() {
                                 />
                               </div>
                             </div>
+                            <p className="text-xs text-muted-foreground">
+                              الزر الثانوي يظهر بخلفية شفافة مع حدود خفيفة
+                            </p>
                           </div>
                         </div>
                       </TabsContent>
