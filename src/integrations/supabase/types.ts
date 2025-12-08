@@ -1485,6 +1485,162 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_commissions: {
+        Row: {
+          auction_id: string | null
+          commission_amount: number
+          commission_rate: number
+          created_at: string | null
+          due_date: string | null
+          id: string
+          paid_at: string | null
+          sale_amount: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          auction_id?: string | null
+          commission_amount: number
+          commission_rate: number
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          sale_amount: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          auction_id?: string | null
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          paid_at?: string | null
+          sale_amount?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_commissions_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_commissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      merchant_plans: {
+        Row: {
+          auctions_per_day: number
+          commission_rate: number
+          created_at: string | null
+          display_order: number | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          is_popular: boolean | null
+          max_active_auctions: number | null
+          name: string
+          name_en: string
+          price: number
+        }
+        Insert: {
+          auctions_per_day?: number
+          commission_rate?: number
+          created_at?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          max_active_auctions?: number | null
+          name: string
+          name_en: string
+          price?: number
+        }
+        Update: {
+          auctions_per_day?: number
+          commission_rate?: number
+          created_at?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_popular?: boolean | null
+          max_active_auctions?: number | null
+          name?: string
+          name_en?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      merchant_subscriptions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          last_payment_date: string | null
+          next_payment_date: string | null
+          plan_id: string
+          started_at: string | null
+          status: string
+          suspended_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          last_payment_date?: string | null
+          next_payment_date?: string | null
+          plan_id: string
+          started_at?: string | null
+          status?: string
+          suspended_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          last_payment_date?: string | null
+          next_payment_date?: string | null
+          plan_id?: string
+          started_at?: string | null
+          status?: string
+          suspended_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -1658,6 +1814,7 @@ export type Database = {
           referral_code: string | null
           referred_by: string | null
           rejection_reason: string | null
+          selected_plan_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1678,6 +1835,7 @@ export type Database = {
           referral_code?: string | null
           referred_by?: string | null
           rejection_reason?: string | null
+          selected_plan_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1698,6 +1856,7 @@ export type Database = {
           referral_code?: string | null
           referred_by?: string | null
           rejection_reason?: string | null
+          selected_plan_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1706,6 +1865,13 @@ export type Database = {
             columns: ["referred_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_selected_plan_id_fkey"
+            columns: ["selected_plan_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -2366,6 +2532,7 @@ export type Database = {
         Args: { seller_uuid: string }
         Returns: number
       }
+      can_merchant_create_auction: { Args: { _user_id: string }; Returns: Json }
       check_and_award_achievements: {
         Args: { _user_id: string }
         Returns: undefined

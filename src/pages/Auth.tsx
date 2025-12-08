@@ -12,6 +12,7 @@ import { ArrowRight, Mail, Lock, User, Eye, EyeOff, Store } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { z } from "zod";
 import podgramLogo from "@/assets/podgram-logo.png";
+import MerchantPlanSelector from "@/components/MerchantPlanSelector";
 import heroImage from "@/assets/hero-luxury.jpg";
 
 const loginSchema = z.object({
@@ -69,6 +70,7 @@ const Auth = () => {
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [registerPassword, setRegisterPassword] = useState("");
   const [membershipType, setMembershipType] = useState<"merchant" | "consumer">("consumer");
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [authSettings, setAuthSettings] = useState<AuthSettings | null>(null);
   const navigate = useNavigate();
 
@@ -174,12 +176,20 @@ const Auth = () => {
     try {
       const validation = registerSchema.parse({ fullName, email, password, confirmPassword, referralCode });
 
+      // Validate plan selection for merchants
+      if (membershipType === "merchant" && !selectedPlanId) {
+        toast.error("يرجى اختيار باقة التاجر");
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await signUp(
         validation.email, 
         validation.password, 
         validation.fullName,
         validation.referralCode,
-        membershipType
+        membershipType,
+        membershipType === "merchant" ? selectedPlanId : undefined
       );
 
       if (error) {
@@ -419,6 +429,16 @@ const Auth = () => {
                     </div>
                   </RadioGroup>
                 </div>
+
+                {/* Merchant Plan Selection */}
+                {membershipType === "merchant" && (
+                  <div className="space-y-3 pt-2">
+                    <MerchantPlanSelector
+                      selectedPlanId={selectedPlanId}
+                      onPlanSelect={setSelectedPlanId}
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="register-email" className="flex items-center gap-2">
