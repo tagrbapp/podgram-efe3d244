@@ -744,54 +744,84 @@ export type Database = {
           badge_text: string | null
           bg_color: string
           created_at: string
+          cta_primary_bg_color: string | null
           cta_primary_link: string | null
           cta_primary_text: string | null
+          cta_primary_text_color: string | null
+          cta_secondary_bg_color: string | null
+          cta_secondary_border_color: string | null
           cta_secondary_link: string | null
           cta_secondary_text: string | null
+          cta_secondary_text_color: string | null
           description: string | null
+          description_color: string | null
           display_order: number
+          floating_image_url: string | null
           id: string
           image_url: string | null
           is_active: boolean
+          show_floating_card: boolean | null
           stats: Json | null
           subtitle: string | null
+          subtitle_color: string | null
           title: string
+          title_color: string | null
           updated_at: string
         }
         Insert: {
           badge_text?: string | null
           bg_color?: string
           created_at?: string
+          cta_primary_bg_color?: string | null
           cta_primary_link?: string | null
           cta_primary_text?: string | null
+          cta_primary_text_color?: string | null
+          cta_secondary_bg_color?: string | null
+          cta_secondary_border_color?: string | null
           cta_secondary_link?: string | null
           cta_secondary_text?: string | null
+          cta_secondary_text_color?: string | null
           description?: string | null
+          description_color?: string | null
           display_order?: number
+          floating_image_url?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          show_floating_card?: boolean | null
           stats?: Json | null
           subtitle?: string | null
+          subtitle_color?: string | null
           title: string
+          title_color?: string | null
           updated_at?: string
         }
         Update: {
           badge_text?: string | null
           bg_color?: string
           created_at?: string
+          cta_primary_bg_color?: string | null
           cta_primary_link?: string | null
           cta_primary_text?: string | null
+          cta_primary_text_color?: string | null
+          cta_secondary_bg_color?: string | null
+          cta_secondary_border_color?: string | null
           cta_secondary_link?: string | null
           cta_secondary_text?: string | null
+          cta_secondary_text_color?: string | null
           description?: string | null
+          description_color?: string | null
           display_order?: number
+          floating_image_url?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          show_floating_card?: boolean | null
           stats?: Json | null
           subtitle?: string | null
+          subtitle_color?: string | null
           title?: string
+          title_color?: string | null
           updated_at?: string
         }
         Relationships: []

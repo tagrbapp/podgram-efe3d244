@@ -27,6 +27,16 @@ interface CarouselSlide {
   cta_secondary_text: string | null;
   cta_secondary_link: string | null;
   stats: unknown;
+  title_color: string | null;
+  subtitle_color: string | null;
+  description_color: string | null;
+  floating_image_url: string | null;
+  show_floating_card: boolean | null;
+  cta_primary_bg_color: string | null;
+  cta_primary_text_color: string | null;
+  cta_secondary_bg_color: string | null;
+  cta_secondary_text_color: string | null;
+  cta_secondary_border_color: string | null;
 }
 
 export default function HeroCarousel() {
@@ -200,6 +210,9 @@ export default function HeroCarousel() {
       <div className="flex">
         {slides.map((slide) => {
           const stats = parseStats(slide.stats);
+          const titleColor = slide.title_color || '#ffffff';
+          const subtitleColor = slide.subtitle_color || '#06b6d4';
+          const descriptionColor = slide.description_color || '#ffffff';
           
           return (
             <div key={slide.id} className="flex-[0_0_100%] min-w-0">
@@ -215,8 +228,21 @@ export default function HeroCarousel() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
                 
+                {/* Floating Card */}
+                {slide.show_floating_card && slide.floating_image_url && (
+                  <div className="absolute left-4 md:left-12 top-1/2 -translate-y-1/2 z-20 hidden md:block">
+                    <div className="bg-white rounded-2xl shadow-2xl p-4 animate-fade-in">
+                      <img
+                        src={slide.floating_image_url}
+                        alt="Featured"
+                        className="max-h-[350px] w-auto rounded-xl"
+                      />
+                    </div>
+                  </div>
+                )}
+                
                 {/* Content */}
-                <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8 animate-fade-in">
+                <div className={`relative z-10 flex flex-col ${slide.show_floating_card ? 'items-end pr-8 md:pr-16' : 'items-center'} justify-center h-full text-${slide.show_floating_card ? 'right' : 'center'} px-8 animate-fade-in`}>
                   {/* Badge */}
                   {slide.badge_text && (
                     <div className="mb-6 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
@@ -224,43 +250,58 @@ export default function HeroCarousel() {
                     </div>
                   )}
                   
-                  {slide.description && (
-                    <p className="text-xl text-white/95 mb-4 max-w-2xl">{slide.description}</p>
-                  )}
-                  
-                  <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
+                  <h2 
+                    className="text-4xl md:text-6xl font-bold mb-2 leading-tight drop-shadow-lg"
+                    style={{ color: titleColor }}
+                  >
                     {slide.title}
                   </h2>
                   
                   {slide.subtitle && (
-                    <p className="text-2xl md:text-3xl text-white/90 mb-8 font-light">
+                    <p 
+                      className="text-2xl md:text-4xl font-bold mb-4"
+                      style={{ color: subtitleColor }}
+                    >
                       {slide.subtitle}
+                    </p>
+                  )}
+                  
+                  {slide.description && (
+                    <p 
+                      className="text-lg mb-6 max-w-2xl"
+                      style={{ color: descriptionColor }}
+                    >
+                      {slide.description}
                     </p>
                   )}
                   
                   {/* CTA Buttons */}
                   <div className="flex flex-wrap gap-4 justify-center mb-8">
-                    {slide.cta_primary_text && slide.cta_primary_link && (
-                      <Link to={slide.cta_primary_link}>
-                        <Button 
-                          size="lg" 
-                          className="bg-white text-primary hover:bg-white/90 font-bold px-8 py-6 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105"
-                        >
-                          <UserPlus className="ml-2 h-5 w-5" />
-                          {slide.cta_primary_text}
-                        </Button>
-                      </Link>
-                    )}
                     {slide.cta_secondary_text && slide.cta_secondary_link && (
                       <Link to={slide.cta_secondary_link}>
-                        <Button 
-                          size="lg" 
-                          variant="outline"
-                          className="border-2 border-white text-white hover:bg-white/20 font-bold px-8 py-6 text-lg rounded-full backdrop-blur-sm transition-all hover:scale-105"
+                        <button 
+                          className="font-bold px-8 py-4 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105 border-2"
+                          style={{
+                            backgroundColor: slide.cta_secondary_bg_color === 'transparent' ? 'transparent' : (slide.cta_secondary_bg_color || 'transparent'),
+                            color: slide.cta_secondary_text_color || '#1a1a1a',
+                            borderColor: slide.cta_secondary_border_color || '#1a1a1a'
+                          }}
                         >
-                          <Gavel className="ml-2 h-5 w-5" />
                           {slide.cta_secondary_text}
-                        </Button>
+                        </button>
+                      </Link>
+                    )}
+                    {slide.cta_primary_text && slide.cta_primary_link && (
+                      <Link to={slide.cta_primary_link}>
+                        <button 
+                          className="font-bold px-8 py-4 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                          style={{
+                            backgroundColor: slide.cta_primary_bg_color || '#0891b2',
+                            color: slide.cta_primary_text_color || '#ffffff'
+                          }}
+                        >
+                          {slide.cta_primary_text}
+                        </button>
                       </Link>
                     )}
                   </div>
