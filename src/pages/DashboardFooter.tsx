@@ -29,6 +29,7 @@ interface FooterSettings {
   email: string;
   address: string;
   copyright_text: string;
+  link_color: string;
   is_active: boolean;
   quick_links: FooterLink[];
   support_links: FooterLink[];
@@ -52,6 +53,7 @@ const DashboardFooter = () => {
     email: "info@podgram.com",
     address: "الرياض، المملكة العربية السعودية",
     copyright_text: "Podgram. جميع الحقوق محفوظة.",
+    link_color: "#9CA3AF",
     is_active: true,
     quick_links: [
       { title: "من نحن", url: "/about" },
@@ -112,6 +114,7 @@ const DashboardFooter = () => {
       if (data) {
         setSettings({
           ...data,
+          link_color: data.link_color || '#9CA3AF',
           quick_links: Array.isArray(data.quick_links) ? data.quick_links as unknown as FooterLink[] : [],
           support_links: Array.isArray(data.support_links) ? data.support_links as unknown as FooterLink[] : [],
           bottom_links: Array.isArray(data.bottom_links) ? data.bottom_links as unknown as FooterLink[] : [],
@@ -142,6 +145,7 @@ const DashboardFooter = () => {
           email: settings.email,
           address: settings.address,
           copyright_text: settings.copyright_text,
+          link_color: settings.link_color,
           is_active: settings.is_active,
           quick_links: settings.quick_links as any,
           support_links: settings.support_links as any,
@@ -462,6 +466,37 @@ const DashboardFooter = () => {
                 onChange={(e) => setSettings({ ...settings, copyright_text: e.target.value })}
                 placeholder="Podgram. جميع الحقوق محفوظة."
               />
+            </div>
+          </div>
+
+          {/* Link Color */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold border-b pb-2">لون الروابط</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="link_color">لون الروابط الفرعية</Label>
+              <div className="flex gap-3 items-center">
+                <Input
+                  id="link_color"
+                  type="color"
+                  value={settings.link_color}
+                  onChange={(e) => setSettings({ ...settings, link_color: e.target.value })}
+                  className="w-16 h-10 p-1 cursor-pointer"
+                />
+                <Input
+                  value={settings.link_color}
+                  onChange={(e) => setSettings({ ...settings, link_color: e.target.value })}
+                  placeholder="#9CA3AF"
+                  className="flex-1"
+                />
+                <div 
+                  className="w-10 h-10 rounded border"
+                  style={{ backgroundColor: settings.link_color }}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                اختر لوناً فاتحاً ليظهر بوضوح على خلفية الفوتر الداكنة
+              </p>
             </div>
           </div>
 

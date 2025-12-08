@@ -21,6 +21,7 @@ interface FooterSettings {
   email: string;
   address: string;
   copyright_text: string;
+  link_color: string;
   quick_links: FooterLink[];
   support_links: FooterLink[];
   bottom_links: FooterLink[];
@@ -46,6 +47,7 @@ const Footer = () => {
       if (data) {
         setSettings({
           ...data,
+          link_color: data.link_color || '#9CA3AF',
           quick_links: Array.isArray(data.quick_links) ? data.quick_links as unknown as FooterLink[] : [],
           support_links: Array.isArray(data.support_links) ? data.support_links as unknown as FooterLink[] : [],
           bottom_links: Array.isArray(data.bottom_links) ? data.bottom_links as unknown as FooterLink[] : [],
@@ -68,6 +70,7 @@ const Footer = () => {
   const email = settings?.email || "info@podgram.com";
   const address = settings?.address || "الرياض، المملكة العربية السعودية";
   const copyrightText = settings?.copyright_text || "Podgram. جميع الحقوق محفوظة.";
+  const linkColor = settings?.link_color || "#9CA3AF";
   
   const quickLinks = settings?.quick_links || [
     { title: "من نحن", url: "/about" },
@@ -156,7 +159,11 @@ const Footer = () => {
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <li key={index}>
-                  <Link to={link.url} className="hover:text-qultura-blue transition-smooth text-sm">
+                  <Link 
+                    to={link.url} 
+                    className="hover:text-qultura-blue transition-smooth text-sm"
+                    style={{ color: linkColor }}
+                  >
                     {link.title}
                   </Link>
                 </li>
@@ -170,7 +177,11 @@ const Footer = () => {
             <ul className="space-y-3">
               {supportLinks.map((link, index) => (
                 <li key={index}>
-                  <Link to={link.url} className="hover:text-qultura-blue transition-smooth text-sm">
+                  <Link 
+                    to={link.url} 
+                    className="hover:text-qultura-blue transition-smooth text-sm"
+                    style={{ color: linkColor }}
+                  >
                     {link.title}
                   </Link>
                 </li>
@@ -186,7 +197,11 @@ const Footer = () => {
                 <Phone className="h-5 w-5 text-qultura-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-white">الهاتف</p>
-                  <a href={`tel:${phone.replace(/\s/g, '')}`} className="text-sm hover:text-qultura-blue transition-smooth">
+                <a 
+                  href={`tel:${phone.replace(/\s/g, '')}`} 
+                  className="text-sm hover:text-qultura-blue transition-smooth"
+                  style={{ color: linkColor }}
+                >
                     {phone}
                   </a>
                 </div>
@@ -195,7 +210,11 @@ const Footer = () => {
                 <Mail className="h-5 w-5 text-qultura-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-white">البريد الإلكتروني</p>
-                  <a href={`mailto:${email}`} className="text-sm hover:text-qultura-blue transition-smooth">
+                  <a 
+                    href={`mailto:${email}`} 
+                    className="text-sm hover:text-qultura-blue transition-smooth"
+                    style={{ color: linkColor }}
+                  >
                     {email}
                   </a>
                 </div>
@@ -204,7 +223,7 @@ const Footer = () => {
                 <MapPin className="h-5 w-5 text-qultura-blue flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-white">العنوان</p>
-                  <p className="text-sm">{address}</p>
+                  <p className="text-sm" style={{ color: linkColor }}>{address}</p>
                 </div>
               </li>
             </ul>
@@ -221,7 +240,12 @@ const Footer = () => {
             </p>
             <div className="flex items-center gap-6 text-sm">
               {bottomLinks.map((link, index) => (
-                <Link key={index} to={link.url} className="hover:text-qultura-blue transition-smooth">
+                <Link 
+                  key={index} 
+                  to={link.url} 
+                  className="hover:text-qultura-blue transition-smooth"
+                  style={{ color: linkColor }}
+                >
                   {link.title}
                 </Link>
               ))}

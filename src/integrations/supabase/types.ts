@@ -1178,6 +1178,7 @@ export type Database = {
           id: string
           instagram_url: string | null
           is_active: boolean
+          link_color: string | null
           linkedin_url: string | null
           phone: string | null
           quick_links: Json | null
@@ -1198,6 +1199,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           is_active?: boolean
+          link_color?: string | null
           linkedin_url?: string | null
           phone?: string | null
           quick_links?: Json | null
@@ -1218,6 +1220,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           is_active?: boolean
+          link_color?: string | null
           linkedin_url?: string | null
           phone?: string | null
           quick_links?: Json | null
