@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Play, UserPlus, Home, Gavel } from "lucide-react";
+import { Link } from "react-router-dom";
 import BrandLogos from "./BrandLogos";
+import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import heroGreenBanner from "@/assets/hero-green-banner.jpg";
 
@@ -98,20 +100,72 @@ export default function HeroCarousel() {
       <div className="flex">
         {slides.map((slide) => (
           <div key={slide.id} className="flex-[0_0_100%] min-w-0">
-            <div className={`relative overflow-hidden h-[500px] bg-gradient-to-br ${slide.bg_color}`}>
+              <div className={`relative overflow-hidden h-[550px] bg-gradient-to-br ${slide.bg_color}`}>
+              {/* Background Image with Overlay */}
               <img
                 src={slide.image_url || heroGreenBanner}
                 alt={slide.title}
-                className="absolute inset-0 w-full h-full object-cover opacity-10"
+                className="absolute inset-0 w-full h-full object-cover opacity-20"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+              
+              {/* Content */}
               <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8 animate-fade-in">
-                <p className="text-lg text-white/90 mb-4">{slide.description}</p>
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                {/* Badge */}
+                <div className="mb-6 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                  <span className="text-white text-sm font-medium">🏆 منصة المزادات الأولى في المملكة</span>
+                </div>
+                
+                <p className="text-xl text-white/95 mb-4 max-w-2xl">{slide.description}</p>
+                <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
                   {slide.title}
-                  <br />
-                  <span className="text-white/80">{slide.subtitle}</span>
                 </h2>
-                <div className="mt-8">
+                <p className="text-2xl md:text-3xl text-white/90 mb-8 font-light">
+                  {slide.subtitle}
+                </p>
+                
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap gap-4 justify-center mb-8">
+                  <Link to="/auth">
+                    <Button 
+                      size="lg" 
+                      className="bg-white text-primary hover:bg-white/90 font-bold px-8 py-6 text-lg rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+                    >
+                      <UserPlus className="ml-2 h-5 w-5" />
+                      سجّل الآن مجاناً
+                    </Button>
+                  </Link>
+                  <Link to="/auctions">
+                    <Button 
+                      size="lg" 
+                      variant="outline"
+                      className="border-2 border-white text-white hover:bg-white/20 font-bold px-8 py-6 text-lg rounded-full backdrop-blur-sm transition-all hover:scale-105"
+                    >
+                      <Gavel className="ml-2 h-5 w-5" />
+                      تصفح المزادات
+                    </Button>
+                  </Link>
+                </div>
+                
+                {/* Stats */}
+                <div className="flex flex-wrap gap-8 justify-center text-white/90">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold">+500</p>
+                    <p className="text-sm opacity-80">مزاد نشط</p>
+                  </div>
+                  <div className="w-px bg-white/30 hidden sm:block" />
+                  <div className="text-center">
+                    <p className="text-3xl font-bold">+10K</p>
+                    <p className="text-sm opacity-80">مستخدم مسجل</p>
+                  </div>
+                  <div className="w-px bg-white/30 hidden sm:block" />
+                  <div className="text-center">
+                    <p className="text-3xl font-bold">+2M</p>
+                    <p className="text-sm opacity-80">ريال قيمة المبيعات</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
                   <BrandLogos />
                 </div>
               </div>
