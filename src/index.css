@@ -299,6 +299,35 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Safe area padding for mobile devices */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* Touch-friendly styles */
+  @media (hover: none) and (pointer: coarse) {
+    button, a, [role="button"] {
+      min-height: 44px;
+    }
+  }
+
+  /* Prevent text selection on touch devices for interactive elements */
+  .touch-none {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smooth scrolling for mobile */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* استيراد الخطوط العربية من Google Fonts */

@@ -18,6 +18,7 @@ const Navbar = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const getInitialSession = async () => {
@@ -86,13 +87,13 @@ const Navbar = () => {
   return (
     <>
       <TopBar />
-      <nav className="sticky top-0 z-40 w-full bg-white border-b border-gray-100 shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex h-20 items-center justify-between gap-4">
+      <nav className="sticky top-0 z-40 w-full bg-background border-b border-border shadow-sm">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex h-14 sm:h-16 md:h-20 items-center justify-between gap-2 sm:gap-4">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 flex-shrink-0">
-              <img src={podgramLogo} alt="Podgram" className="h-10 w-10 object-contain" />
-              <span className="text-2xl font-bold text-qultura-blue hidden sm:inline">
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <img src={podgramLogo} alt="Podgram" className="h-8 w-8 sm:h-10 sm:w-10 object-contain" />
+              <span className="text-lg sm:text-2xl font-bold text-primary hidden xs:inline">
                 Podgram
               </span>
             </Link>
@@ -100,7 +101,7 @@ const Navbar = () => {
             {/* Desktop Navigation - Catalog Button Only */}
             <div className="hidden lg:flex items-center gap-4 text-sm">
               <Button
-                className="bg-qultura-blue hover:bg-qultura-blue/90 text-white px-6 h-12"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 h-12"
                 asChild
               >
                 <Link to="/catalog">
@@ -112,7 +113,7 @@ const Navbar = () => {
               </Button>
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar - Hidden on mobile, shown in separate row */}
             <div className="hidden md:flex flex-1 max-w-2xl justify-center">
               <SearchBar 
                 value={searchQuery}
@@ -122,28 +123,24 @@ const Navbar = () => {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-
+            <div className="flex items-center gap-1 sm:gap-2">
               <CartDrawer />
 
               <NotificationsDropdown userId={user?.id || null} />
 
-              <Link to="/favorites">
-                <Button variant="ghost" size="icon" className="hover:bg-gray-100 transition-smooth">
-                  <Heart className="h-5 w-5 text-gray-600" />
+              <Link to="/favorites" className="hidden sm:block">
+                <Button variant="ghost" size="icon" className="hover:bg-accent transition-all h-9 w-9 sm:h-10 sm:w-10">
+                  <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </Button>
               </Link>
 
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                      <Avatar className="h-10 w-10">
+                    <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full p-0">
+                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
                         <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.full_name || "User"} />
-                        <AvatarFallback className="bg-qultura-blue text-white">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
                           {getUserInitials()}
                         </AvatarFallback>
                       </Avatar>
@@ -174,7 +171,7 @@ const Navbar = () => {
                 </DropdownMenu>
               ) : (
                 <Link to="/auth">
-                  <Button className="bg-qultura-blue hover:bg-qultura-blue/90 transition-smooth">
+                  <Button className="bg-primary hover:bg-primary/90 text-primary-foreground transition-all text-xs sm:text-sm h-8 sm:h-10 px-3 sm:px-4">
                     تسجيل الدخول
                   </Button>
                 </Link>
@@ -183,7 +180,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Search Bar */}
-          <div className="md:hidden pb-4">
+          <div className="md:hidden pb-3">
             <SearchBar 
               value={searchQuery}
               onChange={setSearchQuery}

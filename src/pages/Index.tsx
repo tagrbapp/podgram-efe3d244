@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import ListingCard from "@/components/ListingCard";
 import HeroCarousel from "@/components/HeroCarousel";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
@@ -367,7 +368,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
       <SEO 
         title="Podgram - منصة السوق الفاخرة الأولى | مزادات وإعلانات المنتجات الفاخرة"
         description="اكتشف أفضل منصة لبيع وشراء المنتجات الفاخرة في السعودية. ساعات، حقائب، مجوهرات، سيارات وعقارات. مزادات مباشرة وإعلانات موثوقة."
@@ -377,36 +378,36 @@ const Index = () => {
       <main className="overflow-hidden">
         {/* Hero Section */}
         {sectionVisibility.hero && (
-          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-muted via-background to-accent/10">
-            <div className="container mx-auto px-4">
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <section className="relative py-8 sm:py-12 lg:py-24 bg-gradient-to-br from-muted via-background to-accent/10">
+            <div className="container mx-auto px-3 sm:px-4">
+              <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
                 {/* Carousel */}
                 <div className="order-2 lg:order-1 animate-fade-in">
                   <HeroCarousel />
                 </div>
 
                 {/* Hero Content */}
-                <div className="order-1 lg:order-2 text-center lg:text-right space-y-8 animate-fade-in">
-                  <div className="space-y-4">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight tracking-tight">
+                <div className="order-1 lg:order-2 text-center lg:text-right space-y-4 sm:space-y-6 lg:space-y-8 animate-fade-in">
+                  <div className="space-y-3 sm:space-y-4">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-tight tracking-tight">
                       من المربح أن تشتري
                       <br />
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent">
                         من المربح أن تبيع
                       </span>
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0">
                       المنصة الأولى لإعادة بيع المنتجات الفاخرة
                       <br />
                       <span className="text-primary font-semibold">مع خدمات موثوقة ومضمونة</span>
                     </p>
                   </div>
                   
-                  <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-                    <button className="group px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:shadow-elegant transition-all hover:-translate-y-0.5 hover:scale-105">
+                  <div className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start">
+                    <button className="group px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:shadow-elegant transition-all hover:-translate-y-0.5 hover:scale-105 text-sm sm:text-base">
                       <span>اكتشف المزيد</span>
                     </button>
-                    <button className="px-8 py-4 bg-accent text-accent-foreground rounded-xl font-semibold hover:bg-accent/80 transition-all">
+                    <button className="px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 lg:py-4 bg-accent text-accent-foreground rounded-xl font-semibold hover:bg-accent/80 transition-all text-sm sm:text-base">
                       <span>تصفح المزادات</span>
                     </button>
                   </div>
@@ -434,27 +435,27 @@ const Index = () => {
 
         {/* Categories Section */}
         {sectionVisibility.categories && (
-          <section className="relative py-16 lg:py-20 bg-gradient-to-br from-muted/30 via-background to-muted/20">
-            <div className="container mx-auto px-4">
+          <section className="relative py-8 sm:py-12 lg:py-20 bg-gradient-to-br from-muted/30 via-background to-muted/20">
+            <div className="container mx-auto px-3 sm:px-4">
               {/* Section Header */}
-              <div className="text-center mb-12 space-y-4 animate-fade-in">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+              <div className="text-center mb-6 sm:mb-8 lg:mb-12 space-y-2 sm:space-y-4 animate-fade-in">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground">
                   تصفح حسب الفئة
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                   اكتشف المنتجات الفاخرة في فئتك المفضلة
                 </p>
               </div>
 
               {/* Categories Grid */}
               {categoriesLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-64 bg-card rounded-3xl animate-pulse shadow-card" />
+                    <div key={i} className="h-40 sm:h-52 lg:h-64 bg-card rounded-2xl sm:rounded-3xl animate-pulse shadow-card" />
                   ))}
                 </div>
               ) : categories.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                   {categories.map((category, index) => (
                     <div 
                       key={category.id} 
@@ -487,26 +488,26 @@ const Index = () => {
 
         {/* Live Auctions Section */}
         {sectionVisibility.live_auctions && (
-          <section className="relative py-16 lg:py-24 bg-gradient-to-br from-background via-muted/30 to-background">
-            <div className="container mx-auto px-4">
+          <section className="relative py-8 sm:py-12 lg:py-24 bg-gradient-to-br from-background via-muted/30 to-background">
+            <div className="container mx-auto px-3 sm:px-4">
               {/* Section Header */}
-              <div className="text-center mb-8 space-y-4 animate-fade-in">
-                <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/10 rounded-full mb-4">
-                  <Gavel className="w-6 h-6 text-primary animate-pulse" />
-                  <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+              <div className="text-center mb-6 sm:mb-8 space-y-2 sm:space-y-4 animate-fade-in">
+                <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-primary/10 rounded-full mb-2 sm:mb-4">
+                  <Gavel className="w-4 h-4 sm:w-6 sm:h-6 text-primary animate-pulse" />
+                  <span className="text-xs sm:text-sm font-semibold text-primary uppercase tracking-wider">
                     مزادات مباشرة
                   </span>
                 </div>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground">
                   المزادات المباشرة
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                   شارك في المزادات الحية واحصل على أفضل المنتجات الفاخرة بأسعار تنافسية
                 </p>
               </div>
 
               {/* Categories Strip */}
-              <div className="mb-10 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <div className="mb-6 sm:mb-8 lg:mb-10 animate-fade-in" style={{ animationDelay: '0.1s' }}>
                 <CategoriesStrip 
                   onCategorySelect={handleCategorySelect}
                   selectedCategory={selectedCategoryId}
@@ -515,26 +516,26 @@ const Index = () => {
 
               {/* Tabs */}
               <Tabs defaultValue="active" className="w-full" dir="rtl">
-                <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-12 h-14 bg-muted/50 backdrop-blur-sm">
-                  <TabsTrigger value="active" className="gap-2 text-base data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                    <TrendingUp className="w-5 h-5" />
-                    المزادات النشطة
+                <TabsList className="grid w-full max-w-sm sm:max-w-md mx-auto grid-cols-2 mb-6 sm:mb-8 lg:mb-12 h-10 sm:h-12 lg:h-14 bg-muted/50 backdrop-blur-sm">
+                  <TabsTrigger value="active" className="gap-1 sm:gap-2 text-xs sm:text-sm lg:text-base data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                    <span className="hidden xs:inline">المزادات</span> النشطة
                   </TabsTrigger>
-                  <TabsTrigger value="ended" className="gap-2 text-base data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                    <Gavel className="w-5 h-5" />
-                    المزادات المنتهية
+                  <TabsTrigger value="ended" className="gap-1 sm:gap-2 text-xs sm:text-sm lg:text-base data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                    <Gavel className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                    <span className="hidden xs:inline">المزادات</span> المنتهية
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="active" className="animate-fade-in">
                   {auctionsLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                       {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-96 bg-card rounded-3xl animate-pulse shadow-card" />
+                        <div key={i} className="h-72 sm:h-80 lg:h-96 bg-card rounded-2xl sm:rounded-3xl animate-pulse shadow-card" />
                       ))}
                     </div>
                   ) : filteredAuctions.filter(a => a.status === "active").length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                       {filteredAuctions
                         .filter(a => a.status === "active")
                         .map((auction) => (
@@ -923,6 +924,7 @@ const Index = () => {
       </main>
 
       <Footer />
+      <MobileBottomNav />
     </div>
   );
 };
