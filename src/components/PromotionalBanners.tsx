@@ -1,5 +1,6 @@
 import { ExternalLink, Sparkles } from "lucide-react";
 import bannerBg from "@/assets/ufq1-banner-bg.jpg";
+import ufq1Logo from "@/assets/ufq1-logo.png";
 
 const PromotionalBanners = () => {
   return (
@@ -31,14 +32,9 @@ const PromotionalBanners = () => {
             {/* Logo */}
             <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center p-2 group-hover:scale-110 transition-transform duration-300">
               <img 
-                src="https://www.ufq1.com/wp-content/uploads/2023/09/cropped-Artboard-1-copy.png" 
+                src={ufq1Logo} 
                 alt="UFQ1 Logo"
                 className="w-full h-full object-contain"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  target.parentElement!.innerHTML = '<span class="text-2xl font-bold text-teal-600">UFQ1</span>';
-                }}
               />
             </div>
             
