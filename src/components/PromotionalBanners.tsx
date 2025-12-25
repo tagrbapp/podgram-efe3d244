@@ -1,111 +1,52 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-
-interface PromotionalBanner {
-  id: string;
-  title: string;
-  image_url: string;
-  link_url: string | null;
-  position: number;
-  is_active: boolean;
-}
+import { ExternalLink, Sparkles } from "lucide-react";
 
 const PromotionalBanners = () => {
-  const { data: banners = [], isLoading } = useQuery({
-    queryKey: ["promotional-banners"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("promotional_banners")
-        .select("*")
-        .eq("is_active", true)
-        .order("position");
-
-      if (error) throw error;
-      return data as PromotionalBanner[];
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Skeleton className="h-48 rounded-2xl" />
-          <Skeleton className="h-48 rounded-2xl" />
-          <Skeleton className="h-48 rounded-2xl" />
-        </div>
-        <Skeleton className="h-48 lg:h-full rounded-2xl" />
-      </div>
-    );
-  }
-
-  if (banners.length === 0) {
-    return null;
-  }
-
-  const mainBanners = banners.filter(b => b.position <= 3);
-  const sideBanner = banners.find(b => b.position === 4);
-
-  const BannerCard = ({ banner, className = "" }: { banner: PromotionalBanner; className?: string }) => {
-    const content = (
-      <div 
-        className={`relative overflow-hidden rounded-2xl group cursor-pointer ${className}`}
-      >
-        <img
-          src={banner.image_url}
-          alt={banner.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Title */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <h3 className="text-white font-bold text-lg drop-shadow-lg">{banner.title}</h3>
-        </div>
-
-        {/* Decorative Corner */}
-        <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/30 to-transparent transform rotate-45 translate-x-8 -translate-y-8" />
-        </div>
-      </div>
-    );
-
-    if (banner.link_url) {
-      return (
-        <Link to={banner.link_url} className="block">
-          {content}
-        </Link>
-      );
-    }
-
-    return content;
-  };
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4" dir="rtl">
-      {/* Main 3 Banners */}
-      <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {mainBanners.map((banner) => (
-          <BannerCard 
-            key={banner.id} 
-            banner={banner} 
-            className="h-48 md:h-56"
-          />
-        ))}
-      </div>
-
-      {/* Side Banner */}
-      {sideBanner && (
-        <div className="lg:row-span-1">
-          <BannerCard 
-            banner={sideBanner} 
-            className="h-48 lg:h-56"
-          />
+    <a 
+      href="https://www.ufq1.com" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="block"
+    >
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-l from-primary via-primary/90 to-secondary group cursor-pointer shadow-elegant hover:shadow-2xl transition-all duration-500">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{ 
+            backgroundImage: `radial-gradient(circle at 20% 50%, hsl(var(--primary-foreground)) 1px, transparent 1px)`,
+            backgroundSize: '30px 30px'
+          }} />
         </div>
-      )}
-    </div>
+        
+        {/* Animated Glow */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary-foreground/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-secondary/30 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+        
+        {/* Content */}
+        <div className="relative px-6 sm:px-8 lg:px-12 py-8 sm:py-10 lg:py-12 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6" dir="rtl">
+          {/* Text Content */}
+          <div className="text-center sm:text-right space-y-2 sm:space-y-3">
+            <div className="flex items-center gap-2 justify-center sm:justify-start">
+              <Sparkles className="w-5 h-5 text-primary-foreground animate-pulse" />
+              <span className="text-primary-foreground/80 text-sm font-medium">اكتشف عالم التسوق</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary-foreground">
+              تسوق الآن من <span className="text-secondary-foreground">ufq1.com</span>
+            </h3>
+            <p className="text-primary-foreground/80 text-sm sm:text-base max-w-md">
+              أفضل المنتجات والعروض الحصرية في مكان واحد
+            </p>
+          </div>
+          
+          {/* CTA Button */}
+          <div className="flex-shrink-0">
+            <div className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-primary-foreground text-primary rounded-xl font-bold text-sm sm:text-base group-hover:scale-105 group-hover:shadow-lg transition-all duration-300">
+              <span>زيارة الموقع</span>
+              <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </a>
   );
 };
 
