@@ -30,11 +30,11 @@ const PromotionalBanners = () => {
           {/* Logo & Text Content */}
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             {/* Logo */}
-            <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center p-2 group-hover:scale-110 transition-transform duration-300">
+            <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 bg-white rounded-2xl shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <img 
                 src={ufq1Logo} 
                 alt="UFQ1 Logo"
-                className="w-full h-full object-contain"
+                className="w-[85%] h-[85%] object-contain"
               />
             </div>
             
